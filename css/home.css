@@ -1,0 +1,251 @@
+/* HERO */
+.hero {
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+  padding: 80px 60px;
+}
+
+.hero-text {
+  flex: 1;
+  max-width: 620px;
+}
+
+.hero-tag {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: #7cff4f;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.hero-text h1 {
+  font-size: 3.4rem;
+  line-height: 1.15;
+  margin-bottom: 22px;
+}
+
+.hero-text p {
+  font-size: 1.08rem;
+  color: #cfcfcf;
+  margin-bottom: 32px;
+  max-width: 540px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-image img {
+  width: 100%;
+  max-width: 560px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+/* FEATURES */
+.features {
+  padding: 80px 60px;
+  background-color: #12171d;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  background-color: #181e26;
+  border: 1px solid #242b35;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+.feature-card p {
+  color: #cfcfcf;
+  font-size: 1rem;
+}
+.recommendation {
+  padding: 80px 60px;
+  background-color: #12171d;
+}
+
+.recommendation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.recommendation-form-card,
+.recommendation-result-card {
+  background-color: #181e26;
+  border: 1px solid #242b35;
+  border-radius: 18px;
+  padding: 30px;
+}
+
+.recommendation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.recommendation-image {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
+.recommendation-text {
+  margin-bottom: 12px;
+}
+
+.recommendation-meta {
+  color: #cfcfcf;
+  margin-bottom: 8px;
+}
+
+.recommendation-note {
+  color: #7cff4f;
+  font-weight: 600;
+  margin-top: 12px;
+}
+.recommendation-reason {
+  color: #d8dde3;
+  margin-bottom: 14px;
+}
+.recommendation-result-card .btn-primary {
+  margin-top: 16px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.form-group select {
+  background-color: #0f1115;
+  color: #ffffff;
+  border: 1px solid #2a313c;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  outline: none;
+}
+
+.form-group select:focus {
+  border-color: #7cff4f;
+}
+
+.recommendation-result-card h3 {
+  margin-bottom: 12px;
+}
+
+.recommendation-result-card p {
+  color: #cfcfcf;
+}
+/* FEATURED BIKES SECTION (spacing only) */
+.featured-bikes {
+  padding: 80px 60px;
+}
+
+/* RESPONSIVE (homepage only) */
+@media (max-width: 992px) {
+.hero,
+.features,
+.recommendation,
+.featured-bikes {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    min-height: auto;
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
+  .hero-text {
+    max-width: 100%;
+  }
+
+  .hero-text p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+.hero,
+.features,
+.recommendation,
+.featured-bikes {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.recommendation-grid {
+  grid-template-columns: 1fr;
+}
+  .hero {
+    gap: 30px;
+  }
+
+  .hero-text h1 {
+    font-size: 2.4rem;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding-top: 45px;
+    padding-bottom: 45px;
+  }
+
+  .hero-text h1 {
+    font-size: 2rem;
+  }
+
+  .hero-text p {
+    font-size: 0.95rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+  }
+}

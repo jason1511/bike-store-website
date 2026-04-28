@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bikes | E-Bike Store</title>
+  <link rel="stylesheet" href="css/global.css" />
+<link rel="stylesheet" href="css/bikes.css" />
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="logo">E-Bike Store</a>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="bikes.html">Bikes</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="page-hero-content">
+        <p class="section-tag">Our Collection</p>
+        <h1>Explore Our Electric Bikes</h1>
+        <p>
+          Browse our range of e-bikes designed for commuting, comfort, and performance.
+        </p>
+      </div>
+    </section>
+
+<section class="bike-listing">
+<div class="bike-toolbar">
+  <div class="bike-filters">
+    <button class="filter-btn active" data-category="all">All</button>
+    <button class="filter-btn" data-category="commuter">Commuter</button>
+    <button class="filter-btn" data-category="city">City</button>
+    <button class="filter-btn" data-category="adventure">Adventure</button>
+    <button class="filter-btn" data-category="mountain">Mountain</button>
+    <button class="filter-btn" data-category="folding">Folding</button>
+    <button class="filter-btn" data-category="premium">Premium</button>
+  </div>
+
+<div class="bike-toolbar-right">
+  <div class="bike-search">
+    <label for="searchInput">Search</label>
+    <input type="text" id="searchInput" placeholder="Search bike name">
+  </div>
+
+  <div class="bike-sort">
+    <label for="sortSelect">Sort by</label>
+    <select id="sortSelect">
+      <option value="default">Default</option>
+      <option value="price-low">Price: Low to High</option>
+      <option value="price-high">Price: High to Low</option>
+      <option value="range-high">Range: High to Low</option>
+      <option value="range-low">Range: Low to High</option>
+    </select>
+  </div>
+
+  <label class="stock-toggle">
+    <input type="checkbox" id="hideSoldOutToggle">
+    <span>Hide Sold Out</span>
+  </label>
+
+  <button type="button" class="clear-btn" id="clearFiltersBtn">Clear Filters</button>
+</div>
+    
+  </div>
+<p class="bike-status" id="bikeStatus">Showing all bikes</p>
+  <div class="bike-grid" id="bikeGrid"></div>
+</section>
+  </main>
+<div class="bike-modal" id="bikeModal" aria-hidden="true">
+  <div class="bike-modal-overlay" id="bikeModalOverlay"></div>
+
+  <div class="bike-modal-content" role="dialog" aria-modal="true" aria-labelledby="bikeModalTitle">
+    <button type="button" class="bike-modal-close" id="bikeModalClose" aria-label="Close bike details">
+      &times;
+    </button>
+
+    <div class="bike-modal-body" id="bikeModalBody">
+      <!-- Bike details will be injected here -->
+    </div>
+  </div>
+</div>
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <h3>E-Bike Store</h3>
+        <p>Modern electric bikes for everyday commuting, comfort, and performance.</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="bikes.html">Bikes</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 E-Bike Store. All rights reserved.</p>
+    </div>
+  </footer>
+
+<script src="js/data.js"></script>
+<script src="js/bike-service.js"></script>
+<script src="js/global.js"></script>
+<script src="js/bikes.js"></script>
+</body>
+</html>
