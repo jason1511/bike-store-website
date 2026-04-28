@@ -192,7 +192,7 @@ function openBikeModal(bikeId) {
   <p class="bike-modal-description">${bike.description}</p>
 
         <div class="bike-modal-specs">
-          <div class="bike-modal-spec"><strong>Range:</strong> Up to ${bike.range} km</div>
+          <div class="bike-modal-spec"><strong>Range:</strong> Up to ${bike.range}</div>
           <div class="bike-modal-spec"><strong>Motor:</strong> ${bike.motor}</div>
           <div class="bike-modal-spec"><strong>Charge Time:</strong> ${bike.chargeTime}</div>
           <div class="bike-modal-spec"><strong>Terrain:</strong> ${bike.terrain}</div>

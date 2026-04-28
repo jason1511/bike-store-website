@@ -34,7 +34,7 @@ function createBikeCard(bike) {
   <p class="bike-stock ${getStockClass(bike)}">${getStockLabel(bike)}</p>
   <p class="bike-brand">${bike.brand}</p>
   <h3>${bike.name}</h3>
-  <p class="bike-spec">Range up to ${bike.range} km</p>
+  <p class="bike-spec">Range up to ${bike.range}</p>
   <p class="bike-price">${formatPrice(bike.price)}</p>
 </div>
     </div>

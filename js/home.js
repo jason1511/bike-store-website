@@ -31,7 +31,7 @@ function getBikeScore(bike, preferences) {
     score += 2;
   }
 
-  score += bike.range / 100;
+  score += getNumericRange(bike) / 100;
 
   return score;
 }
@@ -92,9 +92,9 @@ function getRecommendationReason(bike, preferences) {
     reasons.push(`it matches your preference for ${getComfortLabel(preferences.comfort)}`);
   }
 
-  if (bike.range >= 75) {
+  if (getNumericRange(bike) >= 75) {
     reasons.push("it offers strong battery range");
-  } else if (bike.range >= 55) {
+  } else if (getNumericRange(bike) >= 55) {
     reasons.push("it offers practical everyday range");
   }
 
@@ -127,7 +127,7 @@ function renderRecommendationResult(bike, preferences) {
       <strong>${preferences.comfort}</strong> comfort preference.
     </p>
     <p class="recommendation-reason">${reasonText}</p>
-    <p class="recommendation-meta">Range up to ${bike.range} km</p>
+    <p class="recommendation-meta">Range up to ${bike.range}</p>
     <p class="recommendation-meta">${formatPrice(bike.price)}</p>
     <p class="recommendation-note">${budgetMessage}</p>
     <a href="bikes.html?category=${bike.category}" class="btn-primary">See Matching Bikes</a>

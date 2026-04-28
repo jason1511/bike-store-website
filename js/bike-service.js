@@ -23,6 +23,10 @@ function getAvailableBikes() {
 function getUniqueCategories() {
   return [...new Set(bikes.map((bike) => bike.category))];
 }
+function getNumericRange(bike) {
+  const match = String(bike.range || "").match(/\d+/);
+  return match ? Number(match[0]) : 0;
+}
 function getFilteredAndSortedBikes(options = {}) {
   const {
     category = "all",
@@ -56,10 +60,10 @@ function getFilteredAndSortedBikes(options = {}) {
       result.sort((a, b) => b.price - a.price);
       break;
     case "range-high":
-      result.sort((a, b) => b.range - a.range);
+      result.sort((a, b) => getNumericRange(b) - getNumericRange(a));
       break;
     case "range-low":
-      result.sort((a, b) => a.range - b.range);
+      result.sort((a, b) => getNumericRange(a) - getNumericRange(b));
       break;
     default:
       break;
