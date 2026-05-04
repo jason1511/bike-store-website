@@ -1,7 +1,9 @@
-/* PAGE HERO */
+/* =========================
+   PAGE HERO
+========================= */
 .page-hero {
   padding: 80px 60px 40px;
-  background: linear-gradient(135deg, #ffffff 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-primary-light) 100%);
 }
 
 .page-hero-content {
@@ -19,13 +21,17 @@
   font-size: 1.05rem;
 }
 
-/* BIKE LISTING */
+/* =========================
+   BIKE LISTING
+========================= */
 .bike-listing {
   padding: 40px 60px 80px;
   background-color: var(--color-bg);
 }
 
-/* TOOLBAR */
+/* =========================
+   TOOLBAR + FILTERS
+========================= */
 .bike-toolbar {
   display: flex;
   justify-content: space-between;
@@ -116,6 +122,9 @@
   background-color: var(--color-primary-light);
 }
 
+/* =========================
+   STATUS + EMPTY STATE
+========================= */
 .bike-status {
   color: var(--color-muted);
   margin-bottom: 20px;
@@ -125,54 +134,27 @@
 .bike-status strong {
   color: var(--color-primary);
 }
-.bike-toolbar-right {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  align-items: flex-end;
+
+.bike-empty-state {
+  grid-column: 1 / -1;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 30px;
 }
 
-.bike-search {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.bike-empty-state h3 {
+  color: var(--color-primary);
+  margin-bottom: 10px;
 }
 
-.bike-search label {
-  color: #cfcfcf;
-  font-weight: 600;
+.bike-empty-state p {
+  color: var(--color-muted);
 }
 
-.bike-search input {
-  background-color: #181e26;
-  color: #ffffff;
-  border: 1px solid #2a313c;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font: inherit;
-  outline: none;
-  min-width: 220px;
-}
-
-.bike-search input:focus {
-  border-color: #7cff4f;
-}
-.clear-btn {
-  background-color: transparent;
-  color: #ffffff;
-  border: 1px solid #2a313c;
-  padding: 10px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.clear-btn:hover {
-  border-color: #7cff4f;
-  color: #7cff4f;
-}/* BIKE MODAL */
+/* =========================
+   BIKE MODAL
+========================= */
 .bike-modal {
   position: fixed;
   inset: 0;
@@ -260,6 +242,9 @@
   margin-bottom: 18px;
 }
 
+/* =========================
+   MODAL HIGHLIGHTS
+========================= */
 .bike-highlights {
   display: flex;
   flex-wrap: wrap;
@@ -277,6 +262,9 @@
   font-weight: 700;
 }
 
+/* =========================
+   RECOMMENDED USES
+========================= */
 .bike-recommended {
   margin-bottom: 22px;
 }
@@ -294,7 +282,7 @@
 }
 
 .recommended-tags span {
-  background-color: #ffffff;
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-muted);
   padding: 7px 12px;
@@ -302,6 +290,9 @@
   font-size: 0.9rem;
 }
 
+/* =========================
+   MODAL SPECS
+========================= */
 .bike-modal-specs {
   display: grid;
   gap: 12px;
@@ -328,53 +319,10 @@
   gap: 14px;
   flex-wrap: wrap;
 }
-.bike-recommended {
-  margin-bottom: 22px;
-}
 
-.bike-recommended h3 {
-  font-size: 1rem;
-  margin-bottom: 10px;
-}
-
-.recommended-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.recommended-tags span {
-  background-color: #0f1115;
-  border: 1px solid #2a313c;
-  color: #d8dde3;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-}
-.bike-highlights {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.highlight-badge {
-  background-color: rgba(124, 255, 79, 0.15);
-  color: #7cff4f;
-  border: 1px solid #7cff4f;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-.bike-modal-brand {
-  color: #aeb6bf;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
+/* =========================
+   RESPONSIVE
+========================= */
 @media (max-width: 992px) {
   .page-hero,
   .bike-listing {
@@ -382,60 +330,50 @@
     padding-right: 30px;
   }
 }
-.stock-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #cfcfcf;
-  font-weight: 600;
-  padding: 10px 0;
-}
 
-.stock-toggle input {
-  accent-color: #7cff4f;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
 @media (max-width: 768px) {
   .page-hero,
   .bike-listing {
     padding-left: 20px;
     padding-right: 20px;
   }
-  .bike-toolbar {
-  flex-direction: column;
-  align-items: stretch;
-}
 
-.bike-sort {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.bike-sort select {
-  width: 100%;
-}
-.bike-filters {
-  gap: 10px;
-}
   .page-hero h1 {
     font-size: 2.2rem;
   }
+
+  .bike-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bike-toolbar-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bike-search input,
+  .bike-sort select,
+  .clear-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
   .bike-modal-content {
-  margin: 20px auto;
-  width: calc(100% - 20px);
-}
+    margin: 20px auto;
+    width: calc(100% - 20px);
+  }
 
-.bike-modal-body {
-  padding: 20px;
-}
+  .bike-modal-body {
+    padding: 20px;
+  }
 
-.bike-modal-layout {
-  grid-template-columns: 1fr;
-}
+  .bike-modal-layout {
+    grid-template-columns: 1fr;
+  }
 
-.bike-modal-details h2 {
-  font-size: 1.6rem;
-}
+  .bike-modal-details h2 {
+    font-size: 1.6rem;
+  }
 }

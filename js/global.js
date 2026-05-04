@@ -40,3 +40,28 @@ function createBikeCard(bike) {
     </div>
   `;
 }
+function setupThemeToggle() {
+  const themeToggle = document.getElementById("themeToggle");
+
+  if (!themeToggle) {
+    return;
+  }
+
+  const savedTheme = localStorage.getItem("siteTheme");
+
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark-theme");
+    themeToggle.textContent = "Light";
+  }
+
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark-theme");
+
+    const isDark = document.body.classList.contains("dark-theme");
+
+    localStorage.setItem("siteTheme", isDark ? "dark" : "light");
+    themeToggle.textContent = isDark ? "Light" : "Dark";
+  });
+}
+
+setupThemeToggle();

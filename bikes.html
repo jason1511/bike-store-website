@@ -10,20 +10,26 @@
 <body>
   <header>
     <nav class="navbar">
-      <a href="index.html" class="logo">E-Bike Store</a>
+      <a href="index.html" class="logo">
+  <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
+  <span>CV Niaga Bersama Abadi</span>
+</a>
 
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
         <li><a href="bikes.html">Bikes</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
+      <button class="theme-toggle" id="themeToggle" type="button">
+  Dark
+</button>
     </nav>
   </header>
 
   <main>
     <section class="page-hero">
       <div class="page-hero-content">
-        <p class="section-tag">Our Collection</p>
+        <p class="section-tag">Katalog Showroom</p>
         <h1>Katalog Sepeda Listrik</h1>
 <p>
   Lihat pilihan sepeda listrik berdasarkan brand. Untuk harga dan ketersediaan,
@@ -35,37 +41,36 @@
 <section class="bike-listing">
 <div class="bike-toolbar">
   <div class="bike-filters">
-  <button class="filter-btn active" data-brand="all">All</button>
-  <button class="filter-btn" data-brand="Exotic">Exotic</button>
-  <button class="filter-btn" data-brand="Nuv">Nuv</button>
-  <button class="filter-btn" data-brand="Saige">Saige</button>
-  <button class="filter-btn" data-brand="Larizz">Larizz</button>
-  <button class="filter-btn" data-brand="Pacific">Pacific</button>
-  <button class="filter-btn" data-brand="Uwinfly">Uwinfly</button>
+    <button class="filter-btn active" data-brand="all">Semua</button>
+    <button class="filter-btn" data-brand="Exotic">Exotic</button>
+    <button class="filter-btn" data-brand="Nuv">Nuv</button>
+    <button class="filter-btn" data-brand="Saige">Saige</button>
+    <button class="filter-btn" data-brand="Larizz">Larizz</button>
+    <button class="filter-btn" data-brand="Pacific">Pacific</button>
+    <button class="filter-btn" data-brand="Uwinfly">Uwinfly</button>
+  </div>
+
+  <div class="bike-toolbar-right">
+    <div class="bike-search">
+      <label for="searchInput">Cari</label>
+      <input type="text" id="searchInput" placeholder="Cari nama sepeda">
+    </div>
+
+    <div class="bike-sort">
+      <label for="sortSelect">Urutkan</label>
+      <select id="sortSelect">
+        <option value="default">Default</option>
+        <option value="price-low">Harga: Rendah ke Tinggi</option>
+        <option value="price-high">Harga: Tinggi ke Rendah</option>
+        <option value="range-high">Jarak: Tinggi ke Rendah</option>
+        <option value="range-low">Jarak: Rendah ke Tinggi</option>
+      </select>
+    </div>
+
+    <button type="button" class="clear-btn" id="clearFiltersBtn">Reset</button>
+  </div>
 </div>
-
-<div class="bike-toolbar-right">
-  <div class="bike-search">
-    <label for="searchInput">Search</label>
-    <input type="text" id="searchInput" placeholder="Search bike name">
-  </div>
-
-  <div class="bike-sort">
-    <label for="sortSelect">Sort by</label>
-    <select id="sortSelect">
-      <option value="default">Default</option>
-      <option value="price-low">Price: Low to High</option>
-      <option value="price-high">Price: High to Low</option>
-      <option value="range-high">Range: High to Low</option>
-      <option value="range-low">Range: Low to High</option>
-    </select>
-  </div>
-
-  <button type="button" class="clear-btn" id="clearFiltersBtn">Clear Filters</button>
-</div>
-    
-  </div>
-<p class="bike-status" id="bikeStatus">Showing all bikes</p>
+<p class="bike-status" id="bikeStatus">Menampilkan semua sepeda</p>
   <div class="bike-grid" id="bikeGrid"></div>
 </section>
   </main>
@@ -85,8 +90,11 @@
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-brand">
-        <h3>E-Bike Store</h3>
-        <p>Modern electric bikes for everyday commuting, comfort, and performance.</p>
+        <div class="footer-logo">
+  <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
+  <span>CV Niaga Bersama Abadi</span>
+</div>
+<p>Showroom sepeda listrik untuk mobilitas harian dan kebutuhan transportasi praktis.</p>
       </div>
 
       <div class="footer-links">
@@ -97,7 +105,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>&copy; 2026 E-Bike Store. All rights reserved.</p>
+      <p>&copy; 2026 CV Niaga Bersama Abadi. All rights reserved.</p>
     </div>
   </footer>
 
