@@ -1,20 +1,8 @@
 let currentCategory = "all";
 let currentSort = "default";
 let currentSearch = "";
-let hideSoldOut = false;
+let currentBrand = "all";
 
-function setupHideSoldOutToggle() {
-  const hideSoldOutToggle = document.getElementById("hideSoldOutToggle");
-
-  if (!hideSoldOutToggle) {
-    return;
-  }
-
-  hideSoldOutToggle.addEventListener("change", (event) => {
-    hideSoldOut = event.target.checked;
-    renderBikes();
-  });
-}
 function setupBikeSearch() {
   const searchInput = document.getElementById("searchInput");
 
@@ -34,12 +22,11 @@ function renderBikes() {
     return;
   }
 
-  const visibleBikes = getFilteredAndSortedBikes({
-    category: currentCategory,
-    search: currentSearch,
-    sort: currentSort,
-    hideSoldOut
-  });
+const visibleBikes = getFilteredAndSortedBikes({
+  brand: currentBrand,
+  search: currentSearch,
+  sort: currentSort
+});
 
   if (!visibleBikes.length) {
     bikeGrid.innerHTML = `
@@ -63,7 +50,7 @@ function updateActiveFilterButton() {
   const filterButtons = document.querySelectorAll(".filter-btn");
 
   filterButtons.forEach((button) => {
-    const isActive = button.dataset.category === currentCategory;
+    const isActive = button.dataset.brand === currentBrand;
     button.classList.toggle("active", isActive);
   });
 }
@@ -71,13 +58,9 @@ function updateActiveFilterButton() {
 function setupBikeFilters() {
   const filterButtons = document.querySelectorAll(".filter-btn");
 
-  if (!filterButtons.length) {
-    return;
-  }
-
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      currentCategory = button.dataset.category;
+      currentBrand = button.dataset.brand;
       updateActiveFilterButton();
       renderBikes();
     });
@@ -97,27 +80,6 @@ function setupBikeSort() {
   });
 }
 
-function applyCategoryFromUrl() {
-  const params = new URLSearchParams(globalThis.location.search);
-  const categoryFromUrl = params.get("category");
-
-  if (!categoryFromUrl) {
-    return;
-  }
-
-  const validCategories = ["all", ...getUniqueCategories()];
-
-  if (validCategories.includes(categoryFromUrl)) {
-    currentCategory = categoryFromUrl;
-  }
-}
-function formatCategoryLabel(category) {
-  if (category === "all") {
-    return "all bikes";
-  }
-
-  return `${category} bikes`;
-}
 
 function updateBikeStatus() {
   const bikeStatus = document.getElementById("bikeStatus");
@@ -127,25 +89,22 @@ function updateBikeStatus() {
   }
 
   const visibleCount = getFilteredAndSortedBikes({
-  category: currentCategory,
-  search: currentSearch,
-  sort: currentSort,
-  hideSoldOut
-}).length;
-  const categoryLabel = formatCategoryLabel(currentCategory);
+    brand: currentBrand,
+    search: currentSearch,
+    sort: currentSort,
+  }).length;
 
   if (currentSearch.trim()) {
-    bikeStatus.innerHTML = `Showing <strong>${categoryLabel}</strong> for <strong>“${currentSearch.trim()}”</strong> (${visibleCount})`;
+    bikeStatus.innerHTML = `Menampilkan <strong>${currentBrand}</strong> untuk <strong>“${currentSearch.trim()}”</strong> (${visibleCount})`;
     return;
   }
 
-  bikeStatus.innerHTML = `Showing <strong>${categoryLabel}</strong> (${visibleCount})`;
+  bikeStatus.innerHTML = `Menampilkan <strong>${currentBrand}</strong> (${visibleCount})`;
 }
 function setupClearFilters() {
   const clearFiltersBtn = document.getElementById("clearFiltersBtn");
   const searchInput = document.getElementById("searchInput");
   const sortSelect = document.getElementById("sortSelect");
-  const hideSoldOutToggle = document.getElementById("hideSoldOutToggle");
   if (!clearFiltersBtn) {
     return;
   }
@@ -154,11 +113,7 @@ function setupClearFilters() {
     currentCategory = "all";
     currentSort = "default";
     currentSearch = "";
-    hideSoldOut = false;
 
-if (hideSoldOutToggle) {
-  hideSoldOutToggle.checked = false;
-}
     if (searchInput) {
       searchInput.value = "";
     }
@@ -179,7 +134,8 @@ function openBikeModal(bikeId) {
   if (!bikeModal || !bikeModalBody || !bike) {
     return;
   }
-
+const highlights = getHighlights(bike);
+const recommendedUses = getRecommendedUses(bike);
   bikeModalBody.innerHTML = `
     <div class="bike-modal-layout">
       <div class="bike-modal-image">
@@ -190,22 +146,56 @@ function openBikeModal(bikeId) {
   <p class="bike-modal-brand">${bike.brand}</p>
   <h2 id="bikeModalTitle">${bike.name}</h2>
   <p class="bike-modal-description">${bike.description}</p>
-
+${highlights.length ? `
+  <div class="bike-highlights">
+    ${highlights.map(h => `<span class="highlight-badge">${h}</span>`).join("")}
+  </div>
+` : ""}
+${recommendedUses.length ? `
+  <div class="bike-recommended">
+    <h3>Cocok untuk:</h3>
+    <div class="recommended-tags">
+      ${recommendedUses.map(use => `<span>${use}</span>`).join("")}
+    </div>
+  </div>
+` : ""}
         <div class="bike-modal-specs">
-          <div class="bike-modal-spec"><strong>Range:</strong> Up to ${bike.range}</div>
-          <div class="bike-modal-spec"><strong>Motor:</strong> ${bike.motor}</div>
-          <div class="bike-modal-spec"><strong>Charge Time:</strong> ${bike.chargeTime}</div>
-          <div class="bike-modal-spec"><strong>Terrain:</strong> ${bike.terrain}</div>
-          <div class="bike-modal-spec"><strong>Comfort:</strong> ${bike.comfort}</div>
-          <div class="bike-modal-spec"><strong>Category:</strong> ${bike.category}</div>
-        </div>
+  <div class="bike-modal-spec">
+    <strong>Jarak Tempuh:</strong> ${bike.range || "-"}
+  </div>
+
+  <div class="bike-modal-spec">
+    <strong>Motor:</strong> ${bike.motor || "-"}
+  </div>
+
+  <div class="bike-modal-spec">
+    <strong>Waktu Pengisian:</strong> ${getChargeTime(bike)}
+  </div>
+
+  <div class="bike-modal-spec">
+    <strong>Kecepatan Maks:</strong> ${bike.topSpeed || "± 40 KM/H"}
+  </div>
+
+  <div class="bike-modal-spec">
+    <strong>Kapasitas Beban:</strong> ${bike.maxWeight || "± 150 KG"}
+  </div>
+</div>
 
         <p class="bike-modal-price">${formatPrice(bike.price)}</p>
 
         <div class="bike-modal-actions">
-          <a href="contact.html" class="btn-primary">Contact Us</a>
-          <a href="contact.html" class="btn-secondary">Ask About This Bike</a>
-        </div>
+  <a href="${getWhatsAppLink(bike)}" target="_blank" rel="noopener" class="btn-primary">
+  <span class="wa-btn-content">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+         alt="WhatsApp" 
+         class="wa-icon">
+    <span>Tanya WhatsApp</span>
+  </span>
+</a>
+  <a href="contact.html" class="btn-secondary">
+    Lihat Kontak Toko
+  </a>
+</div>
       </div>
     </div>
   `;
@@ -275,8 +265,7 @@ openBikeModal(bikeId);
     }
   });
 }
-document.addEventListener("bikesLoaded", () => {
-  applyCategoryFromUrl();
+whenBikesLoaded(() => {
   renderBikes();
   updateActiveFilterButton();
   setupBikeFilters();
@@ -284,5 +273,4 @@ document.addEventListener("bikesLoaded", () => {
   setupBikeSearch();
   setupClearFilters();
   setupBikeModal();
-  setupHideSoldOutToggle();
 });

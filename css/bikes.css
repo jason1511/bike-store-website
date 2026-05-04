@@ -240,6 +240,45 @@
   gap: 14px;
   flex-wrap: wrap;
 }
+.bike-recommended {
+  margin-bottom: 22px;
+}
+
+.bike-recommended h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.recommended-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.recommended-tags span {
+  background-color: #0f1115;
+  border: 1px solid #2a313c;
+  color: #d8dde3;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+.bike-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.highlight-badge {
+  background-color: rgba(124, 255, 79, 0.15);
+  color: #7cff4f;
+  border: 1px solid #7cff4f;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
 .bike-modal-brand {
   color: #aeb6bf;
   font-size: 0.9rem;

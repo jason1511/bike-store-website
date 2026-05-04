@@ -119,7 +119,41 @@ header {
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
+.bike-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background-color: #25D366;
+  color: #111;
+  font-weight: 700;
+  text-align: center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
 
+.bike-whatsapp-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.wa-btn-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.wa-icon {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  display: inline-block;
+  object-fit: contain;
+}
 .bike-card {
   background-color: #181e26;
   border: 1px solid #242b35;
@@ -164,33 +198,6 @@ header {
   color: #7cff4f;
   font-size: 1.1rem;
   font-weight: 700;
-}
-.bike-stock {
-  display: inline-block;
-  margin-bottom: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.bike-stock.in-stock {
-  background-color: rgba(124, 255, 79, 0.14);
-  color: #7cff4f;
-}
-
-.bike-stock.low-stock {
-  background-color: rgba(255, 193, 7, 0.14);
-  color: #ffc107;
-}
-
-.bike-stock.sold-out {
-  background-color: rgba(255, 90, 90, 0.14);
-  color: #ff7a7a;
-}
-
-.bike-card.sold-out {
-  opacity: 0.75;
 }
 /* CTA (shared style) */
 .cta {

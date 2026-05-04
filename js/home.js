@@ -153,7 +153,7 @@ function setupRecommendationForm() {
     renderRecommendationResult(recommendedBike, preferences);
   });
 }
-document.addEventListener("bikesLoaded", () => {
+whenBikesLoaded(() => {
   renderFeaturedBikes();
   setupRecommendationForm();
 });

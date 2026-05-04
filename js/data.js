@@ -1,4 +1,5 @@
 let bikes = [];
+let bikesLoaded = false;
 
 async function loadBikes() {
   try {
@@ -9,11 +10,21 @@ async function loadBikes() {
     }
 
     bikes = await response.json();
+    bikesLoaded = true;
 
     document.dispatchEvent(new Event("bikesLoaded"));
   } catch (error) {
     console.error("Error loading bikes:", error);
   }
+}
+
+function whenBikesLoaded(callback) {
+  if (bikesLoaded) {
+    callback();
+    return;
+  }
+
+  document.addEventListener("bikesLoaded", callback);
 }
 
 loadBikes();
