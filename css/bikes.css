@@ -1,93 +1,129 @@
+/* PAGE HERO */
 .page-hero {
   padding: 80px 60px 40px;
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-primary-light) 100%);
 }
 
 .page-hero-content {
-  max-width: 700px;
+  max-width: 760px;
 }
 
 .page-hero h1 {
+  color: var(--color-primary);
   font-size: 3rem;
   margin-bottom: 16px;
 }
 
 .page-hero p {
-  color: #cfcfcf;
+  color: var(--color-muted);
   font-size: 1.05rem;
 }
 
+/* BIKE LISTING */
 .bike-listing {
-  padding: 20px 60px 80px;
-}
-.bike-filters {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
+  padding: 40px 60px 80px;
+  background-color: var(--color-bg);
 }
 
-.filter-btn {
-  background-color: transparent;
-  color: #ffffff;
-  border: 1px solid #2a313c;
-  padding: 10px 18px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.filter-btn:hover {
-  border-color: #7cff4f;
-  color: #7cff4f;
-}
-
-.filter-btn.active {
-  background-color: #7cff4f;
-  color: #111;
-  border-color: #7cff4f;
-}
+/* TOOLBAR */
 .bike-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
+.bike-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.filter-btn.active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+.bike-toolbar-right {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.bike-search,
 .bike-sort {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
 }
 
+.bike-search label,
 .bike-sort label {
-  color: #cfcfcf;
-  font-weight: 600;
+  color: var(--color-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
+.bike-search input,
 .bike-sort select {
-  background-color: #181e26;
-  color: #ffffff;
-  border: 1px solid #2a313c;
-  border-radius: 10px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 10px 14px;
   font: inherit;
   outline: none;
+  min-width: 220px;
 }
 
+.bike-search input:focus,
 .bike-sort select:focus {
-  border-color: #7cff4f;
+  border-color: var(--color-primary);
 }
+
+.clear-btn {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.clear-btn:hover {
+  background-color: var(--color-primary-light);
+}
+
 .bike-status {
-  color: #cfcfcf;
+  color: var(--color-muted);
   margin-bottom: 20px;
   font-size: 0.98rem;
 }
 
 .bike-status strong {
-  color: #7cff4f;
+  color: var(--color-primary);
 }
 .bike-toolbar-right {
   display: flex;
@@ -136,7 +172,7 @@
 .clear-btn:hover {
   border-color: #7cff4f;
   color: #7cff4f;
-}
+}/* BIKE MODAL */
 .bike-modal {
   position: fixed;
   inset: 0;
@@ -151,19 +187,19 @@
 .bike-modal-overlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(16, 24, 24, 0.65);
 }
 
 .bike-modal-content {
   position: relative;
   z-index: 1;
-  width: min(900px, calc(100% - 32px));
+  width: min(920px, calc(100% - 32px));
   margin: 60px auto;
-  background-color: #181e26;
-  border: 1px solid #242b35;
-  border-radius: 20px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 70px rgba(16, 24, 24, 0.28);
 }
 
 .bike-modal-close {
@@ -172,19 +208,18 @@
   right: 14px;
   width: 42px;
   height: 42px;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background-color: #0f1115;
-  color: #ffffff;
+  background-color: var(--color-surface);
+  color: var(--color-primary);
   font-size: 1.5rem;
   cursor: pointer;
   z-index: 2;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .bike-modal-close:hover {
-  color: #7cff4f;
-  border: 1px solid #7cff4f;
+  background-color: var(--color-primary-light);
 }
 
 .bike-modal-body {
@@ -200,18 +235,71 @@
 
 .bike-modal-image img {
   width: 100%;
-  border-radius: 16px;
+  border-radius: 14px;
   object-fit: cover;
+  background-color: var(--color-primary-light);
+}
+
+.bike-modal-brand {
+  color: var(--color-primary-soft);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
 }
 
 .bike-modal-details h2 {
+  color: var(--color-primary);
   font-size: 2rem;
   margin-bottom: 14px;
 }
 
 .bike-modal-description {
-  color: #cfcfcf;
+  color: var(--color-muted);
+  margin-bottom: 18px;
+}
+
+.bike-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 20px;
+}
+
+.highlight-badge {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.bike-recommended {
+  margin-bottom: 22px;
+}
+
+.bike-recommended h3 {
+  color: var(--color-primary);
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.recommended-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.recommended-tags span {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
 }
 
 .bike-modal-specs {
@@ -221,17 +309,17 @@
 }
 
 .bike-modal-spec {
-  background-color: #0f1115;
-  border: 1px solid #242b35;
-  border-radius: 12px;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
   padding: 12px 14px;
-  color: #d8dde3;
+  color: var(--color-text);
 }
 
 .bike-modal-price {
-  color: #7cff4f;
-  font-size: 1.25rem;
-  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  font-weight: 800;
   margin-bottom: 18px;
 }
 

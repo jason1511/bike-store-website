@@ -1,19 +1,45 @@
-.contact-hero {
-  padding: 80px 60px 40px;
+/* CONTACT PAGE */
+.contact-page {
+  padding: 80px 60px;
+  background-color: var(--color-bg);
 }
 
-.contact-hero-content {
-  max-width: 700px;
+.contact-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 40px;
 }
 
-.contact-hero h1 {
-  font-size: 3rem;
+.contact-container h1 {
+  color: var(--color-primary);
+  font-size: 2rem;
   margin-bottom: 16px;
 }
 
-.contact-hero p {
-  color: #cfcfcf;
-  font-size: 1.05rem;
+.contact-container p {
+  color: var(--color-muted);
+  margin-bottom: 30px;
+}
+
+.contact-info {
+  display: grid;
+  gap: 18px;
+}
+
+.contact-item {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.contact-item strong {
+  display: block;
+  color: var(--color-primary);
+  margin-bottom: 6px;
 }
 
 /* CONTACT SECTION */
