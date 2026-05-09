@@ -44,7 +44,7 @@ body.dark-theme .hero-tag {
   color: #cbd8d6;
 }
 
-body.dark-theme .btn-primary {
+body.dark-theme .hero .btn-primary {
   background-color: #ffffff;
   color: #203333;
 }
@@ -107,6 +107,16 @@ body.dark-theme .feature-card h3 {
 
 body.dark-theme .feature-card p {
   color: #b8c4c2;
+}
+
+body.dark-theme .bike-price,
+body.dark-theme .bike-modal-price {
+  color: #ffffff;
+  opacity: 0.85;
+}
+body.dark-theme .bike-card img {
+  background-color: #dfe7e5;
+  border-bottom: 1px solid var(--color-border);
 }
 /* BASE */
 body {
@@ -253,7 +263,6 @@ header {
   justify-content: center;
   gap: 8px;
 }
-
 .wa-icon {
   width: 20px !important;
   height: 20px !important;
@@ -261,7 +270,10 @@ header {
   max-height: 20px !important;
   display: inline-block;
   object-fit: contain;
-}/* BIKE CARD */
+  background: transparent !important;
+  padding: 0 !important;
+}
+/* BIKE CARD */
 .bike-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -284,9 +296,10 @@ header {
 
 .bike-card img {
   width: 100%;
-  height: 240px;
-  object-fit: cover;
-  background-color: var(--color-primary-light);
+  height: 260px;
+  object-fit: contain;
+  background-color: #ffffff;
+  padding: 10px;
 }
 
 .bike-info {

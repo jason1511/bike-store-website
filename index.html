@@ -6,6 +6,7 @@
   <title>CV Niaga Bersama Abadi</title>
  <link rel="stylesheet" href="css/global.css" />
 <link rel="stylesheet" href="css/home.css" />
+<link rel="stylesheet" href="css/bikes.css" />
 </head>
 <body>
 <header>
@@ -42,8 +43,74 @@
     </div>
   </div>
 
-  <div class="hero-image">
-    <img src="images/hero-bike.jpg" alt="Showroom sepeda listrik" />
+  <div class="hero-featured" id="heroFeaturedBike">
+  <!-- Random bike recommendation will be inserted here -->
+</div>
+</section>
+<section class="brand-strip">
+  <div class="section-heading">
+    <p class="section-tag">Brand Tersedia</p>
+    <h2>Pilihan brand sepeda listrik di showroom kami</h2>
+  </div>
+
+  <div class="brand-grid">
+    <div class="brand-logo-card">
+      <img src="images/brands/exotic.jpeg" alt="Exotic logo">
+    </div>
+
+    <div class="brand-logo-card">
+      <img src="images/brands/nuv.jpeg" alt="Nuv logo">
+    </div>
+
+    <div class="brand-logo-card">
+      <img src="images/brands/saige.jpeg" alt="Saige logo">
+    </div>
+
+    <div class="brand-logo-card">
+      <img src="images/brands/laris.jpeg" alt="Larizz logo">
+    </div>
+
+    <div class="brand-logo-card">
+      <img src="images/brands/pacific.jpeg" alt="Pacific logo">
+    </div>
+
+    <div class="brand-logo-card">
+      <img src="images/brands/uwinfly.jpeg" alt="Uwinfly logo">
+    </div>
+  </div>
+</section>
+<section class="ai-finder">
+  <div class="section-heading">
+    <p class="section-tag">Bantu Pilih Sepeda</p>
+    <h2>Cari sepeda listrik yang cocok untuk kebutuhan Anda</h2>
+  </div>
+
+  <div class="ai-finder-card">
+    <form id="bikeFinderForm" class="ai-finder-form">
+      <div class="form-group">
+        <label for="usageInput">Kebutuhan utama</label>
+        <select id="usageInput" required>
+          <option value="">Pilih kebutuhan</option>
+          <option value="harian">Mobilitas harian</option>
+          <option value="jarak">Jarak lebih jauh</option>
+          <option value="tenaga">Tenaga lebih besar</option>
+          <option value="keamanan">Fitur keamanan</option>
+          <option value="nyaman">Kenyamanan</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="budgetInput">Budget</label>
+        <input id="budgetInput" type="text" placeholder="Contoh: 8 juta atau kosongkan">
+      </div>
+
+      <button type="submit" class="btn-primary">Cari Rekomendasi</button>
+    </form>
+
+    <div class="ai-finder-result" id="bikeFinderResult">
+      <h3>Rekomendasi akan muncul di sini</h3>
+      <p>Pilih kebutuhan Anda, lalu sistem akan membantu menyarankan model yang sesuai.</p>
+    </div>
   </div>
 </section>
 <section class="features">
@@ -85,6 +152,19 @@
   </div>
 </section>
 </main>
+<div class="bike-modal" id="bikeModal" aria-hidden="true">
+  <div class="bike-modal-overlay" id="bikeModalOverlay"></div>
+
+  <div class="bike-modal-content" role="dialog" aria-modal="true" aria-labelledby="bikeModalTitle">
+    <button type="button" class="bike-modal-close" id="bikeModalClose" aria-label="Close bike details">
+      &times;
+    </button>
+
+    <div class="bike-modal-body" id="bikeModalBody">
+      <!-- Bike details will be injected here -->
+    </div>
+  </div>
+</div>
 <footer class="footer">
   <div class="footer-content">
     <div class="footer-brand">
@@ -109,6 +189,7 @@
 <script src="js/data.js"></script>
 <script src="js/bike-service.js"></script>
 <script src="js/global.js"></script>
+<script src="js/bike-modal.js"></script>
 <script src="js/home.js"></script>
 </body>
 </html>

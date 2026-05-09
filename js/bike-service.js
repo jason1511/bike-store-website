@@ -136,3 +136,48 @@ function getFilteredAndSortedBikes(options = {}) {
 
   return result;
 }
+function getBrandTheme(brand) {
+  const themes = {
+    Exotic: {
+      className: "brand-exotic",
+      logo: "images/brands/exotic.jpeg"
+    },
+    Pacific: {
+      className: "brand-pacific",
+      logo: "images/brands/pacific.jpeg"
+    },
+    Nuv: {
+      className: "brand-nuv",
+      logo: "images/brands/nuv.jpeg"
+    },
+    Saige: {
+      className: "brand-saige",
+      logo: "images/brands/saige.jpeg"
+    },
+    Uwinfly: {
+      className: "brand-uwinfly",
+      logo: "images/brands/uwinfly.jpeg"
+    },
+    Larizz: {
+      className: "brand-larizz",
+      logo: "images/brands/laris.jpeg"
+    }
+  };
+
+  return themes[brand] || {
+    className: "brand-default",
+    logo: ""
+  };
+}
+function getBrandLogo(brand) {
+  const logos = {
+    Exotic: "images/brands/exotic.jpeg",
+    Pacific: "images/brands/pacific.jpeg",
+    Nuv: "images/brands/nuv.jpeg",
+    Saige: "images/brands/saige.jpeg",
+    Uwinfly: "images/brands/uwinfly.jpeg",
+    Larizz: "images/brands/larizz.jpeg"
+  };
+
+  return logos[brand] || "";
+}

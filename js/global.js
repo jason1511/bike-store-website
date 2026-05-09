@@ -1,11 +1,11 @@
 function formatPrice(price) {
   if (price === undefined || price === null || price === "") {
-    return "Price on request";
+    return "Hubungi untuk harga";
   }
 
   return `Rp ${Number(price).toLocaleString("id-ID")}`;
 }
-const STORE_WHATSAPP_NUMBER = "6281234567890"; // replace with real number
+const STORE_WHATSAPP_NUMBER = "6282122065168"; // replace with real number
 
 function getWhatsAppLink(bike) {
   const message = `Halo, saya tertarik dengan ${bike.name}. Apakah unit ini tersedia?`;
@@ -49,9 +49,14 @@ function setupThemeToggle() {
 
   const savedTheme = localStorage.getItem("siteTheme");
 
-  if (savedTheme === "dark") {
+  const shouldUseDarkTheme = savedTheme === null || savedTheme === "dark";
+
+  if (shouldUseDarkTheme) {
     document.body.classList.add("dark-theme");
     themeToggle.textContent = "Light";
+  } else {
+    document.body.classList.remove("dark-theme");
+    themeToggle.textContent = "Dark";
   }
 
   themeToggle.addEventListener("click", () => {

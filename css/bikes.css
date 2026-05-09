@@ -3,7 +3,11 @@
 ========================= */
 .page-hero {
   padding: 80px 60px 40px;
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-surface) 0%,
+    var(--color-primary-light) 100%
+  );
 }
 
 .page-hero-content {
@@ -48,14 +52,35 @@
 }
 
 .filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: 999px;
+
   background-color: var(--color-surface);
   color: var(--color-primary);
   border: 1px solid var(--color-border);
-  padding: 10px 16px;
-  border-radius: 999px;
+
   cursor: pointer;
   font-weight: 700;
+  font-size: 0.9rem;
   transition: all 0.25s ease;
+}
+
+.filter-btn img {
+  height: 20px;
+  width: auto;
+  max-width: 42px;
+  object-fit: contain;
+
+  background-color: #ffffff;
+  border-radius: 5px;
+  padding: 2px 4px;
+  display: block;
 }
 
 .filter-btn:hover {
@@ -66,6 +91,18 @@
   background-color: var(--color-primary);
   color: #ffffff;
   border-color: var(--color-primary);
+}
+
+body.dark-theme .filter-btn {
+  background-color: #172323;
+  color: #e6f0ef;
+  border-color: #2f4444;
+}
+
+body.dark-theme .filter-btn.active {
+  background-color: #ffffff;
+  color: #203333;
+  border-color: #ffffff;
 }
 
 .bike-toolbar-right {
@@ -153,7 +190,7 @@
 }
 
 /* =========================
-   BIKE MODAL
+   BASE MODAL
 ========================= */
 .bike-modal {
   position: fixed;
@@ -215,11 +252,32 @@
   align-items: start;
 }
 
+.bike-modal-image {
+  border-radius: 16px;
+}
+
 .bike-modal-image img {
   width: 100%;
   border-radius: 14px;
   object-fit: cover;
   background-color: var(--color-primary-light);
+}
+
+.bike-modal-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.bike-modal-brand-logo {
+  height: 32px;
+  width: auto;
+  max-width: 80px;
+  object-fit: contain;
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 4px 6px;
 }
 
 .bike-modal-brand {
@@ -318,6 +376,229 @@
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
+}
+
+/* =========================
+   BRAND THEME VARIABLES
+========================= */
+.bike-brand-theme {
+  --brand-main: #203333;
+  --brand-second: #2f4f4f;
+  --brand-soft: rgba(32, 51, 51, 0.14);
+  --brand-glow: rgba(32, 51, 51, 0.22);
+  --brand-text: #ffffff;
+}
+
+/* Exotic: red + black */
+.brand-exotic {
+  --brand-main: #d71920;
+  --brand-second: #111111;
+  --brand-soft: rgba(215, 25, 32, 0.16);
+  --brand-glow: rgba(215, 25, 32, 0.28);
+}
+
+/* Pacific: red + black */
+.brand-pacific {
+  --brand-main: #ed1c24;
+  --brand-second: #111111;
+  --brand-soft: rgba(237, 28, 36, 0.16);
+  --brand-glow: rgba(237, 28, 36, 0.26);
+}
+
+/* Nuv: turquoise */
+.brand-nuv {
+  --brand-main: #27bfc3;
+  --brand-second: #0f777b;
+  --brand-soft: rgba(39, 191, 195, 0.18);
+  --brand-glow: rgba(39, 191, 195, 0.24);
+}
+
+/* Saige: green */
+.brand-saige {
+  --brand-main: #66bd45;
+  --brand-second: #2f6f2e;
+  --brand-soft: rgba(102, 189, 69, 0.18);
+  --brand-glow: rgba(102, 189, 69, 0.24);
+}
+
+/* Uwinfly: red */
+.brand-uwinfly {
+  --brand-main: #ed1c24;
+  --brand-second: #b91319;
+  --brand-soft: rgba(237, 28, 36, 0.16);
+  --brand-glow: rgba(237, 28, 36, 0.25);
+}
+
+/* Larizz: navy + red */
+.brand-larizz {
+  --brand-main: #27245f;
+  --brand-second: #e31b23;
+  --brand-soft: rgba(39, 36, 95, 0.2);
+  --brand-glow: rgba(39, 36, 95, 0.28);
+}
+
+/* =========================
+   FULL BRAND MODAL CARD
+   ignores site light/dark theme
+========================= */
+.bike-modal-content:has(.bike-brand-theme) {
+  color: #ffffff;
+  border-color: var(--brand-main);
+  box-shadow: 0 24px 80px var(--brand-glow);
+}
+
+/* Exotic */
+.bike-modal-content:has(.brand-exotic) {
+  background:
+    radial-gradient(circle at top right, rgba(215, 25, 32, 0.26), transparent 34%),
+    linear-gradient(135deg, #111111 0%, #1f0f11 100%);
+}
+
+/* Pacific */
+.bike-modal-content:has(.brand-pacific) {
+  background:
+    radial-gradient(circle at top right, rgba(237, 28, 36, 0.24), transparent 34%),
+    linear-gradient(135deg, #111111 0%, #1e0f11 100%);
+}
+
+/* Nuv */
+.bike-modal-content:has(.brand-nuv) {
+  background:
+    radial-gradient(circle at top right, rgba(39, 191, 195, 0.26), transparent 34%),
+    linear-gradient(135deg, #071919 0%, #0f2b2c 100%);
+}
+
+/* Saige */
+.bike-modal-content:has(.brand-saige) {
+  background:
+    radial-gradient(circle at top right, rgba(102, 189, 69, 0.26), transparent 34%),
+    linear-gradient(135deg, #081608 0%, #102410 100%);
+}
+
+/* Uwinfly */
+.bike-modal-content:has(.brand-uwinfly) {
+  background:
+    radial-gradient(circle at top right, rgba(237, 28, 36, 0.24), transparent 34%),
+    linear-gradient(135deg, #111111 0%, #240d0f 100%);
+}
+
+/* Larizz */
+.bike-modal-content:has(.brand-larizz) {
+  background:
+    radial-gradient(circle at top right, rgba(227, 27, 35, 0.22), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(39, 36, 95, 0.32), transparent 38%),
+    linear-gradient(135deg, #080817 0%, #151438 100%);
+}
+
+/* =========================
+   BRAND MODAL INNER ELEMENTS
+========================= */
+.bike-brand-theme .bike-modal-brand-row {
+  background: linear-gradient(135deg, var(--brand-main), var(--brand-second));
+  color: #ffffff;
+  padding: 12px 14px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
+.bike-brand-theme .bike-modal-brand-logo {
+  height: 34px;
+  width: auto;
+  max-width: 90px;
+  object-fit: contain;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 5px 8px;
+}
+
+.bike-brand-theme .bike-modal-brand {
+  color: #ffffff;
+  margin: 0;
+}
+
+.bike-brand-theme .bike-modal-details h2 {
+  color: #ffffff;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.bike-brand-theme .bike-modal-details h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 70px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand-main), var(--brand-second));
+}
+
+.bike-brand-theme .bike-modal-description,
+.bike-brand-theme .bike-recommended h3,
+.bike-brand-theme .bike-modal-price {
+  color: #ffffff;
+}
+
+.bike-brand-theme .highlight-badge {
+  background-color: var(--brand-soft);
+  color: var(--brand-main);
+  border-color: var(--brand-main);
+}
+
+.bike-brand-theme .recommended-tags span {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-color: var(--brand-main);
+}
+
+.bike-brand-theme .bike-modal-spec {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+  border-left: 4px solid var(--brand-main);
+}
+
+.bike-brand-theme .bike-modal-actions .btn-primary {
+  background: linear-gradient(135deg, var(--brand-main), var(--brand-second));
+  color: #ffffff;
+  border: none;
+}
+
+.bike-modal-content:has(.bike-brand-theme) .btn-secondary {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.bike-modal-content:has(.bike-brand-theme) .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* =========================
+   BRAND IMAGE PANEL
+========================= */
+.bike-modal-content:has(.bike-brand-theme) .bike-modal-image {
+  border-radius: 16px;
+  padding: 10px;
+  background: linear-gradient(135deg, var(--brand-main), var(--brand-second));
+}
+
+.bike-modal-content:has(.bike-brand-theme) .bike-modal-image img {
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+/* =========================
+   BRAND CLOSE BUTTON
+========================= */
+.bike-modal-content:has(.bike-brand-theme) .bike-modal-close {
+  background-color: rgba(255, 255, 255, 0.92);
+  border-color: var(--brand-main);
+  color: #111111;
+}
+
+.bike-modal-content:has(.bike-brand-theme) .bike-modal-close:hover {
+  background-color: var(--brand-main);
+  color: #ffffff;
 }
 
 /* =========================
