@@ -1,7 +1,7 @@
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
-
+console.log("Has OpenAI key:", Boolean(env.OPENAI_API_KEY));
     const body = await request.json();
     const { usage, budget, bikes } = body;
 
