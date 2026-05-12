@@ -146,50 +146,96 @@
 }
 
 /* STORE BRAND THEMES */
-.store-exotic-pacific {
+.store-exotic-pacific-larizz {
   background:
-    radial-gradient(circle at top right, rgba(215, 25, 32, 0.24), transparent 34%),
-    linear-gradient(135deg, #111111 0%, #1f0f11 100%);
-  border-color: rgba(215, 25, 32, 0.65);
-  box-shadow: 0 18px 45px rgba(215, 25, 32, 0.18);
+    radial-gradient(circle at top left, rgba(237, 28, 36, 0.28), transparent 34%),
+    radial-gradient(circle at top right, rgba(39, 36, 95, 0.45), transparent 38%),
+    radial-gradient(circle at bottom right, rgba(227, 27, 35, 0.24), transparent 36%),
+    linear-gradient(135deg, #111111 0%, #1d0f13 45%, #11133a 100%);
+
+  border-color: rgba(39, 36, 95, 0.85);
+  box-shadow:
+    0 18px 45px rgba(39, 36, 95, 0.28),
+    0 8px 28px rgba(237, 28, 36, 0.16);
 }
 
-.store-exotic-pacific::before {
-  background: linear-gradient(90deg, #d71920, #111111, #ed1c24);
+.store-exotic-pacific-larizz::before {
+  background: linear-gradient(90deg, #ed1c24, #d71920, #27245f, #e31b23);
 }
 
-.store-exotic-pacific h2,
-.store-exotic-pacific strong {
+.store-exotic-pacific-larizz h2 {
+  color: #ffffff;
+  text-shadow:
+    0 0 18px rgba(39, 36, 95, 0.65),
+    0 0 10px rgba(237, 28, 36, 0.35);
+}
+
+.store-exotic-pacific-larizz strong {
   color: #ffffff;
 }
 
-.store-exotic-pacific p {
+.store-exotic-pacific-larizz p {
   color: #e6f0ef;
 }
 
-.store-larizz {
+.store-saige {
   background:
-    radial-gradient(circle at top right, rgba(227, 27, 35, 0.24), transparent 30%),
-    radial-gradient(circle at bottom left, rgba(39, 36, 95, 0.35), transparent 38%),
-    linear-gradient(135deg, #080817 0%, #151438 100%);
-  border-color: rgba(39, 36, 95, 0.75);
-  box-shadow: 0 18px 45px rgba(39, 36, 95, 0.3);
+    radial-gradient(circle at top right, rgba(102, 189, 69, 0.28), transparent 34%),
+    linear-gradient(135deg, #081608 0%, #102410 100%);
+  border-color: rgba(102, 189, 69, 0.65);
+  box-shadow: 0 18px 45px rgba(102, 189, 69, 0.18);
 }
 
-.store-larizz::before {
-  background: linear-gradient(90deg, #27245f, #e31b23);
+.store-saige::before {
+  background: linear-gradient(90deg, #66bd45, #2f6f2e);
 }
 
-.store-larizz h2,
-.store-larizz strong {
+.store-saige h2,
+.store-saige strong {
   color: #ffffff;
 }
 
-.store-larizz p {
+.store-saige p {
   color: #e6f0ef;
 }
-.store-neutral {
+
+.store-uwinfly {
   background:
-    radial-gradient(circle at top right, rgba(47, 79, 79, 0.2), transparent 34%),
-    linear-gradient(135deg, #101818 0%, #172323 100%);
+    radial-gradient(circle at top right, rgba(237, 28, 36, 0.24), transparent 34%),
+    linear-gradient(135deg, #111111 0%, #240d0f 100%);
+  border-color: rgba(237, 28, 36, 0.65);
+  box-shadow: 0 18px 45px rgba(237, 28, 36, 0.18);
+}
+
+.store-uwinfly::before {
+  background: linear-gradient(90deg, #ed1c24, #b91319);
+}
+
+.store-uwinfly h2,
+.store-uwinfly strong {
+  color: #ffffff;
+}
+
+.store-uwinfly p {
+  color: #e6f0ef;
+}
+.store-uwinfly {
+  background:
+    radial-gradient(circle at top right, rgba(237, 28, 36, 0.24), transparent 34%),
+    linear-gradient(135deg, #111111 0%, #240d0f 100%);
+  border-color: rgba(237, 28, 36, 0.65);
+  box-shadow: 0 18px 45px rgba(237, 28, 36, 0.18);
+}
+
+.store-uwinfly::before {
+  background: linear-gradient(90deg, #ed1c24, #b91319);
+}
+
+.store-uwinfly h2,
+.store-uwinfly strong {
+  color: #ffffff;
+}
+
+.store-uwinfly p {
+  color: #e6f0ef;
 }

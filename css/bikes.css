@@ -219,10 +219,12 @@ body.dark-theme .filter-btn.active {
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 24px 70px rgba(16, 24, 24, 0.28);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
 }
 
 .bike-modal-close {
-  position: absolute;
+  position: sticky;
   top: 14px;
   right: 14px;
   width: 42px;
@@ -235,6 +237,7 @@ body.dark-theme .filter-btn.active {
   cursor: pointer;
   z-index: 2;
   transition: all 0.25s ease;
+  margin-left: auto;
 }
 
 .bike-modal-close:hover {
@@ -627,7 +630,11 @@ body.dark-theme .filter-btn.active {
     flex-direction: column;
     align-items: stretch;
   }
-
+.bike-modal-close {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+  }
   .bike-toolbar-right {
     width: 100%;
     flex-direction: column;
@@ -644,6 +651,8 @@ body.dark-theme .filter-btn.active {
   .bike-modal-content {
     margin: 20px auto;
     width: calc(100% - 20px);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
   }
 
   .bike-modal-body {
@@ -653,7 +662,9 @@ body.dark-theme .filter-btn.active {
   .bike-modal-layout {
     grid-template-columns: 1fr;
   }
-
+.bike-modal {
+    overflow-y: auto;
+  }
   .bike-modal-details h2 {
     font-size: 1.6rem;
   }
