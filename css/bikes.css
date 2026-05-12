@@ -3,11 +3,9 @@
 ========================= */
 .page-hero {
   padding: 80px 60px 40px;
-  background: linear-gradient(
-    135deg,
-    var(--color-surface) 0%,
-    var(--color-primary-light) 100%
-  );
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.1), transparent 30%),
+    linear-gradient(135deg, var(--color-surface) 0%, var(--color-primary-light) 100%);
 }
 
 .page-hero-content {
@@ -23,6 +21,20 @@
 .page-hero p {
   color: var(--color-muted);
   font-size: 1.05rem;
+}
+
+body.dark-theme .page-hero {
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.1), transparent 30%),
+    linear-gradient(135deg, #101818 0%, #203030 100%);
+}
+
+body.dark-theme .page-hero h1 {
+  color: #ffffff;
+}
+
+body.dark-theme .page-hero p {
+  color: #cbd8d6;
 }
 
 /* =========================
@@ -43,6 +55,17 @@
   gap: 24px;
   flex-wrap: wrap;
   margin-bottom: 24px;
+}
+
+.filter-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.filter-label {
+  color: var(--color-muted);
+  font-weight: 800;
+  font-size: 0.9rem;
 }
 
 .bike-filters {
@@ -66,15 +89,16 @@
   border: 1px solid var(--color-border);
 
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.9rem;
+  white-space: nowrap;
   transition: all 0.25s ease;
 }
 
 .filter-btn img {
   height: 20px;
   width: auto;
-  max-width: 42px;
+  max-width: 46px;
   object-fit: contain;
 
   background-color: #ffffff;
@@ -85,12 +109,17 @@
 
 .filter-btn:hover {
   border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 .filter-btn.active {
   background-color: var(--color-primary);
   color: #ffffff;
   border-color: var(--color-primary);
+}
+
+body.dark-theme .filter-label {
+  color: #9fb8b6;
 }
 
 body.dark-theme .filter-btn {
@@ -159,6 +188,15 @@ body.dark-theme .filter-btn.active {
   background-color: var(--color-primary-light);
 }
 
+body.dark-theme .clear-btn {
+  color: #e6f0ef;
+  border-color: #2f4444;
+}
+
+body.dark-theme .clear-btn:hover {
+  background-color: #172323;
+}
+
 /* =========================
    STATUS + EMPTY STATE
 ========================= */
@@ -189,6 +227,144 @@ body.dark-theme .filter-btn.active {
   color: var(--color-muted);
 }
 
+body.dark-theme .bike-status strong,
+body.dark-theme .bike-empty-state h3 {
+  color: #ffffff;
+}
+/* =========================
+   CATALOG PRODUCT CARD POLISH
+========================= */
+.bike-grid {
+  align-items: stretch;
+}
+
+.bike-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.bike-card::after {
+  content: "Klik detail";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background-color: rgba(16, 24, 24, 0.78);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.bike-card:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bike-card img {
+  height: 260px;
+  object-fit: contain;
+  background-color: #ffffff;
+  padding: 14px;
+}
+
+.bike-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 22px;
+}
+
+.bike-info h3 {
+  line-height: 1.25;
+}
+
+.bike-spec {
+  margin-bottom: 14px;
+}
+
+.bike-price {
+  margin-top: auto;
+  margin-bottom: 14px;
+}
+
+.bike-card .bike-whatsapp-btn {
+  margin-top: 0;
+}
+/* =========================
+   CATALOG BRAND ACCENTS
+========================= */
+.bike-card {
+  --card-brand-main: var(--color-primary);
+  --card-brand-second: var(--color-primary-soft);
+  --card-brand-soft: rgba(159, 184, 182, 0.12);
+}
+
+.bike-card.brand-exotic {
+  --card-brand-main: #d71920;
+  --card-brand-second: #111111;
+  --card-brand-soft: rgba(215, 25, 32, 0.14);
+}
+
+.bike-card.brand-pacific {
+  --card-brand-main: #ed1c24;
+  --card-brand-second: #111111;
+  --card-brand-soft: rgba(237, 28, 36, 0.14);
+}
+
+.bike-card.brand-nuv {
+  --card-brand-main: #27bfc3;
+  --card-brand-second: #0f777b;
+  --card-brand-soft: rgba(39, 191, 195, 0.16);
+}
+
+.bike-card.brand-saige {
+  --card-brand-main: #66bd45;
+  --card-brand-second: #2f6f2e;
+  --card-brand-soft: rgba(102, 189, 69, 0.16);
+}
+
+.bike-card.brand-uwinfly {
+  --card-brand-main: #ed1c24;
+  --card-brand-second: #b91319;
+  --card-brand-soft: rgba(237, 28, 36, 0.14);
+}
+
+.bike-card.brand-larizz {
+  --card-brand-main: #27245f;
+  --card-brand-second: #e31b23;
+  --card-brand-soft: rgba(39, 36, 95, 0.18);
+}
+
+.bike-card::before {
+  content: "";
+  height: 5px;
+  width: 100%;
+  display: block;
+  background: linear-gradient(90deg, var(--card-brand-main), var(--card-brand-second));
+}
+
+.bike-card:hover {
+  border-color: var(--card-brand-main);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.22),
+    0 0 0 1px var(--card-brand-soft);
+}
+
+.bike-card .bike-brand {
+  color: var(--card-brand-main);
+}
 /* =========================
    BASE MODAL
 ========================= */
@@ -197,6 +373,7 @@ body.dark-theme .filter-btn.active {
   inset: 0;
   display: none;
   z-index: 2000;
+  overflow-y: auto;
 }
 
 .bike-modal.is-open {
@@ -204,27 +381,26 @@ body.dark-theme .filter-btn.active {
 }
 
 .bike-modal-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background-color: rgba(16, 24, 24, 0.65);
+  background-color: rgba(16, 24, 24, 0.72);
 }
 
 .bike-modal-content {
   position: relative;
   z-index: 1;
-  width: min(920px, calc(100% - 32px));
-  margin: 60px auto;
+  width: min(980px, calc(100% - 32px));
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  margin: 40px auto;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 18px;
-  overflow: hidden;
   box-shadow: 0 24px 70px rgba(16, 24, 24, 0.28);
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
 }
 
 .bike-modal-close {
-  position: sticky;
+  position: absolute;
   top: 14px;
   right: 14px;
   width: 42px;
@@ -237,7 +413,6 @@ body.dark-theme .filter-btn.active {
   cursor: pointer;
   z-index: 2;
   transition: all 0.25s ease;
-  margin-left: auto;
 }
 
 .bike-modal-close:hover {
@@ -276,7 +451,7 @@ body.dark-theme .filter-btn.active {
 .bike-modal-brand-logo {
   height: 32px;
   width: auto;
-  max-width: 80px;
+  max-width: 90px;
   object-fit: contain;
   background-color: #ffffff;
   border-radius: 6px;
@@ -289,7 +464,7 @@ body.dark-theme .filter-btn.active {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  margin: 0;
 }
 
 .bike-modal-details h2 {
@@ -304,7 +479,7 @@ body.dark-theme .filter-btn.active {
 }
 
 /* =========================
-   MODAL HIGHLIGHTS
+   MODAL HIGHLIGHTS + USES
 ========================= */
 .bike-highlights {
   display: flex;
@@ -323,9 +498,6 @@ body.dark-theme .filter-btn.active {
   font-weight: 700;
 }
 
-/* =========================
-   RECOMMENDED USES
-========================= */
 .bike-recommended {
   margin-bottom: 22px;
 }
@@ -392,7 +564,6 @@ body.dark-theme .filter-btn.active {
   --brand-text: #ffffff;
 }
 
-/* Exotic: red + black */
 .brand-exotic {
   --brand-main: #d71920;
   --brand-second: #111111;
@@ -400,7 +571,6 @@ body.dark-theme .filter-btn.active {
   --brand-glow: rgba(215, 25, 32, 0.28);
 }
 
-/* Pacific: red + black */
 .brand-pacific {
   --brand-main: #ed1c24;
   --brand-second: #111111;
@@ -408,7 +578,6 @@ body.dark-theme .filter-btn.active {
   --brand-glow: rgba(237, 28, 36, 0.26);
 }
 
-/* Nuv: turquoise */
 .brand-nuv {
   --brand-main: #27bfc3;
   --brand-second: #0f777b;
@@ -416,7 +585,6 @@ body.dark-theme .filter-btn.active {
   --brand-glow: rgba(39, 191, 195, 0.24);
 }
 
-/* Saige: green */
 .brand-saige {
   --brand-main: #66bd45;
   --brand-second: #2f6f2e;
@@ -424,7 +592,6 @@ body.dark-theme .filter-btn.active {
   --brand-glow: rgba(102, 189, 69, 0.24);
 }
 
-/* Uwinfly: red */
 .brand-uwinfly {
   --brand-main: #ed1c24;
   --brand-second: #b91319;
@@ -432,7 +599,6 @@ body.dark-theme .filter-btn.active {
   --brand-glow: rgba(237, 28, 36, 0.25);
 }
 
-/* Larizz: navy + red */
 .brand-larizz {
   --brand-main: #27245f;
   --brand-second: #e31b23;
@@ -442,7 +608,6 @@ body.dark-theme .filter-btn.active {
 
 /* =========================
    FULL BRAND MODAL CARD
-   ignores site light/dark theme
 ========================= */
 .bike-modal-content:has(.bike-brand-theme) {
   color: #ffffff;
@@ -450,42 +615,36 @@ body.dark-theme .filter-btn.active {
   box-shadow: 0 24px 80px var(--brand-glow);
 }
 
-/* Exotic */
 .bike-modal-content:has(.brand-exotic) {
   background:
     radial-gradient(circle at top right, rgba(215, 25, 32, 0.26), transparent 34%),
     linear-gradient(135deg, #111111 0%, #1f0f11 100%);
 }
 
-/* Pacific */
 .bike-modal-content:has(.brand-pacific) {
   background:
     radial-gradient(circle at top right, rgba(237, 28, 36, 0.24), transparent 34%),
     linear-gradient(135deg, #111111 0%, #1e0f11 100%);
 }
 
-/* Nuv */
 .bike-modal-content:has(.brand-nuv) {
   background:
     radial-gradient(circle at top right, rgba(39, 191, 195, 0.26), transparent 34%),
     linear-gradient(135deg, #071919 0%, #0f2b2c 100%);
 }
 
-/* Saige */
 .bike-modal-content:has(.brand-saige) {
   background:
     radial-gradient(circle at top right, rgba(102, 189, 69, 0.26), transparent 34%),
     linear-gradient(135deg, #081608 0%, #102410 100%);
 }
 
-/* Uwinfly */
 .bike-modal-content:has(.brand-uwinfly) {
   background:
     radial-gradient(circle at top right, rgba(237, 28, 36, 0.24), transparent 34%),
     linear-gradient(135deg, #111111 0%, #240d0f 100%);
 }
 
-/* Larizz */
 .bike-modal-content:has(.brand-larizz) {
   background:
     radial-gradient(circle at top right, rgba(227, 27, 35, 0.22), transparent 30%),
@@ -496,6 +655,17 @@ body.dark-theme .filter-btn.active {
 /* =========================
    BRAND MODAL INNER ELEMENTS
 ========================= */
+.bike-brand-theme .bike-modal-image {
+  border-radius: 16px;
+  padding: 10px;
+  background: linear-gradient(135deg, var(--brand-main), var(--brand-second));
+}
+
+.bike-brand-theme .bike-modal-image img {
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
 .bike-brand-theme .bike-modal-brand-row {
   background: linear-gradient(135deg, var(--brand-main), var(--brand-second));
   color: #ffffff;
@@ -506,17 +676,13 @@ body.dark-theme .filter-btn.active {
 
 .bike-brand-theme .bike-modal-brand-logo {
   height: 34px;
-  width: auto;
   max-width: 90px;
-  object-fit: contain;
-  background-color: #ffffff;
   border-radius: 8px;
   padding: 5px 8px;
 }
 
 .bike-brand-theme .bike-modal-brand {
   color: #ffffff;
-  margin: 0;
 }
 
 .bike-brand-theme .bike-modal-details h2 {
@@ -576,23 +742,6 @@ body.dark-theme .filter-btn.active {
   background-color: rgba(255, 255, 255, 0.12);
 }
 
-/* =========================
-   BRAND IMAGE PANEL
-========================= */
-.bike-modal-content:has(.bike-brand-theme) .bike-modal-image {
-  border-radius: 16px;
-  padding: 10px;
-  background: linear-gradient(135deg, var(--brand-main), var(--brand-second));
-}
-
-.bike-modal-content:has(.bike-brand-theme) .bike-modal-image img {
-  border-radius: 12px;
-  background-color: #ffffff;
-}
-
-/* =========================
-   BRAND CLOSE BUTTON
-========================= */
 .bike-modal-content:has(.bike-brand-theme) .bike-modal-close {
   background-color: rgba(255, 255, 255, 0.92);
   border-color: var(--brand-main);
@@ -613,30 +762,60 @@ body.dark-theme .filter-btn.active {
     padding-left: 30px;
     padding-right: 30px;
   }
+
+  .bike-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bike-toolbar-right {
+    width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
-  .page-hero,
+  .bike-card img {
+  height: 230px;
+}
+
+.bike-card::after {
+  opacity: 1;
+  top: 10px;
+  right: 10px;
+  font-size: 0.68rem;
+}
+
+.bike-info {
+  padding: 20px;
+}
+  .page-hero {
+    padding: 60px 20px 34px;
+  }
+
   .bike-listing {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding: 32px 20px 64px;
   }
 
   .page-hero h1 {
     font-size: 2.2rem;
   }
 
-  .bike-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-.bike-modal-close {
-    position: fixed;
-    top: 18px;
-    right: 18px;
-  }
-  .bike-toolbar-right {
+  .filter-panel {
     width: 100%;
+  }
+
+  .bike-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+  }
+
+  .filter-btn {
+    flex: 0 0 auto;
+  }
+
+  .bike-toolbar-right {
     flex-direction: column;
     align-items: stretch;
   }
@@ -648,11 +827,21 @@ body.dark-theme .filter-btn.active {
     min-width: 0;
   }
 
+  .bike-modal {
+    overflow-y: auto;
+  }
+
   .bike-modal-content {
     margin: 20px auto;
     width: calc(100% - 20px);
     max-height: calc(100vh - 40px);
     overflow-y: auto;
+  }
+
+  .bike-modal-close {
+    position: fixed;
+    top: 18px;
+    right: 18px;
   }
 
   .bike-modal-body {
@@ -661,11 +850,60 @@ body.dark-theme .filter-btn.active {
 
   .bike-modal-layout {
     grid-template-columns: 1fr;
+    gap: 22px;
   }
-.bike-modal {
-    overflow-y: auto;
+
+  .bike-modal-image img {
+    max-height: 420px;
+    object-fit: contain;
   }
+
   .bike-modal-details h2 {
     font-size: 1.6rem;
+  }
+
+  .bike-modal-actions {
+    flex-direction: column;
+  }
+
+  .bike-modal-actions .btn-primary,
+  .bike-modal-actions .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-hero h1 {
+    font-size: 1.9rem;
+  }
+
+  .bike-modal-body {
+    padding: 16px;
+  }
+
+  .bike-modal-image {
+    padding: 8px;
+  }
+
+  .bike-modal-details h2 {
+    font-size: 1.45rem;
+  }
+
+  .highlight-badge,
+  .recommended-tags span {
+    font-size: 0.82rem;
+  }
+.bike-card img {
+    height: 210px;
+  }
+
+  .bike-info {
+    padding: 18px;
+  }
+}
+
+@media (hover: none) {
+  .filter-btn:hover {
+    transform: none;
   }
 }
