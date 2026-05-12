@@ -232,39 +232,111 @@ body.dark-theme .bike-empty-state h3 {
   color: #ffffff;
 }
 /* =========================
-   CATALOG PRODUCT CARD POLISH
+   CATALOG PRODUCT CARD DISPLAY
 ========================= */
 .bike-grid {
   align-items: stretch;
 }
 
 .bike-card {
+  --card-brand-main: #203333;
+  --card-brand-second: #2f4f4f;
+  --card-brand-soft: rgba(159, 184, 182, 0.18);
+  --card-brand-glow: rgba(0, 0, 0, 0.24);
+
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100%;
+
   background:
-    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
-    var(--color-surface);
-  border: 1px solid var(--color-border);
+    radial-gradient(circle at top right, var(--card-brand-soft), transparent 34%),
+    linear-gradient(135deg, #101818 0%, #172323 100%);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   overflow: hidden;
+  color: #ffffff;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
+.bike-card.brand-exotic {
+  --card-brand-main: #d71920;
+  --card-brand-second: #111111;
+  --card-brand-soft: rgba(215, 25, 32, 0.3);
+  --card-brand-glow: rgba(215, 25, 32, 0.3);
+}
+
+.bike-card.brand-pacific {
+  --card-brand-main: #ed1c24;
+  --card-brand-second: #111111;
+  --card-brand-soft: rgba(237, 28, 36, 0.3);
+  --card-brand-glow: rgba(237, 28, 36, 0.3);
+}
+
+.bike-card.brand-nuv {
+  --card-brand-main: #27bfc3;
+  --card-brand-second: #0f777b;
+  --card-brand-soft: rgba(39, 191, 195, 0.32);
+  --card-brand-glow: rgba(39, 191, 195, 0.28);
+}
+
+.bike-card.brand-saige {
+  --card-brand-main: #66bd45;
+  --card-brand-second: #2f6f2e;
+  --card-brand-soft: rgba(102, 189, 69, 0.3);
+  --card-brand-glow: rgba(102, 189, 69, 0.28);
+}
+
+.bike-card.brand-uwinfly {
+  --card-brand-main: #ed1c24;
+  --card-brand-second: #b91319;
+  --card-brand-soft: rgba(237, 28, 36, 0.3);
+  --card-brand-glow: rgba(237, 28, 36, 0.28);
+}
+
+.bike-card.brand-larizz {
+  --card-brand-main: #27245f;
+  --card-brand-second: #e31b23;
+  --card-brand-soft: rgba(39, 36, 95, 0.42);
+  --card-brand-glow: rgba(39, 36, 95, 0.36);
+}
+
+/* Top brand strip */
+.bike-card::before {
+  content: "";
+  height: 7px;
+  width: 100%;
+  flex: 0 0 auto;
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--card-brand-main),
+    var(--card-brand-second)
+  );
+}
+
+/* Detail badge */
 .bike-card::after {
   content: "Klik detail";
   position: absolute;
-  top: 14px;
+  top: 18px;
   right: 14px;
-  padding: 5px 9px;
+  padding: 6px 10px;
   border-radius: 999px;
-  background-color: rgba(16, 24, 24, 0.78);
+  background: linear-gradient(
+    135deg,
+    var(--card-brand-main),
+    var(--card-brand-second)
+  );
   color: #ffffff;
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 900;
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 2;
 }
 
 .bike-card:hover::after {
@@ -272,35 +344,74 @@ body.dark-theme .bike-empty-state h3 {
   transform: translateY(0);
 }
 
+/* Image display area */
 .bike-card img {
-  height: 260px;
+  width: 100%;
+  height: 270px;
   object-fit: contain;
-  background-color: #ffffff;
-  padding: 14px;
+  background:
+    radial-gradient(circle at center, #ffffff 0%, #f3f6f5 52%, #dfe7e5 100%);
+  padding: 16px;
 }
 
+/* Product info area */
 .bike-info {
   display: flex;
   flex-direction: column;
   flex: 1;
   padding: 22px;
+
+  background:
+    radial-gradient(circle at top right, var(--card-brand-soft), transparent 36%),
+    linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
 }
 
-.bike-info h3 {
+.bike-card .bike-brand {
+  color: var(--card-brand-main);
+  font-weight: 900;
+}
+
+.bike-info h3,
+.bike-card h3 {
+  color: #ffffff;
   line-height: 1.25;
 }
 
-.bike-spec {
+.bike-spec,
+.bike-card .bike-spec {
+  color: #cbd8d6;
   margin-bottom: 14px;
 }
 
-.bike-price {
+.bike-price,
+.bike-card .bike-price {
+  color: #ffffff;
   margin-top: auto;
   margin-bottom: 14px;
 }
 
+/* Strong hover */
+.bike-card:hover {
+  border-color: var(--card-brand-main);
+  transform: translateY(-6px);
+  box-shadow:
+    0 24px 58px var(--card-brand-glow),
+    0 0 0 1px var(--card-brand-main);
+}
+
+/* WhatsApp button */
 .bike-card .bike-whatsapp-btn {
   margin-top: 0;
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 10px 24px rgba(37, 211, 102, 0.22);
+}
+
+.bike-card .bike-whatsapp-btn:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(37, 211, 102, 0.3);
 }
 /* =========================
    CATALOG BRAND ACCENTS
@@ -774,20 +885,6 @@ body.dark-theme .bike-empty-state h3 {
 }
 
 @media (max-width: 768px) {
-  .bike-card img {
-  height: 230px;
-}
-
-.bike-card::after {
-  opacity: 1;
-  top: 10px;
-  right: 10px;
-  font-size: 0.68rem;
-}
-
-.bike-info {
-  padding: 20px;
-}
   .page-hero {
     padding: 60px 20px 34px;
   }
@@ -815,9 +912,15 @@ body.dark-theme .bike-empty-state h3 {
     flex: 0 0 auto;
   }
 
+  .bike-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .bike-toolbar-right {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
   }
 
   .bike-search input,
@@ -825,6 +928,21 @@ body.dark-theme .bike-empty-state h3 {
   .clear-btn {
     width: 100%;
     min-width: 0;
+  }
+
+  .bike-card img {
+    height: 230px;
+  }
+
+  .bike-card::after {
+    opacity: 1;
+    top: 12px;
+    right: 12px;
+    font-size: 0.68rem;
+  }
+
+  .bike-info {
+    padding: 20px;
   }
 
   .bike-modal {
@@ -877,6 +995,14 @@ body.dark-theme .bike-empty-state h3 {
     font-size: 1.9rem;
   }
 
+  .bike-card img {
+    height: 210px;
+  }
+
+  .bike-info {
+    padding: 18px;
+  }
+
   .bike-modal-body {
     padding: 16px;
   }
@@ -892,13 +1018,6 @@ body.dark-theme .bike-empty-state h3 {
   .highlight-badge,
   .recommended-tags span {
     font-size: 0.82rem;
-  }
-.bike-card img {
-    height: 210px;
-  }
-
-  .bike-info {
-    padding: 18px;
   }
 }
 

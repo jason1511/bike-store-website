@@ -13,29 +13,38 @@ function getWhatsAppLink(bike) {
 }
 
 function createBikeCard(bike) {
+  const brandTheme = getBrandTheme(bike.brand);
+
   return `
-    <div class="bike-card" data-bike-id="${bike.id}" tabindex="0" role="button" aria-label="View details for ${bike.name}">
+    <div class="bike-card ${brandTheme.className}" data-bike-id="${bike.id}" tabindex="0" role="button">
       <img src="${bike.image}" alt="${bike.alt}">
+
       <div class="bike-info">
         <p class="bike-brand">${bike.brand}</p>
         <h3>${bike.name}</h3>
-        <p class="bike-spec">Jarak tempuh ${bike.range || "Hubungi toko"}</p>
+
+        <p class="bike-spec">
+          Jarak tempuh ${bike.range || "-"}
+        </p>
+
         <p class="bike-price">${formatPrice(bike.price)}</p>
 
         <a 
-  href="${getWhatsAppLink(bike)}" 
-  class="bike-whatsapp-btn" 
-  target="_blank" 
-  rel="noopener"
-  onclick="event.stopPropagation();"
->
-  <span class="wa-btn-content">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
-         alt="WhatsApp" 
-         class="wa-icon">
-    <span>Tanya WhatsApp</span>
-  </span>
-</a>
+          href="${getWhatsAppLink(bike)}" 
+          class="bike-whatsapp-btn"
+          target="_blank"
+          rel="noopener"
+          onclick="event.stopPropagation();"
+        >
+          <span class="wa-btn-content">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+              alt="WhatsApp" 
+              class="wa-icon"
+            >
+            <span>Tanya WhatsApp</span>
+          </span>
+        </a>
       </div>
     </div>
   `;
