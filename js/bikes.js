@@ -2,7 +2,28 @@ let currentCategory = "all";
 let currentSort = "default";
 let currentSearch = "";
 let currentBrand = "all";
+function getInitialBrandFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const brand = params.get("brand");
 
+  if (!brand) {
+    return "all";
+  }
+
+  const brandExists = bikes.some(
+    (bike) => bike.brand.toLowerCase() === brand.toLowerCase()
+  );
+const url = new URL(window.location);
+
+if (currentBrand === "all") {
+  url.searchParams.delete("brand");
+} else {
+  url.searchParams.set("brand", currentBrand);
+}
+
+window.history.replaceState({}, "", url);
+  return brandExists ? brand : "all";
+}
 function setupBikeSearch() {
   const searchInput = document.getElementById("searchInput");
 
@@ -160,6 +181,8 @@ function setupBikeModal() {
   });
 }
 whenBikesLoaded(() => {
+  currentBrand = getInitialBrandFromUrl();
+
   renderBikes();
   updateActiveFilterButton();
   setupBikeFilters();
