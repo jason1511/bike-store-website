@@ -10,19 +10,11 @@ function getInitialBrandFromUrl() {
     return "all";
   }
 
-  const brandExists = bikes.some(
+  const matchedBike = bikes.find(
     (bike) => bike.brand.toLowerCase() === brand.toLowerCase()
   );
-const url = new URL(window.location);
 
-if (currentBrand === "all") {
-  url.searchParams.delete("brand");
-} else {
-  url.searchParams.set("brand", currentBrand);
-}
-
-window.history.replaceState({}, "", url);
-  return brandExists ? brand : "all";
+  return matchedBike ? matchedBike.brand : "all";
 }
 function setupBikeSearch() {
   const searchInput = document.getElementById("searchInput");
@@ -82,6 +74,17 @@ function setupBikeFilters() {
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
       currentBrand = button.dataset.brand;
+
+      const url = new URL(window.location);
+
+      if (currentBrand === "all") {
+        url.searchParams.delete("brand");
+      } else {
+        url.searchParams.set("brand", currentBrand);
+      }
+
+      window.history.replaceState({}, "", url);
+
       updateActiveFilterButton();
       renderBikes();
     });
@@ -126,14 +129,19 @@ function setupClearFilters() {
   const clearFiltersBtn = document.getElementById("clearFiltersBtn");
   const searchInput = document.getElementById("searchInput");
   const sortSelect = document.getElementById("sortSelect");
+
   if (!clearFiltersBtn) {
     return;
   }
 
   clearFiltersBtn.addEventListener("click", () => {
-    currentCategory = "all";
+    currentBrand = "all";
     currentSort = "default";
     currentSearch = "";
+
+    const url = new URL(window.location);
+    url.searchParams.delete("brand");
+    window.history.replaceState({}, "", url);
 
     if (searchInput) {
       searchInput.value = "";

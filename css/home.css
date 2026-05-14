@@ -1,7 +1,12 @@
 /* =========================
-   HERO
+   HERO + BRAND THEME VARIABLES
 ========================= */
 .hero {
+  --hero-brand-main: #9fb8b6;
+  --hero-brand-second: #203333;
+  --hero-brand-soft: rgba(159, 184, 182, 0.12);
+  --hero-brand-glow: rgba(159, 184, 182, 0.18);
+
   position: relative;
   overflow: hidden;
   min-height: 720px;
@@ -11,10 +16,52 @@
   gap: clamp(56px, 7vw, 140px);
   padding: 90px 60px;
   background:
-    radial-gradient(circle at 72% 32%, rgba(255, 255, 255, 0.08), transparent 18%),
-    radial-gradient(circle at 80% 45%, rgba(37, 211, 102, 0.08), transparent 30%),
+    radial-gradient(circle at 72% 32%, var(--hero-brand-soft), transparent 22%),
+    radial-gradient(circle at 82% 46%, var(--hero-brand-glow), transparent 34%),
     radial-gradient(circle at 18% 76%, rgba(159, 184, 182, 0.12), transparent 34%),
     linear-gradient(135deg, #101818 0%, #203030 100%);
+}
+
+.hero.hero-brand-exotic {
+  --hero-brand-main: #d71920;
+  --hero-brand-second: #111111;
+  --hero-brand-soft: rgba(215, 25, 32, 0.18);
+  --hero-brand-glow: rgba(215, 25, 32, 0.28);
+}
+
+.hero.hero-brand-pacific {
+  --hero-brand-main: #ed1c24;
+  --hero-brand-second: #111111;
+  --hero-brand-soft: rgba(237, 28, 36, 0.18);
+  --hero-brand-glow: rgba(237, 28, 36, 0.28);
+}
+
+.hero.hero-brand-larizz {
+  --hero-brand-main: #27245f;
+  --hero-brand-second: #e31b23;
+  --hero-brand-soft: rgba(39, 36, 95, 0.24);
+  --hero-brand-glow: rgba(39, 36, 95, 0.34);
+}
+
+.hero.hero-brand-saige {
+  --hero-brand-main: #66bd45;
+  --hero-brand-second: #2f6f2e;
+  --hero-brand-soft: rgba(102, 189, 69, 0.2);
+  --hero-brand-glow: rgba(102, 189, 69, 0.3);
+}
+
+.hero.hero-brand-uwinfly {
+  --hero-brand-main: #ed1c24;
+  --hero-brand-second: #b91319;
+  --hero-brand-soft: rgba(237, 28, 36, 0.18);
+  --hero-brand-glow: rgba(237, 28, 36, 0.28);
+}
+
+.hero.hero-brand-nuv {
+  --hero-brand-main: #27bfc3;
+  --hero-brand-second: #0f777b;
+  --hero-brand-soft: rgba(39, 191, 195, 0.2);
+  --hero-brand-glow: rgba(39, 191, 195, 0.3);
 }
 
 .hero::before {
@@ -65,7 +112,7 @@
   height: 4px;
   margin-top: 20px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #ffffff, #9fb8b6);
+  background: linear-gradient(90deg, var(--hero-brand-main), var(--hero-brand-second));
 }
 
 .hero-text p {
@@ -86,10 +133,10 @@
   display: inline-flex;
   align-items: center;
   padding: 7px 12px;
-  border: 1px solid rgba(159, 184, 182, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   color: #dce5e3;
-  background-color: rgba(255, 255, 255, 0.045);
+  background-color: var(--hero-brand-soft);
   font-size: 0.9rem;
   font-weight: 700;
   backdrop-filter: blur(8px);
@@ -99,6 +146,20 @@
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.hero .btn-primary {
+  background: linear-gradient(135deg, #ffffff, #e8f0ef);
+  color: #203333;
+}
+
+.hero .btn-secondary {
+  border-color: var(--hero-brand-main);
+  color: #ffffff;
+}
+
+.hero .btn-secondary:hover {
+  background-color: var(--hero-brand-soft);
 }
 
 /* =========================
@@ -128,13 +189,13 @@
   width: 100%;
   min-height: 520px;
   background-color: #132020;
-  border: 1px solid rgba(159, 184, 182, 0.32);
+  border: 1px solid var(--hero-brand-main);
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
   box-shadow:
     0 28px 80px rgba(0, 0, 0, 0.34),
-    0 0 0 1px rgba(255, 255, 255, 0.035);
+    0 0 42px var(--hero-brand-glow);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -142,7 +203,15 @@
   transform: translateY(-5px);
   box-shadow:
     0 34px 90px rgba(0, 0, 0, 0.42),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+    0 0 50px var(--hero-brand-glow);
+}
+
+.hero-bike-card::before {
+  content: "";
+  display: block;
+  height: 7px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--hero-brand-main), var(--hero-brand-second));
 }
 
 .hero-bike-card::after {
@@ -150,7 +219,7 @@
   position: absolute;
   top: 14px;
   right: 14px;
-  background-color: rgba(16, 24, 24, 0.86);
+  background: linear-gradient(135deg, var(--hero-brand-main), var(--hero-brand-second));
   color: #ffffff;
   padding: 6px 10px;
   border-radius: 999px;
@@ -168,6 +237,9 @@
 
 .hero-bike-info {
   padding: 24px;
+  background:
+    radial-gradient(circle at top right, var(--hero-brand-soft), transparent 36%),
+    linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
 }
 
 .hero-bike-label {
@@ -180,8 +252,8 @@
 }
 
 .hero-bike-brand {
-  color: #b8c4c2;
-  font-weight: 700;
+  color: var(--hero-brand-main);
+  font-weight: 900;
   margin-bottom: 6px;
 }
 
@@ -195,21 +267,71 @@
   color: #dce5e3;
   margin-bottom: 18px;
 }
+
+.hero-bike-card .bike-whatsapp-btn {
+  background: linear-gradient(135deg, #25d366, #128c7e);
+}
+
+/* =========================
+   BRAND THEME VARIABLES
+========================= */
+.brand-card-exotic {
+  --brand-main: #d71920;
+  --brand-second: #111111;
+  --brand-soft: rgba(215, 25, 32, 0.32);
+  --brand-glow: rgba(215, 25, 32, 0.28);
+}
+
+.brand-card-pacific {
+  --brand-main: #ed1c24;
+  --brand-second: #111111;
+  --brand-soft: rgba(237, 28, 36, 0.32);
+  --brand-glow: rgba(237, 28, 36, 0.28);
+}
+
+.brand-card-larizz {
+  --brand-main: #27245f;
+  --brand-second: #e31b23;
+  --brand-soft: rgba(39, 36, 95, 0.42);
+  --brand-glow: rgba(39, 36, 95, 0.34);
+}
+
+.brand-card-saige {
+  --brand-main: #66bd45;
+  --brand-second: #2f6f2e;
+  --brand-soft: rgba(102, 189, 69, 0.32);
+  --brand-glow: rgba(102, 189, 69, 0.28);
+}
+
+.brand-card-uwinfly {
+  --brand-main: #ed1c24;
+  --brand-second: #b91319;
+  --brand-soft: rgba(237, 28, 36, 0.32);
+  --brand-glow: rgba(237, 28, 36, 0.28);
+}
+
+.brand-card-nuv {
+  --brand-main: #27bfc3;
+  --brand-second: #0f777b;
+  --brand-soft: rgba(39, 191, 195, 0.34);
+  --brand-glow: rgba(39, 191, 195, 0.28);
+}
+
 /* =========================
    BRAND MARQUEE
 ========================= */
 .brand-marquee {
   overflow: hidden;
-  background-color: #0f1919;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 16px 0;
+  background: linear-gradient(135deg, #0f1919 0%, #132020 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 0;
 }
 
 .brand-marquee-track {
   display: flex;
   width: max-content;
-  animation: brandMarquee 42s linear infinite;
+  animation: brandMarquee 24s linear infinite;
 }
 
 .brand-marquee-group {
@@ -220,27 +342,34 @@
 }
 
 .brand-marquee-item {
+  --brand-main: #9fb8b6;
+  --brand-second: #203333;
+  --brand-soft: rgba(159, 184, 182, 0.16);
+
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: max-content;
-  padding: 10px 18px;
+  padding: 11px 20px;
   border-radius: 999px;
-  background-color: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #e6f0ef;
-  font-weight: 800;
-  font-size: 0.92rem;
+  background:
+    radial-gradient(circle at top right, var(--brand-soft), transparent 40%),
+    linear-gradient(135deg, #111818, #172323);
+  border: 1px solid var(--brand-main);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 1rem;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
 }
 
 .brand-marquee-item img {
-  height: 26px;
+  height: 34px;
   width: auto;
-  max-width: 80px;
+  max-width: 110px;
   object-fit: contain;
   background-color: #ffffff;
-  border-radius: 6px;
-  padding: 3px 6px;
+  border-radius: 8px;
+  padding: 5px 8px;
 }
 
 @keyframes brandMarquee {
@@ -252,18 +381,23 @@
     transform: translateX(-25%);
   }
 }
+
 /* =========================
    BRAND STRIP
 ========================= */
 .brand-strip {
-  padding: 80px 60px;
+  padding: 90px 60px;
   background:
-    radial-gradient(circle at top right, rgba(159, 184, 182, 0.1), transparent 30%),
-    var(--color-bg);
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.12), transparent 30%),
+    linear-gradient(135deg, #101818 0%, #132020 100%);
+}
+
+.brand-strip .section-heading h2 {
+  color: #ffffff;
 }
 
 .brand-strip .section-heading p:last-child {
-  color: var(--color-muted);
+  color: #cbd8d6;
   margin-top: 14px;
   font-size: 1rem;
 }
@@ -271,22 +405,30 @@
 .brand-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 18px;
+  gap: 20px;
 }
 
 .brand-logo-card {
+  --brand-main: #9fb8b6;
+  --brand-second: #203333;
+  --brand-soft: rgba(159, 184, 182, 0.16);
+  --brand-glow: rgba(159, 184, 182, 0.18);
+
   position: relative;
-  min-height: 120px;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 18px;
-  padding: 20px;
+  min-height: 150px;
+  background:
+    radial-gradient(circle at top right, var(--brand-soft), transparent 38%),
+    linear-gradient(135deg, #111818 0%, #172323 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 5px solid var(--brand-main);
+  border-radius: 22px;
+  padding: 24px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 18px;
 
   overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
@@ -296,15 +438,18 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top right, rgba(37, 211, 102, 0.1), transparent 34%);
+  background: linear-gradient(135deg, transparent 0%, var(--brand-soft) 100%);
   opacity: 0;
   transition: opacity 0.25s ease;
 }
 
 .brand-logo-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(159, 184, 182, 0.55);
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18);
+  transform: translateY(-5px);
+  border-color: var(--brand-main);
+  border-top-color: var(--brand-main);
+  box-shadow:
+    0 22px 48px var(--brand-glow),
+    0 0 0 1px var(--brand-main);
 }
 
 .brand-logo-card:hover::before {
@@ -318,23 +463,22 @@
 }
 
 .brand-logo-card img {
-  max-height: 48px;
-  max-width: 100%;
+  height: 58px;
+  max-width: 150px;
+  width: auto;
   object-fit: contain;
   background-color: #ffffff;
-  border-radius: 10px;
-  padding: 6px 10px;
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
 }
 
 .brand-logo-card span {
-  color: var(--color-text);
-  font-weight: 800;
-  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 1.08rem;
 }
 
-body.dark-theme .brand-logo-card span {
-  color: #ffffff;
-}
 /* =========================
    AI BIKE FINDER
 ========================= */
@@ -417,11 +561,18 @@ body.dark-theme .brand-logo-card span {
   color: #cbd8d6;
 }
 
-.ai-finder-result .btn-primary,
-.ai-finder-result .btn-secondary {
+.ai-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: 16px;
-  margin-right: 10px;
 }
+
+.ai-result-actions .btn-primary,
+.ai-result-actions .btn-secondary {
+  margin: 0;
+}
+
 /* =========================
    FEATURES
 ========================= */
@@ -506,6 +657,7 @@ body.dark-theme .brand-logo-card span {
   color: var(--color-muted);
   font-size: 1rem;
 }
+
 /* =========================
    SHOWROOM CTA
 ========================= */
@@ -610,22 +762,6 @@ body.dark-theme .brand-logo-card span {
 /* =========================
    DARK MODE HOME FIXES
 ========================= */
-body.dark-theme .hero-bike-card {
-  background-color: #172323;
-  border-color: #2f4444;
-}
-
-body.dark-theme .hero-bike-info h3 {
-  color: #ffffff;
-}
-
-body.dark-theme .hero-bike-label {
-  color: #9fb8b6;
-}
-
-body.dark-theme .ai-finder-result h3 {
-  color: #ffffff;
-}
 body.dark-theme .features {
   background:
     radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 30%),
@@ -648,6 +784,7 @@ body.dark-theme .feature-card h3 {
 body.dark-theme .feature-card p {
   color: #b8c4c2;
 }
+
 /* =========================
    RESPONSIVE
 ========================= */
@@ -661,46 +798,53 @@ body.dark-theme .feature-card p {
     padding-left: 30px;
     padding-right: 30px;
   }
-.hero {
-  flex-direction: column;
-  text-align: center;
-  min-height: auto;
-  padding-top: 70px;
-  padding-bottom: 70px;
-}
 
-.hero-text {
-  max-width: 100%;
-}
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    min-height: auto;
+    padding-top: 70px;
+    padding-bottom: 70px;
+  }
 
-.hero-text p {
-  margin-left: auto;
-  margin-right: auto;
-}
+  .hero-text {
+    max-width: 100%;
+  }
 
-.hero-text h1::after {
-  margin-left: auto;
-  margin-right: auto;
-}
+  .hero-text p {
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-.hero-points {
-  justify-content: center;
-}
+  .hero-text h1::after {
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-.hero-buttons {
-  justify-content: center;
-}
+  .hero-points,
+  .hero-buttons {
+    justify-content: center;
+  }
 
-.hero-featured-wrap {
-  max-width: 560px;
-  width: 100%;
-}
+  .hero-featured-wrap {
+    max-width: 560px;
+    width: 100%;
+  }
 
-.hero-display-label {
-  text-align: center;
-}
-.brand-grid {
+  .hero-display-label {
+    text-align: center;
+  }
+
+  .brand-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .ai-finder-card {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -715,59 +859,94 @@ body.dark-theme .feature-card p {
     padding-right: 20px;
   }
 
- .hero {
-  gap: 36px;
-  padding-top: 54px;
-  padding-bottom: 54px;
-}
+  .hero {
+    gap: 36px;
+    padding-top: 54px;
+    padding-bottom: 54px;
+  }
 
-.hero-text h1 {
-  font-size: 2.35rem;
-}
+  .hero-text h1 {
+    font-size: 2.35rem;
+  }
 
-.hero-text p {
-  font-size: 1rem;
-}
+  .hero-text p {
+    font-size: 1rem;
+  }
 
-.hero-points {
-  gap: 8px;
-  margin-bottom: 26px;
-}
+  .hero-points {
+    gap: 8px;
+    margin-bottom: 26px;
+  }
 
-.hero-points span {
-  font-size: 0.82rem;
-  padding: 6px 10px;
-}
+  .hero-points span {
+    font-size: 0.82rem;
+    padding: 6px 10px;
+  }
 
-.hero-bike-card img {
-  height: 230px;
-}
-.hero-bike-card::after {
-  font-size: 0.7rem;
-  top: 10px;
-  right: 10px;
-}
-.brand-marquee {
-  padding: 12px 0;
-}
+  .hero-bike-card {
+    border-radius: 18px;
+  }
 
-.brand-marquee-track {
-  animation-duration: 28s;
-}
+  .hero-bike-card img {
+    height: 230px;
+  }
 
-.brand-marquee-item {
-  padding: 8px 14px;
-  font-size: 0.82rem;
-}
+  .hero-bike-card::after {
+    font-size: 0.7rem;
+    top: 10px;
+    right: 10px;
+  }
 
-.brand-marquee-item img {
-  height: 22px;
-}
-.brand-grid {
+  .hero-bike-info {
+    padding: 18px;
+  }
+
+  .hero-bike-info h3 {
+    font-size: 1.25rem;
+  }
+
+  .brand-marquee {
+    padding: 12px 0;
+  }
+
+  .brand-marquee-track {
+    animation-duration: 30s;
+  }
+
+  .brand-marquee-item {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .brand-marquee-item img {
+    height: 22px;
+  }
+
+  .brand-strip {
+    padding-top: 52px;
+    padding-bottom: 52px;
+  }
+
+  .brand-grid {
     grid-template-columns: repeat(2, 1fr);
   }
- .ai-finder {
-    padding: 54px 20px;
+
+  .brand-logo-card {
+    min-height: 100px;
+    padding: 16px;
+  }
+
+  .brand-logo-card img {
+    max-height: 38px;
+  }
+
+  .brand-logo-card span {
+    font-size: 0.85rem;
+  }
+
+  .ai-finder {
+    padding-top: 54px;
+    padding-bottom: 54px;
   }
 
   .ai-finder-card {
@@ -807,178 +986,18 @@ body.dark-theme .feature-card p {
     width: 100%;
   }
 
-.showroom-cta {
-  padding-top: 50px;
-  padding-bottom: 50px;
-}
-
-.showroom-cta-content {
-  max-width: 420px;
-}
-
-.showroom-cta .section-tag {
-  font-size: 0.78rem;
-  margin-bottom: 8px;
-}
-
-.showroom-cta h2 {
-  font-size: 1.55rem;
-  line-height: 1.18;
-  margin-bottom: 12px;
-}
-
-.showroom-cta p {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-
-.showroom-cta-points {
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.showroom-cta-points span {
-  font-size: 0.8rem;
-  padding: 6px 10px;
-}
-
-.showroom-actions {
-  flex-direction: column;
-  gap: 10px;
-}
-
-.showroom-actions .btn-primary,
-.showroom-actions .btn-secondary {
-  width: 100%;
-  padding: 12px 16px;
-}
-.hero-bike-card {
-  border-radius: 18px;
-}
-
-.features {
-  padding-top: 56px;
-  padding-bottom: 56px;
-}
-
-.feature-card {
-  min-height: auto;
-  padding: 24px;
-}
-
-.feature-icon {
-  width: 38px;
-  height: 38px;
-  margin-bottom: 14px;
-}
-
-.hero-bike-info {
-  padding: 18px;
-}
-
-.hero-bike-info h3 {
-  font-size: 1.25rem;
-}
-.brand-strip {
-  padding-top: 52px;
-  padding-bottom: 52px;
-}
-
-.brand-logo-card {
-  min-height: 100px;
-  padding: 16px;
-}
-
-.brand-logo-card img {
-  max-height: 38px;
-}
-
-.brand-logo-card span {
-  font-size: 0.85rem;
-}
-}
-
-@media (max-width: 480px) {
-  .hero {
-  padding-top: 42px;
-  padding-bottom: 42px;
-}
-
-.hero-text h1 {
-  font-size: 2rem;
-}
-
-.hero-text p {
-  font-size: 0.95rem;
-}
-
-.hero-buttons {
-  flex-direction: column;
-}
-
-.hero-bike-card img {
-  height: 200px;
-}
-
-.hero-bike-info {
-  padding: 16px;
-}
-.hero-bike-card::after {
-  content: "Detail";
-  font-size: 0.68rem;
-}
-
-.hero-bike-info h3 {
-  font-size: 1.25rem;
-}
-.showroom-cta {
-  padding: 40px 16px;
-}
-
-.showroom-cta h2 {
-  font-size: 1.35rem;
-}
-
-.showroom-cta p {
-  font-size: 0.85rem;
-}
-.brand-logo-card {
-  min-height: 88px;
-  padding: 14px;
-}
-
-.brand-logo-card img {
-  max-height: 32px;
-}
-.ai-finder {
-    padding: 46px 16px;
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
 
-  .ai-finder-card {
-    padding: 18px;
-  }
-
-  .ai-finder-result {
-    padding: 18px;
-  }
-}
-/* =========================
-   MOBILE FEATURE SECTION FIX
-========================= */
-@media (max-width: 768px) {
   .features {
-    padding: 54px 20px;
+    padding-top: 54px;
+    padding-bottom: 54px;
   }
 
   .features .section-heading {
     margin-bottom: 30px;
-  }
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 18px;
   }
 
   .feature-card {
@@ -1001,33 +1020,134 @@ body.dark-theme .feature-card p {
     height: 40px;
     margin-bottom: 14px;
   }
-  .brand-marquee {
-    padding: 12px 0;
+
+  .showroom-cta {
+    padding-top: 50px;
+    padding-bottom: 50px;
   }
 
-  .brand-marquee-track {
-    animation-duration: 30s;
+  .showroom-cta-content {
+    max-width: 420px;
   }
 
-  .brand-marquee-item {
-    padding: 8px 14px;
-    font-size: 0.82rem;
+  .showroom-cta .section-tag {
+    font-size: 0.78rem;
+    margin-bottom: 8px;
   }
 
-  .brand-marquee-item img {
-    height: 22px;
+  .showroom-cta h2 {
+    font-size: 1.55rem;
+    line-height: 1.18;
+    margin-bottom: 12px;
+  }
+
+  .showroom-cta p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .showroom-cta-points {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .showroom-cta-points span {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .showroom-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .showroom-actions .btn-primary,
+  .showroom-actions .btn-secondary {
+    width: 100%;
+    padding: 12px 16px;
   }
 }
 
 @media (max-width: 480px) {
+  .hero {
+    padding-top: 42px;
+    padding-bottom: 42px;
+  }
+
+  .hero-text h1 {
+    font-size: 2rem;
+  }
+
+  .hero-text p {
+    font-size: 0.95rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+  }
+
+  .hero-bike-card img {
+    height: 200px;
+  }
+
+  .hero-bike-card::after {
+    content: "Detail";
+    font-size: 0.68rem;
+  }
+
+  .hero-bike-info {
+    padding: 16px;
+  }
+
+  .hero-bike-info h3 {
+    font-size: 1.25rem;
+  }
+
+  .brand-logo-card {
+    min-height: 88px;
+    padding: 14px;
+  }
+
+  .brand-logo-card img {
+    max-height: 32px;
+  }
+
+  .ai-finder {
+    padding-top: 46px;
+    padding-bottom: 46px;
+  }
+
+  .ai-finder-card {
+    padding: 18px;
+  }
+
+  .ai-finder-result {
+    padding: 18px;
+  }
+
   .features {
-    padding: 46px 16px;
+    padding-top: 46px;
+    padding-bottom: 46px;
   }
 
   .feature-card {
     padding: 22px;
   }
+
+  .showroom-cta {
+    padding: 40px 16px;
+  }
+
+  .showroom-cta h2 {
+    font-size: 1.35rem;
+  }
+
+  .showroom-cta p {
+    font-size: 0.85rem;
+  }
 }
+
 @media (min-width: 1500px) {
   .hero {
     min-height: 760px;
