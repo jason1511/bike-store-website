@@ -1,5 +1,28 @@
+# Dependencies
+node_modules/
+
+# Local env / secrets
 .dev.vars
 .env
 .env.*
-node_modules
-dist
+!.env.example
+
+# Cloudflare / Wrangler local generated files
+.wrangler/
+.wrangler-state/
+wrangler-debug.log
+wrangler-*.log
+functionWorker.js
+functionsWorker.js
+
+# Build output / temporary folders
+dist/
+build/
+.cache/
+.tmp/
+.temp/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/

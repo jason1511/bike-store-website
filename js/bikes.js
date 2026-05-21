@@ -1,7 +1,16 @@
-let currentCategory = "all";
+let currentBrand = "all";
 let currentSort = "default";
 let currentSearch = "";
-let currentBrand = "all";
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function getInitialBrandFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const brand = params.get("brand");
@@ -16,18 +25,7 @@ function getInitialBrandFromUrl() {
 
   return matchedBike ? matchedBike.brand : "all";
 }
-function setupBikeSearch() {
-  const searchInput = document.getElementById("searchInput");
 
-  if (!searchInput) {
-    return;
-  }
-
-  searchInput.addEventListener("input", (event) => {
-    currentSearch = event.target.value;
-    renderBikes();
-  });
-}
 function renderBikes() {
   const bikeGrid = document.getElementById("bikeGrid");
 
@@ -35,28 +33,55 @@ function renderBikes() {
     return;
   }
 
-const visibleBikes = getFilteredAndSortedBikes({
-  brand: currentBrand,
-  search: currentSearch,
-  sort: currentSort
-});
+  const visibleBikes = getFilteredAndSortedBikes({
+    brand: currentBrand,
+    search: currentSearch,
+    sort: currentSort
+  });
 
   if (!visibleBikes.length) {
     bikeGrid.innerHTML = `
       <div class="bike-empty-state">
-        <h3>No bikes found</h3>
-        <p>Try a different search, category, or sort option.</p>
+        <h3>Tidak ada sepeda ditemukan</h3>
+        <p>Coba gunakan kata kunci, brand, atau urutan yang berbeda.</p>
       </div>
     `;
+
     updateBikeStatus();
     return;
   }
 
   bikeGrid.innerHTML = visibleBikes
-  .map((bike) => createBikeCard(bike))
-  .join("");
+    .map((bike) => createBikeCard(bike))
+    .join("");
 
   updateBikeStatus();
+}
+
+function updateBikeStatus() {
+  const bikeStatus = document.getElementById("bikeStatus");
+
+  if (!bikeStatus) {
+    return;
+  }
+
+  const visibleCount = getFilteredAndSortedBikes({
+    brand: currentBrand,
+    search: currentSearch,
+    sort: currentSort
+  }).length;
+
+  const brandLabel = currentBrand === "all" ? "semua brand" : currentBrand;
+
+  if (currentSearch.trim()) {
+    bikeStatus.innerHTML = `
+      Menampilkan <strong>${brandLabel}</strong> untuk 
+      <strong>“${escapeHtml(currentSearch.trim())}”</strong> (${visibleCount})
+    `;
+    return;
+  }
+
+  bikeStatus.innerHTML = `Menampilkan <strong>${brandLabel}</strong> (${visibleCount})`;
 }
 
 function updateActiveFilterButton() {
@@ -73,7 +98,7 @@ function setupBikeFilters() {
 
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      currentBrand = button.dataset.brand;
+      currentBrand = button.dataset.brand || "all";
 
       const url = new URL(window.location);
 
@@ -91,6 +116,19 @@ function setupBikeFilters() {
   });
 }
 
+function setupBikeSearch() {
+  const searchInput = document.getElementById("searchInput");
+
+  if (!searchInput) {
+    return;
+  }
+
+  searchInput.addEventListener("input", (event) => {
+    currentSearch = event.target.value;
+    renderBikes();
+  });
+}
+
 function setupBikeSort() {
   const sortSelect = document.getElementById("sortSelect");
 
@@ -104,27 +142,6 @@ function setupBikeSort() {
   });
 }
 
-
-function updateBikeStatus() {
-  const bikeStatus = document.getElementById("bikeStatus");
-
-  if (!bikeStatus) {
-    return;
-  }
-
-  const visibleCount = getFilteredAndSortedBikes({
-    brand: currentBrand,
-    search: currentSearch,
-    sort: currentSort,
-  }).length;
-
-  if (currentSearch.trim()) {
-    bikeStatus.innerHTML = `Menampilkan <strong>${currentBrand}</strong> untuk <strong>“${currentSearch.trim()}”</strong> (${visibleCount})`;
-    return;
-  }
-
-  bikeStatus.innerHTML = `Menampilkan <strong>${currentBrand}</strong> (${visibleCount})`;
-}
 function setupClearFilters() {
   const clearFiltersBtn = document.getElementById("clearFiltersBtn");
   const searchInput = document.getElementById("searchInput");
@@ -170,8 +187,7 @@ function setupBikeModal() {
       return;
     }
 
-    const bikeId = bikeCard.dataset.bikeId;
-    openBikeModal(bikeId);
+    openBikeModal(bikeCard.dataset.bikeId);
   });
 
   bikeGrid.addEventListener("keydown", (event) => {
@@ -183,11 +199,11 @@ function setupBikeModal() {
 
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      const bikeId = bikeCard.dataset.bikeId;
-      openBikeModal(bikeId);
+      openBikeModal(bikeCard.dataset.bikeId);
     }
   });
 }
+
 function setupCompareBikeDropdowns() {
   const compareBikeOne = document.getElementById("compareBikeOne");
   const compareBikeTwo = document.getElementById("compareBikeTwo");
@@ -199,8 +215,8 @@ function setupCompareBikeDropdowns() {
   const bikeOptions = bikes
     .map((bike) => {
       return `
-        <option value="${bike.id}">
-          ${bike.brand} - ${bike.name}
+        <option value="${escapeHtml(bike.id)}">
+          ${escapeHtml(bike.brand)} - ${escapeHtml(bike.name)}
         </option>
       `;
     })
@@ -216,6 +232,97 @@ function setupCompareBikeDropdowns() {
     ${bikeOptions}
   `;
 }
+
+function getCompareCellClass(winner, side) {
+  if (winner === "tie") {
+    return "compare-neutral";
+  }
+
+  if (winner === side) {
+    return "compare-win";
+  }
+
+  return "compare-lose";
+}
+
+function renderComparisonResult(result, bikeOne, bikeTwo, comparison) {
+  const rows = Array.isArray(comparison.rows) ? comparison.rows : [];
+
+  const rowsHtml = rows
+    .map((row) => {
+      const winner = ["bikeOne", "bikeTwo", "tie"].includes(row.winner)
+        ? row.winner
+        : "tie";
+
+      return `
+        <tr>
+          <th>${escapeHtml(row.label)}</th>
+          <td class="${getCompareCellClass(winner, "bikeOne")}">
+            ${escapeHtml(row.bikeOne)}
+          </td>
+          <td class="${getCompareCellClass(winner, "bikeTwo")}">
+            ${escapeHtml(row.bikeTwo)}
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  result.innerHTML = `
+    <p class="hero-bike-label">Hasil Perbandingan AI</p>
+    <h3>${escapeHtml(bikeOne.name)} vs ${escapeHtml(bikeTwo.name)}</h3>
+
+    <div class="compare-summary">
+      <p>${escapeHtml(comparison.summary || "Ringkasan belum tersedia.")}</p>
+    </div>
+
+    <div class="compare-table-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Aspek</th>
+            <th>${escapeHtml(bikeOne.name)}</th>
+            <th>${escapeHtml(bikeTwo.name)}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="compare-final">
+      <strong>Rekomendasi akhir:</strong>
+      <p>${escapeHtml(comparison.finalRecommendation || "Rekomendasi akhir belum tersedia.")}</p>
+    </div>
+
+    <div class="compare-result-actions">
+      <button type="button" class="btn-secondary" id="openCompareBikeOne">
+        Lihat ${escapeHtml(bikeOne.name)}
+      </button>
+
+      <button type="button" class="btn-secondary" id="openCompareBikeTwo">
+        Lihat ${escapeHtml(bikeTwo.name)}
+      </button>
+    </div>
+  `;
+
+  const openBikeOneButton = document.getElementById("openCompareBikeOne");
+  const openBikeTwoButton = document.getElementById("openCompareBikeTwo");
+
+  if (openBikeOneButton) {
+    openBikeOneButton.addEventListener("click", () => {
+      openBikeModal(bikeOne.id);
+    });
+  }
+
+  if (openBikeTwoButton) {
+    openBikeTwoButton.addEventListener("click", () => {
+      openBikeModal(bikeTwo.id);
+    });
+  }
+}
+
 function setupCompareBikeForm() {
   const form = document.getElementById("compareBikeForm");
   const result = document.getElementById("compareBikeResult");
@@ -284,83 +391,11 @@ function setupCompareBikeForm() {
 
       const data = await response.json();
 
-      const comparison = data.comparison;
-
-const rowsHtml = comparison.rows
-  .map((row) => {
-    const bikeOneClass =
-      row.winner === "bikeOne" ? "compare-win" :
-      row.winner === "bikeTwo" ? "compare-lose" :
-      "compare-neutral";
-
-    const bikeTwoClass =
-      row.winner === "bikeTwo" ? "compare-win" :
-      row.winner === "bikeOne" ? "compare-lose" :
-      "compare-neutral";
-
-    return `
-      <tr>
-        <th>${row.label}</th>
-        <td class="${bikeOneClass}">${row.bikeOne}</td>
-        <td class="${bikeTwoClass}">${row.bikeTwo}</td>
-      </tr>
-    `;
-  })
-  .join("");
-
-result.innerHTML = `
-  <p class="hero-bike-label">Hasil Perbandingan AI</p>
-  <h3>${bikeOne.name} vs ${bikeTwo.name}</h3>
-
-  <div class="compare-summary">
-    <p>${comparison.summary}</p>
-  </div>
-
-  <div class="compare-table-wrap">
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>Aspek</th>
-          <th>${bikeOne.name}</th>
-          <th>${bikeTwo.name}</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rowsHtml}
-      </tbody>
-    </table>
-  </div>
-
-  <div class="compare-final">
-    <strong>Rekomendasi akhir:</strong>
-    <p>${comparison.finalRecommendation}</p>
-  </div>
-
-  <div class="compare-result-actions">
-    <button type="button" class="btn-secondary" id="openCompareBikeOne">
-      Lihat ${bikeOne.name}
-    </button>
-
-    <button type="button" class="btn-secondary" id="openCompareBikeTwo">
-      Lihat ${bikeTwo.name}
-    </button>
-  </div>
-`;
-
-      const openBikeOneButton = document.getElementById("openCompareBikeOne");
-      const openBikeTwoButton = document.getElementById("openCompareBikeTwo");
-
-      if (openBikeOneButton) {
-        openBikeOneButton.addEventListener("click", () => {
-          openBikeModal(bikeOne.id);
-        });
+      if (!data.comparison) {
+        throw new Error("Comparison data missing");
       }
 
-      if (openBikeTwoButton) {
-        openBikeTwoButton.addEventListener("click", () => {
-          openBikeModal(bikeTwo.id);
-        });
-      }
+      renderComparisonResult(result, bikeOne, bikeTwo, data.comparison);
     } catch (error) {
       console.error(error);
 
@@ -371,6 +406,7 @@ result.innerHTML = `
     }
   });
 }
+
 whenBikesLoaded(() => {
   currentBrand = getInitialBrandFromUrl();
 
