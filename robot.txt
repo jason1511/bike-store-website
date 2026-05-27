@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bike-store-website.pages.dev/sitemap.xml
