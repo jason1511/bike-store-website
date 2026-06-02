@@ -1,3 +1,12 @@
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function formatPrice(price) {
   if (price === undefined || price === null || price === "") {
     return "Hubungi untuk harga";
@@ -5,7 +14,8 @@ function formatPrice(price) {
 
   return `Rp ${Number(price).toLocaleString("id-ID")}`;
 }
-const STORE_WHATSAPP_NUMBER = "6282122065168"; // replace with real number
+
+const STORE_WHATSAPP_NUMBER = "6282122065168";
 
 function getWhatsAppLink(bike) {
   const message = `Halo, saya tertarik dengan ${bike.name}. Apakah unit ini tersedia?`;
@@ -14,18 +24,33 @@ function getWhatsAppLink(bike) {
 
 function createBikeCard(bike) {
   const brandTheme = getBrandTheme(bike.brand);
+  const badges = getHighlights(bike).slice(0, 2);
 
   return `
-    <div class="bike-card ${brandTheme.className}" data-bike-id="${bike.id}" tabindex="0" role="button">
-      <img src="${bike.image}" alt="${bike.alt}">
+    <div class="bike-card ${brandTheme.className}" data-bike-id="${escapeHtml(bike.id)}" tabindex="0" role="button">
+      <img src="${escapeHtml(bike.image)}" alt="${escapeHtml(bike.alt)}" loading="lazy">
 
       <div class="bike-info">
-        <p class="bike-brand">${bike.brand}</p>
-        <h3>${bike.name}</h3>
+        <p class="bike-brand">${escapeHtml(bike.brand)}</p>
+        <h3>${escapeHtml(bike.name)}</h3>
 
         <p class="bike-spec">
-          Jarak tempuh ${bike.range || "-"}
+          Jarak tempuh ${escapeHtml(bike.range || "-")}
         </p>
+
+        <p class="bike-card-description">
+          ${escapeHtml(bike.description || "Sepeda listrik untuk kebutuhan mobilitas harian.")}
+        </p>
+
+        ${
+          badges.length
+            ? `
+              <div class="bike-card-badges">
+                ${badges.map((badge) => `<span>${escapeHtml(badge)}</span>`).join("")}
+              </div>
+            `
+            : ""
+        }
 
         <p class="bike-price">${formatPrice(bike.price)}</p>
 
@@ -49,6 +74,7 @@ function createBikeCard(bike) {
     </div>
   `;
 }
+
 function setupThemeToggle() {
   const themeToggle = document.getElementById("themeToggle");
 
@@ -57,7 +83,6 @@ function setupThemeToggle() {
   }
 
   const savedTheme = localStorage.getItem("siteTheme");
-
   const shouldUseDarkTheme = savedTheme === null || savedTheme === "dark";
 
   if (shouldUseDarkTheme) {

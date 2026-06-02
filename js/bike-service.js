@@ -23,12 +23,19 @@ function getMotorWatts(bike) {
   return match ? Number(match[1]) : 0;
 }
 
+function getNumericRange(bike) {
+  const match = String(bike.range || "").match(/\d+/);
+  return match ? Number(match[1] || match[0]) : 0;
+}
+
 function getHighlights(bike) {
   const highlights = [];
 
   const batteryAh = getBatteryAh(bike);
   const motorWatts = getMotorWatts(bike);
   const rangeKm = getNumberFromText(bike.range);
+  const safetyText = String(bike.safety || "").toLowerCase();
+  const comfortText = String(bike.comfort || "").toLowerCase();
 
   if (batteryAh >= 20) {
     highlights.push("🔋 Baterai Besar");
@@ -40,14 +47,35 @@ function getHighlights(bike) {
     highlights.push("⚡ Motor Bertenaga");
   }
 
-  if (rangeKm >= 42) {
+  if (rangeKm >= 50) {
+    highlights.push("🛣️ Jarak Lebih Jauh");
+  } else if (rangeKm >= 42) {
     highlights.push("🚀 Jarak Lebih Jauh");
+  }
+
+  if (
+    safetyText.includes("nfc") ||
+    safetyText.includes("alarm") ||
+    safetyText.includes("remote")
+  ) {
+    highlights.push("🔐 Fitur Keamanan");
+  }
+
+  if (comfortText === "high") {
+    highlights.push("🛋️ Nyaman Harian");
+  }
+
+  if (!highlights.length) {
+    highlights.push("🚲 Mobilitas Harian");
   }
 
   return highlights;
 }
+
 function getChargeTime(bike) {
-  if (!bike.battery) return "± 4–6 jam";
+  if (!bike.battery) {
+    return "± 4–6 jam";
+  }
 
   const battery = bike.battery.toLowerCase();
 
@@ -55,8 +83,9 @@ function getChargeTime(bike) {
   if (battery.includes("20ah")) return "± 6–8 jam";
   if (battery.includes("12ah")) return "± 4–5 jam";
 
-  return "± 4–6 jam"; // fallback
+  return "± 4–6 jam";
 }
+
 function getBikeById(id) {
   return bikes.find((bike) => bike.id === id) || null;
 }
@@ -70,18 +99,16 @@ function getAvailableBikes() {
 }
 
 function getUniqueCategories() {
-  return [...new Set(bikes.map((bike) => bike.category))];
+  return [...new Set(bikes.map((bike) => bike.category).filter(Boolean))];
 }
-function getNumericRange(bike) {
-  const match = String(bike.range || "").match(/\d+/);
-  return match ? Number(match[0]) : 0;
-}
+
 function getRecommendedUses(bike) {
   const uses = [];
 
   const batteryAh = getBatteryAh(bike);
   const motorWatts = getMotorWatts(bike);
   const rangeKm = getNumberFromText(bike.range);
+  const safetyText = String(bike.safety || "").toLowerCase();
 
   uses.push("Mobilitas harian");
 
@@ -97,12 +124,18 @@ function getRecommendedUses(bike) {
     uses.push("Kenyamanan berkendara");
   }
 
-  if (bike.safety) {
+  if (
+    safetyText.includes("nfc") ||
+    safetyText.includes("alarm") ||
+    safetyText.includes("remote") ||
+    safetyText.includes("kunci")
+  ) {
     uses.push("Pengguna yang butuh fitur keamanan tambahan");
   }
 
   return uses;
 }
+
 function getFilteredAndSortedBikes(options = {}) {
   const {
     brand = "all",
@@ -113,29 +146,52 @@ function getFilteredAndSortedBikes(options = {}) {
   let result = [...bikes];
 
   if (brand !== "all") {
-    result = result.filter(bike => bike.brand === brand);
+    result = result.filter((bike) => bike.brand === brand);
   }
 
   if (search.trim()) {
     const searchTerm = search.toLowerCase();
-    result = result.filter(bike =>
-      bike.name.toLowerCase().includes(searchTerm)
-    );
+
+    result = result.filter((bike) => {
+      const searchableText = [
+        bike.brand,
+        bike.name,
+        bike.description,
+        bike.motor,
+        bike.battery,
+        bike.safety
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(searchTerm);
+    });
   }
 
   switch (sort) {
-    case "price-low":
-      result.sort((a, b) => a.price - b.price);
+    case "range-high":
+      result.sort((a, b) => getNumericRange(b) - getNumericRange(a));
       break;
-    case "price-high":
-      result.sort((a, b) => b.price - a.price);
+
+    case "range-low":
+      result.sort((a, b) => getNumericRange(a) - getNumericRange(b));
       break;
+
+    case "motor-high":
+      result.sort((a, b) => getMotorWatts(b) - getMotorWatts(a));
+      break;
+
+    case "battery-high":
+      result.sort((a, b) => getBatteryAh(b) - getBatteryAh(a));
+      break;
+
     default:
       break;
   }
 
   return result;
 }
+
 function getBrandTheme(brand) {
   const themes = {
     Exotic: {
@@ -169,6 +225,7 @@ function getBrandTheme(brand) {
     logo: ""
   };
 }
+
 function getBrandLogo(brand) {
   const logos = {
     Exotic: "images/brands/exotic.jpeg",
@@ -176,7 +233,7 @@ function getBrandLogo(brand) {
     Nuv: "images/brands/nuv.jpeg",
     Saige: "images/brands/saige.jpeg",
     Uwinfly: "images/brands/uwinfly.jpeg",
-    Larizz: "images/brands/larizz.jpeg"
+    Larizz: "images/brands/laris.jpeg"
   };
 
   return logos[brand] || "";

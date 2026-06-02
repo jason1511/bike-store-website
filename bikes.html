@@ -1,41 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Katalog Sepeda Listrik Lumajang | CV Niaga Bersama Abadi</title>
-<meta
-  name="description"
-  content="Lihat katalog sepeda listrik di Lumajang berdasarkan brand. Tersedia pilihan Exotic, Pacific, Larizz, Saige, Uwinfly, dan Nuv untuk mobilitas harian."
->
-<link rel="canonical" href="https://niagabersama.com/bikes.html">
 
-<meta property="og:title" content="Katalog Sepeda Listrik Lumajang | CV Niaga Bersama Abadi">
-<meta property="og:description" content="Bandingkan dan lihat pilihan sepeda listrik dari berbagai brand di showroom Lumajang.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://niagabersama.com/bikes.html">
-<meta property="og:image" content="https://niagabersama.com/images/og/katalog-og.jpg">
+  <title>Katalog Sepeda Listrik Lumajang | CV Niaga Bersama Abadi</title>
+  <meta
+    name="description"
+    content="Lihat katalog sepeda listrik di Lumajang berdasarkan brand. Tersedia pilihan Exotic, Pacific, Larizz, Saige, Uwinfly, dan Nuv untuk mobilitas harian."
+  >
+  <link rel="canonical" href="https://niagabersama.com/bikes.html">
 
-<meta name="twitter:card" content="summary_large_image">
+  <meta property="og:title" content="Katalog Sepeda Listrik Lumajang | CV Niaga Bersama Abadi">
+  <meta property="og:description" content="Bandingkan dan lihat pilihan sepeda listrik dari berbagai brand di showroom Lumajang.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://niagabersama.com/bikes.html">
+  <meta property="og:image" content="https://niagabersama.com/images/og/katalog-og.jpg">
+
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="stylesheet" href="css/global.css" />
-<link rel="stylesheet" href="css/bikes.css" />
+  <link rel="stylesheet" href="css/bikes.css" />
 </head>
+
 <body>
   <header>
     <nav class="navbar">
       <a href="index.html" class="logo">
-  <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
-  <span>CV Niaga Bersama Abadi</span>
-</a>
+        <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
+        <span>CV Niaga Bersama Abadi</span>
+      </a>
 
       <ul class="nav-links">
-  <li><a href="index.html">Beranda</a></li>
-  <li><a href="bikes.html">Katalog</a></li>
-  <li><a href="contact.html">Kontak</a></li>
-</ul>
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="bikes.html">Katalog</a></li>
+        <li><a href="contact.html">Kontak</a></li>
+      </ul>
+
       <button class="theme-toggle" id="themeToggle" type="button">
-  Dark
-</button>
+        Dark
+      </button>
     </nav>
   </header>
 
@@ -44,144 +48,152 @@
       <div class="page-hero-content">
         <p class="section-tag">Katalog Showroom</p>
         <h1>Katalog Sepeda Listrik</h1>
-<p>
-  Lihat pilihan sepeda listrik berdasarkan brand. Untuk harga dan ketersediaan,
-  silakan hubungi toko melalui WhatsApp.
-</p>
+        <p>
+          Lihat pilihan sepeda listrik di Lumajang dari brand Exotic, Pacific,
+          Larizz, Saige, Uwinfly, dan Nuv. Untuk harga terbaru dan ketersediaan
+          unit, silakan hubungi showroom melalui WhatsApp.
+        </p>
       </div>
     </section>
-<section class="bike-compare-ai">
-  <div class="bike-compare-content">
-    <div class="compare-heading">
-      <p class="section-tag">Bandingkan Sepeda</p>
-      <h2>Bingung antara dua model?</h2>
-      <p>
-        Pilih dua sepeda listrik dari katalog, lalu sistem akan membantu
-        membandingkan kelebihan, kenyamanan, fitur keamanan, dan kecocokan penggunaannya.
-      </p>
-    </div>
 
-    <form class="compare-form" id="compareBikeForm">
-      <div class="form-group">
-        <label for="compareBikeOne">Sepeda pertama</label>
-        <select id="compareBikeOne" required>
-          <option value="">Pilih sepeda pertama</option>
-        </select>
+    <section class="bike-compare-ai">
+      <div class="bike-compare-content">
+        <div class="compare-heading">
+          <p class="section-tag">Bandingkan Sepeda</p>
+          <h2>Bingung antara dua model?</h2>
+          <p>
+            Pilih dua sepeda listrik dari katalog, lalu sistem akan membantu
+            membandingkan kelebihan, kenyamanan, fitur keamanan, dan kecocokan penggunaannya.
+          </p>
+        </div>
+
+        <form class="compare-form" id="compareBikeForm">
+          <div class="form-group">
+            <label for="compareBikeOne">Sepeda pertama</label>
+            <select id="compareBikeOne" required>
+              <option value="">Pilih sepeda pertama</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="compareBikeTwo">Sepeda kedua</label>
+            <select id="compareBikeTwo" required>
+              <option value="">Pilih sepeda kedua</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            Bandingkan
+          </button>
+        </form>
+
+        <div class="compare-result" id="compareBikeResult">
+          <h3>Hasil perbandingan akan muncul di sini</h3>
+          <p>
+            Cocok untuk pelanggan yang sudah punya dua pilihan, tetapi masih bingung
+            model mana yang lebih sesuai.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bike-listing">
+      <div class="bike-toolbar">
+        <div class="filter-panel">
+          <p class="filter-label">Pilih Brand</p>
+
+          <div class="bike-filters">
+            <button class="filter-btn active" data-brand="all">Semua</button>
+
+            <button class="filter-btn" data-brand="Exotic">
+              <img src="images/brands/exotic.jpeg" alt="Exotic logo">
+              Exotic
+            </button>
+
+            <button class="filter-btn" data-brand="Pacific">
+              <img src="images/brands/pacific.jpeg" alt="Pacific logo">
+              Pacific
+            </button>
+
+            <button class="filter-btn" data-brand="Larizz">
+              <img src="images/brands/laris.jpeg" alt="Larizz logo">
+              Larizz
+            </button>
+
+            <button class="filter-btn" data-brand="Saige">
+              <img src="images/brands/saige.jpeg" alt="Saige logo">
+              Saige
+            </button>
+
+            <button class="filter-btn" data-brand="Uwinfly">
+              <img src="images/brands/uwinfly.jpeg" alt="Uwinfly logo">
+              Uwinfly
+            </button>
+
+            <button class="filter-btn" data-brand="Nuv">
+              <img src="images/brands/nuv.jpeg" alt="Nuv logo">
+              Nuv
+            </button>
+          </div>
+        </div>
+
+        <div class="bike-toolbar-right">
+          <div class="bike-search">
+            <label for="searchInput">Cari</label>
+            <input type="text" id="searchInput" placeholder="Cari nama, brand, fitur, atau spesifikasi">
+          </div>
+
+          <div class="bike-sort">
+            <label for="sortSelect">Urutkan</label>
+            <select id="sortSelect">
+              <option value="default">Default</option>
+              <option value="range-high">Jarak: Tinggi ke Rendah</option>
+              <option value="range-low">Jarak: Rendah ke Tinggi</option>
+              <option value="motor-high">Motor: Paling Bertenaga</option>
+              <option value="battery-high">Baterai: Paling Besar</option>
+            </select>
+          </div>
+
+          <button type="button" class="clear-btn" id="clearFiltersBtn">Reset</button>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="compareBikeTwo">Sepeda kedua</label>
-        <select id="compareBikeTwo" required>
-          <option value="">Pilih sepeda kedua</option>
-        </select>
-      </div>
+      <p class="bike-status" id="bikeStatus">Menampilkan semua sepeda</p>
 
-      <button type="submit" class="btn-primary">
-        Bandingkan
-      </button>
-    </form>
-
-    <div class="compare-result" id="compareBikeResult">
-      <h3>Hasil perbandingan akan muncul di sini</h3>
-      <p>
-        Cocok untuk pelanggan yang sudah punya dua pilihan, tetapi masih bingung
-        model mana yang lebih sesuai.
-      </p>
-    </div>
-  </div>
-</section>
-<section class="bike-listing">
-<div class="bike-toolbar">
-  <div class="filter-panel">
-    <p class="filter-label">Pilih Brand</p>
-
-    <div class="bike-filters">
-      <button class="filter-btn active" data-brand="all">Semua</button>
-
-      <button class="filter-btn" data-brand="Exotic">
-        <img src="images/brands/exotic.jpeg" alt="Exotic logo">
-        Exotic
-      </button>
-
-      <button class="filter-btn" data-brand="Pacific">
-        <img src="images/brands/pacific.jpeg" alt="Pacific logo">
-        Pacific
-      </button>
-
-      <button class="filter-btn" data-brand="Larizz">
-        <img src="images/brands/laris.jpeg" alt="Larizz logo">
-        Larizz
-      </button>
-
-      <button class="filter-btn" data-brand="Saige">
-        <img src="images/brands/saige.jpeg" alt="Saige logo">
-        Saige
-      </button>
-
-      <button class="filter-btn" data-brand="Uwinfly">
-        <img src="images/brands/uwinfly.jpeg" alt="Uwinfly logo">
-        Uwinfly
-      </button>
-
-      <button class="filter-btn" data-brand="Nuv">
-        <img src="images/brands/nuv.jpeg" alt="Nuv logo">
-        Nuv
-      </button>
-    </div>
-  </div>
-
-  <div class="bike-toolbar-right">
-    <div class="bike-search">
-      <label for="searchInput">Cari</label>
-      <input type="text" id="searchInput" placeholder="Cari nama sepeda">
-    </div>
-
-    <div class="bike-sort">
-      <label for="sortSelect">Urutkan</label>
-      <select id="sortSelect">
-        <option value="default">Default</option>
-        <option value="price-low">Harga: Rendah ke Tinggi</option>
-        <option value="price-high">Harga: Tinggi ke Rendah</option>
-        <option value="range-high">Jarak: Tinggi ke Rendah</option>
-        <option value="range-low">Jarak: Rendah ke Tinggi</option>
-      </select>
-    </div>
-
-    <button type="button" class="clear-btn" id="clearFiltersBtn">Reset</button>
-  </div>
-</div>
-<p class="bike-status" id="bikeStatus">Menampilkan semua sepeda</p>
-  <div class="bike-grid" id="bikeGrid"></div>
-</section>
+      <div class="bike-grid" id="bikeGrid"></div>
+    </section>
   </main>
-<div class="bike-modal" id="bikeModal" aria-hidden="true">
-  <div class="bike-modal-overlay" id="bikeModalOverlay"></div>
 
-  <div class="bike-modal-content" role="dialog" aria-modal="true" aria-labelledby="bikeModalTitle">
-    <button type="button" class="bike-modal-close" id="bikeModalClose" aria-label="Close bike details">
-      &times;
-    </button>
+  <div class="bike-modal" id="bikeModal" aria-hidden="true">
+    <div class="bike-modal-overlay" id="bikeModalOverlay"></div>
 
-    <div class="bike-modal-body" id="bikeModalBody">
-      <!-- Bike details will be injected here -->
+    <div class="bike-modal-content" role="dialog" aria-modal="true" aria-labelledby="bikeModalTitle">
+      <button type="button" class="bike-modal-close" id="bikeModalClose" aria-label="Tutup detail sepeda">
+        &times;
+      </button>
+
+      <div class="bike-modal-body" id="bikeModalBody">
+        <!-- Bike details will be injected here -->
+      </div>
     </div>
   </div>
-</div>
+
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-brand">
         <div class="footer-logo">
-  <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
-  <span>CV Niaga Bersama Abadi</span>
-</div>
-<p>Showroom sepeda listrik untuk mobilitas harian dan kebutuhan transportasi praktis.</p>
+          <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
+          <span>CV Niaga Bersama Abadi</span>
+        </div>
+
+        <p>Showroom sepeda listrik untuk mobilitas harian dan kebutuhan transportasi praktis.</p>
       </div>
 
       <div class="footer-links">
-  <a href="index.html">Beranda</a>
-  <a href="bikes.html">Katalog</a>
-  <a href="contact.html">Kontak</a>
-</div>
+        <a href="index.html">Beranda</a>
+        <a href="bikes.html">Katalog</a>
+        <a href="contact.html">Kontak</a>
+      </div>
     </div>
 
     <div class="footer-bottom">
@@ -189,10 +201,10 @@
     </div>
   </footer>
 
-<script src="js/data.js"></script>
-<script src="js/bike-service.js"></script>
-<script src="js/global.js"></script>
-<script src="js/bike-modal.js"></script>
-<script src="js/bikes.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/bike-service.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/bike-modal.js"></script>
+  <script src="js/bikes.js"></script>
 </body>
 </html>
