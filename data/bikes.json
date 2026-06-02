@@ -198,6 +198,24 @@
     "stockQty": 2
   },
   {
+  "id": "saige-roma",
+  "brand": "Saige",
+  "name": "SAIGE ROMA",
+  "battery": "48V/ 20Ah",
+  "motor": "800 WATT MOTOR",
+  "topSpeed": "40-45 KM/H",
+  "range": "50-60 KM",
+  "maxWeight": "150 KG",
+  "safety": "NFC Card, Remote Alarm, Kunci Roda Manual, Rem Cakram Depan, Lampu LED, Sein Terintegrasi",
+  "image": "images/bikes/saige_roma.jpeg",
+  "alt": "Sepeda listrik Saige Roma di showroom Lumajang",
+  "comfort": "high",
+  "description": "Sepeda listrik bergaya moped dengan desain seperti skuter klasik untuk mobilitas harian di perkotaan. Dilengkapi motor 800W, baterai 48V/20Ah, pijakan kaki luas, dashboard digital, dan fitur keamanan NFC untuk pengalaman berkendara yang nyaman dan modern.",
+  "featured": true,
+  "inStock": true,
+  "stockQty": 1
+},
+  {
     "id": "larizz-f8",
     "brand": "Larizz",
     "name": "LARIZZ F8",

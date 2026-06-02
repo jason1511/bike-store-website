@@ -324,7 +324,55 @@ body.dark-theme .store-badge {
 body.dark-theme .store-email-link {
   color: #ffffff;
 }
+/* =========================
+   STORE HOURS
+========================= */
+.store-hours {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  color: #526363;
+}
 
+.store-hours strong {
+  display: block;
+  color: #203333;
+  margin-bottom: 10px;
+}
+
+.store-hours ul {
+  list-style: none;
+  display: grid;
+  gap: 7px;
+}
+
+.store-hours li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-left: 18px;
+  line-height: 1.5;
+}
+
+.store-hours li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background-color: var(--store-brand-main);
+}
+
+body.dark-theme .store-hours {
+  color: #e6f0ef;
+}
+
+body.dark-theme .store-hours strong {
+  color: #ffffff;
+}
 /* =========================
    RESPONSIVE
 ========================= */

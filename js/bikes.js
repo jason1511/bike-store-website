@@ -245,6 +245,37 @@ function getCompareCellClass(winner, side) {
   return "compare-lose";
 }
 
+function createCompareBikePreview(bike, label, buttonId) {
+  const brandClass = getBrandTheme(bike.brand).className;
+
+  return `
+    <button
+      type="button"
+      class="compare-bike-preview ${brandClass}"
+      id="${buttonId}"
+      aria-label="Lihat detail ${escapeHtml(bike.name)}"
+    >
+      <div class="compare-bike-preview-image">
+        <img src="${escapeHtml(bike.image)}" alt="${escapeHtml(bike.alt)}">
+      </div>
+
+      <div class="compare-bike-preview-info">
+        <p class="hero-bike-label">${escapeHtml(label)}</p>
+        <p class="hero-bike-brand">${escapeHtml(bike.brand)}</p>
+        <h4>${escapeHtml(bike.name)}</h4>
+
+        <div class="compare-bike-preview-specs">
+          <span>${escapeHtml(bike.range || "Jarak belum tersedia")}</span>
+          <span>${escapeHtml(bike.motor || "Motor belum tersedia")}</span>
+          <span>${escapeHtml(bike.safety || "Keamanan standar")}</span>
+        </div>
+
+        <p class="compare-click-hint">Klik untuk lihat detail</p>
+      </div>
+    </button>
+  `;
+}
+
 function renderComparisonResult(result, bikeOne, bikeTwo, comparison) {
   const rows = Array.isArray(comparison.rows) ? comparison.rows : [];
 
@@ -272,6 +303,14 @@ function renderComparisonResult(result, bikeOne, bikeTwo, comparison) {
     <p class="hero-bike-label">Hasil Perbandingan AI</p>
     <h3>${escapeHtml(bikeOne.name)} vs ${escapeHtml(bikeTwo.name)}</h3>
 
+    <div class="compare-preview-grid">
+  ${createCompareBikePreview(bikeOne, "Sepeda Pertama", "openCompareBikeOne")}
+
+  <div class="compare-vs-badge">VS</div>
+
+  ${createCompareBikePreview(bikeTwo, "Sepeda Kedua", "openCompareBikeTwo")}
+</div>
+
     <div class="compare-summary">
       <p>${escapeHtml(comparison.summary || "Ringkasan belum tersedia.")}</p>
     </div>
@@ -294,16 +333,6 @@ function renderComparisonResult(result, bikeOne, bikeTwo, comparison) {
     <div class="compare-final">
       <strong>Rekomendasi akhir:</strong>
       <p>${escapeHtml(comparison.finalRecommendation || "Rekomendasi akhir belum tersedia.")}</p>
-    </div>
-
-    <div class="compare-result-actions">
-      <button type="button" class="btn-secondary" id="openCompareBikeOne">
-        Lihat ${escapeHtml(bikeOne.name)}
-      </button>
-
-      <button type="button" class="btn-secondary" id="openCompareBikeTwo">
-        Lihat ${escapeHtml(bikeTwo.name)}
-      </button>
     </div>
   `;
 

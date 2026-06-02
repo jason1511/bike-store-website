@@ -147,10 +147,10 @@ body.dark-theme .hero::before {
 
 .hero-text h1 {
   position: relative;
+  color: #203333;
   font-size: 3.25rem;
   line-height: 1.12;
   margin-bottom: 24px;
-  color: #203333;
 }
 
 .hero-text h1::after {
@@ -164,10 +164,10 @@ body.dark-theme .hero::before {
 }
 
 .hero-text p {
-  font-size: 1.08rem;
-  color: #526363;
-  margin-bottom: 28px;
   max-width: 620px;
+  color: #526363;
+  font-size: 1.08rem;
+  margin-bottom: 28px;
 }
 
 .hero-points {
@@ -183,8 +183,8 @@ body.dark-theme .hero::before {
   padding: 7px 12px;
   border: 1px solid rgba(32, 51, 51, 0.14);
   border-radius: 999px;
-  color: #203333;
   background-color: rgba(255, 255, 255, 0.64);
+  color: #203333;
   font-size: 0.9rem;
   font-weight: 700;
   backdrop-filter: blur(8px);
@@ -192,8 +192,8 @@ body.dark-theme .hero::before {
 
 .hero-buttons {
   display: flex;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
 }
 
 .hero .btn-primary {
@@ -203,15 +203,17 @@ body.dark-theme .hero::before {
 
 .hero .btn-secondary {
   border-color: var(--hero-brand-main);
-  color: #203333;
   background-color: rgba(255, 255, 255, 0.45);
+  color: #203333;
 }
 
 .hero .btn-secondary:hover {
   background-color: var(--hero-brand-soft);
 }
 
-body.dark-theme .hero-tag {
+body.dark-theme .hero-tag,
+body.dark-theme .hero-display-label,
+body.dark-theme .hero-bike-label {
   color: #9fb8b6;
 }
 
@@ -224,9 +226,9 @@ body.dark-theme .hero-text p {
 }
 
 body.dark-theme .hero-points span {
-  color: #dce5e3;
   border-color: rgba(255, 255, 255, 0.18);
   background-color: var(--hero-brand-soft);
+  color: #dce5e3;
 }
 
 body.dark-theme .hero .btn-primary {
@@ -236,8 +238,8 @@ body.dark-theme .hero .btn-primary {
 
 body.dark-theme .hero .btn-secondary {
   border-color: var(--hero-brand-main);
-  color: #ffffff;
   background-color: transparent;
+  color: #ffffff;
 }
 
 body.dark-theme .hero .btn-secondary:hover {
@@ -270,16 +272,16 @@ body.dark-theme .hero .btn-secondary:hover {
   position: relative;
   width: 100%;
   min-height: 520px;
+  overflow: hidden;
+  border: 1px solid var(--hero-brand-main);
+  border-radius: 24px;
   background:
     radial-gradient(circle at top right, var(--hero-brand-soft), transparent 34%),
     linear-gradient(135deg, #ffffff 0%, #f4f7f6 100%);
-  border: 1px solid var(--hero-brand-main);
-  border-radius: 24px;
-  overflow: hidden;
-  cursor: pointer;
   box-shadow:
     0 28px 80px rgba(32, 51, 51, 0.14),
     0 0 42px var(--hero-brand-glow);
+  cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -293,8 +295,8 @@ body.dark-theme .hero .btn-secondary:hover {
 .hero-bike-card::before {
   content: "";
   display: block;
-  height: 7px;
   width: 100%;
+  height: 7px;
   background: linear-gradient(90deg, var(--hero-brand-main), var(--hero-brand-second));
 }
 
@@ -303,10 +305,10 @@ body.dark-theme .hero .btn-secondary:hover {
   position: absolute;
   top: 14px;
   right: 14px;
-  background: linear-gradient(135deg, var(--hero-brand-main), var(--hero-brand-second));
-  color: #ffffff;
   padding: 6px 10px;
   border-radius: 999px;
+  background: linear-gradient(135deg, var(--hero-brand-main), var(--hero-brand-second));
+  color: #ffffff;
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -356,10 +358,6 @@ body.dark-theme .hero .btn-secondary:hover {
   background: linear-gradient(135deg, #25d366, #128c7e);
 }
 
-body.dark-theme .hero-display-label {
-  color: #9fb8b6;
-}
-
 body.dark-theme .hero-bike-card {
   background:
     radial-gradient(circle at top right, var(--hero-brand-soft), transparent 34%),
@@ -373,10 +371,6 @@ body.dark-theme .hero-bike-info {
   background:
     radial-gradient(circle at top right, var(--hero-brand-soft), transparent 36%),
     linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
-}
-
-body.dark-theme .hero-bike-label {
-  color: #9fb8b6;
 }
 
 body.dark-theme .hero-bike-info h3 {
@@ -467,10 +461,10 @@ body.dark-theme .brand-card-nuv {
 ========================= */
 .brand-marquee {
   overflow: hidden;
-  background: linear-gradient(135deg, #f5f7f6 0%, #e8f0ef 100%);
+  padding: 18px 0;
   border-top: 1px solid rgba(32, 51, 51, 0.1);
   border-bottom: 1px solid rgba(32, 51, 51, 0.1);
-  padding: 18px 0;
+  background: linear-gradient(135deg, #f5f7f6 0%, #e8f0ef 100%);
 }
 
 .brand-marquee-track {
@@ -481,9 +475,9 @@ body.dark-theme .brand-card-nuv {
 
 .brand-marquee-group {
   display: flex;
+  flex-shrink: 0;
   gap: 18px;
   padding-right: 18px;
-  flex-shrink: 0;
 }
 
 .brand-marquee-item {
@@ -496,20 +490,20 @@ body.dark-theme .brand-card-nuv {
   gap: 12px;
   min-width: max-content;
   padding: 11px 20px;
+  border: 1px solid var(--brand-main);
   border-radius: 999px;
   background:
     radial-gradient(circle at top right, var(--brand-soft), transparent 40%),
     linear-gradient(135deg, #ffffff, #f4f7f6);
-  border: 1px solid var(--brand-main);
   color: #203333;
-  font-weight: 900;
   font-size: 1rem;
+  font-weight: 900;
   box-shadow: 0 10px 26px rgba(32, 51, 51, 0.08);
 }
 
 .brand-marquee-item img {
-  height: 34px;
   width: auto;
+  height: 34px;
   max-width: 110px;
   object-fit: contain;
   background-color: #ffffff;
@@ -574,22 +568,20 @@ body.dark-theme .brand-marquee-item {
   --brand-glow: rgba(159, 184, 182, 0.18);
 
   position: relative;
+  overflow: hidden;
   min-height: 150px;
-  background:
-    radial-gradient(circle at top right, var(--brand-soft), transparent 38%),
-    linear-gradient(135deg, #ffffff 0%, #f4f7f6 100%);
-  border: 1px solid rgba(32, 51, 51, 0.12);
-  border-top: 5px solid var(--brand-main);
-  border-radius: 22px;
   padding: 24px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 18px;
-
-  overflow: hidden;
+  border: 1px solid rgba(32, 51, 51, 0.12);
+  border-top: 5px solid var(--brand-main);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, var(--brand-soft), transparent 38%),
+    linear-gradient(135deg, #ffffff 0%, #f4f7f6 100%);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
@@ -622,9 +614,9 @@ body.dark-theme .brand-marquee-item {
 }
 
 .brand-logo-card img {
+  width: auto;
   height: 58px;
   max-width: 150px;
-  width: auto;
   object-fit: contain;
   background-color: #ffffff;
   border-radius: 12px;
@@ -634,8 +626,8 @@ body.dark-theme .brand-marquee-item {
 
 .brand-logo-card span {
   color: #203333;
-  font-weight: 900;
   font-size: 1.08rem;
+  font-weight: 900;
 }
 
 body.dark-theme .brand-strip {
@@ -653,10 +645,10 @@ body.dark-theme .brand-strip .section-heading p:last-child {
 }
 
 body.dark-theme .brand-logo-card {
+  border-color: rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(circle at top right, var(--brand-soft), transparent 38%),
     linear-gradient(135deg, #111818 0%, #172323 100%);
-  border-color: rgba(255, 255, 255, 0.12);
 }
 
 body.dark-theme .brand-logo-card span {
@@ -682,23 +674,43 @@ body.dark-theme .brand-logo-card span {
 }
 
 .ai-finder-card {
-  max-width: 1050px;
+  max-width: 1120px;
   margin: 0 auto;
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 0.78fr 1.22fr;
+  gap: 28px;
+  align-items: start;
+  border: 1px solid rgba(32, 51, 51, 0.12);
+  border-radius: 22px;
   background:
     radial-gradient(circle at top right, rgba(159, 184, 182, 0.14), transparent 30%),
     rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(32, 51, 51, 0.12);
-  border-radius: 22px;
-  padding: 32px;
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 28px;
   box-shadow: 0 24px 60px rgba(32, 51, 51, 0.1);
 }
 
 .ai-finder-form {
   display: grid;
+  align-content: start;
   gap: 18px;
+  padding: 24px;
+  border: 1px solid rgba(32, 51, 51, 0.12);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.1), transparent 34%),
+    rgba(255, 255, 255, 0.72);
+}
+
+.ai-form-intro h3 {
+  color: #203333;
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+.ai-form-intro p {
+  color: #526363;
+  font-size: 0.95rem;
+  line-height: 1.55;
 }
 
 .form-group {
@@ -714,11 +726,12 @@ body.dark-theme .brand-logo-card span {
 .form-group select,
 .form-group input {
   width: 100%;
-  background-color: #ffffff;
-  color: #203333;
+  min-height: 48px;
+  padding: 13px 14px;
   border: 1px solid rgba(32, 51, 51, 0.14);
   border-radius: 10px;
-  padding: 13px 14px;
+  background-color: #ffffff;
+  color: #203333;
   font: inherit;
   outline: none;
 }
@@ -728,14 +741,18 @@ body.dark-theme .brand-logo-card span {
   border-color: #203333;
 }
 
+.ai-finder-form .btn-primary {
+  min-height: 50px;
+}
+
 .ai-finder-result {
+  min-height: 260px;
+  padding: 28px;
+  border: 1px solid rgba(32, 51, 51, 0.12);
+  border-radius: 18px;
   background:
     radial-gradient(circle at top right, rgba(159, 184, 182, 0.1), transparent 30%),
     #ffffff;
-  border: 1px solid rgba(32, 51, 51, 0.12);
-  border-radius: 18px;
-  padding: 26px;
-  min-height: 210px;
 }
 
 .ai-finder-result h3 {
@@ -774,15 +791,27 @@ body.dark-theme .ai-finder .section-heading p {
 }
 
 body.dark-theme .ai-finder-card {
+  border-color: rgba(255, 255, 255, 0.1);
   background:
     radial-gradient(circle at top right, rgba(159, 184, 182, 0.1), transparent 30%),
     rgba(255, 255, 255, 0.045);
-  border-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
 }
 
+body.dark-theme .ai-finder-form {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.035);
+}
+
+body.dark-theme .ai-form-intro h3,
 body.dark-theme .form-group label {
   color: #ffffff;
+}
+
+body.dark-theme .ai-form-intro p {
+  color: #cbd8d6;
 }
 
 body.dark-theme .form-group select,
@@ -793,10 +822,10 @@ body.dark-theme .form-group input {
 }
 
 body.dark-theme .ai-finder-result {
+  border-color: rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 30%),
     #0f1919;
-  border-color: rgba(255, 255, 255, 0.12);
 }
 
 body.dark-theme .ai-finder-result h3 {
@@ -805,6 +834,157 @@ body.dark-theme .ai-finder-result h3 {
 
 body.dark-theme .ai-finder-result p {
   color: #cbd8d6;
+}
+
+/* =========================
+   AI RECOMMENDATION CARD
+========================= */
+.ai-recommend-card {
+  --brand-main: #203333;
+  --brand-second: #2f4f4f;
+  --brand-soft: rgba(159, 184, 182, 0.18);
+  --brand-glow: rgba(32, 51, 51, 0.12);
+
+  max-width: 620px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--brand-main);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, var(--brand-soft), transparent 34%),
+    linear-gradient(135deg, #ffffff 0%, #f4f7f6 100%);
+  box-shadow: 0 18px 42px var(--brand-glow);
+}
+
+.ai-recommend-card.brand-card-exotic {
+  --brand-main: #d71920;
+  --brand-second: #111111;
+  --brand-soft: rgba(215, 25, 32, 0.18);
+  --brand-glow: rgba(215, 25, 32, 0.16);
+}
+
+.ai-recommend-card.brand-card-pacific {
+  --brand-main: #ed1c24;
+  --brand-second: #111111;
+  --brand-soft: rgba(237, 28, 36, 0.18);
+  --brand-glow: rgba(237, 28, 36, 0.16);
+}
+
+.ai-recommend-card.brand-card-larizz {
+  --brand-main: #27245f;
+  --brand-second: #e31b23;
+  --brand-soft: rgba(39, 36, 95, 0.2);
+  --brand-glow: rgba(39, 36, 95, 0.16);
+}
+
+.ai-recommend-card.brand-card-saige {
+  --brand-main: #66bd45;
+  --brand-second: #2f6f2e;
+  --brand-soft: rgba(102, 189, 69, 0.18);
+  --brand-glow: rgba(102, 189, 69, 0.16);
+}
+
+.ai-recommend-card.brand-card-uwinfly {
+  --brand-main: #ed1c24;
+  --brand-second: #b91319;
+  --brand-soft: rgba(237, 28, 36, 0.18);
+  --brand-glow: rgba(237, 28, 36, 0.16);
+}
+
+.ai-recommend-card.brand-card-nuv {
+  --brand-main: #27bfc3;
+  --brand-second: #0f777b;
+  --brand-soft: rgba(39, 191, 195, 0.2);
+  --brand-glow: rgba(39, 191, 195, 0.16);
+}
+
+.ai-recommend-card::before {
+  content: "";
+  display: block;
+  height: 6px;
+  background: linear-gradient(90deg, var(--brand-main), var(--brand-second));
+}
+
+.ai-recommend-image {
+  background-color: #ffffff;
+}
+
+.ai-recommend-image img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  padding: 14px;
+}
+
+.ai-recommend-info {
+  padding: 20px;
+  background:
+    radial-gradient(circle at top right, var(--brand-soft), transparent 36%),
+    linear-gradient(135deg, rgba(255,255,255,0.86), rgba(255,255,255,0.7));
+}
+
+.ai-recommend-info .hero-bike-label,
+.ai-recommend-info .hero-bike-brand {
+  color: var(--brand-main);
+}
+
+.ai-recommend-info h3 {
+  color: #203333;
+  font-size: 1.45rem;
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.ai-recommend-reason {
+  max-width: 520px;
+  color: #526363;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.ai-recommend-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ai-recommend-specs span {
+  display: inline-flex;
+  padding: 6px 10px;
+  border: 1px solid rgba(32, 51, 51, 0.12);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.72);
+  color: #203333;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+body.dark-theme .ai-recommend-card {
+  background:
+    radial-gradient(circle at top right, var(--brand-soft), transparent 34%),
+    linear-gradient(135deg, #101818 0%, #172323 100%);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-theme .ai-recommend-info {
+  background:
+    radial-gradient(circle at top right, var(--brand-soft), transparent 36%),
+    linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+}
+
+body.dark-theme .ai-recommend-info h3 {
+  color: #ffffff;
+}
+
+body.dark-theme .ai-recommend-reason {
+  color: #dce5e3;
+}
+
+body.dark-theme .ai-recommend-specs span {
+  border-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 /* =========================
@@ -832,11 +1012,11 @@ body.dark-theme .ai-finder-result p {
 .feature-card {
   position: relative;
   overflow: hidden;
-  background-color: var(--color-surface);
+  min-height: 250px;
+  padding: 30px;
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: 30px;
-  min-height: 250px;
+  background-color: var(--color-surface);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
@@ -844,8 +1024,7 @@ body.dark-theme .ai-finder-result p {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at top right, rgba(37, 211, 102, 0.08), transparent 34%);
+  background: radial-gradient(circle at top right, rgba(37, 211, 102, 0.08), transparent 34%);
   opacity: 0;
   transition: opacity 0.25s ease;
 }
@@ -922,11 +1101,11 @@ body.dark-theme .feature-card p {
   position: relative;
   overflow: hidden;
   padding: 90px 60px;
+  text-align: center;
   background:
     radial-gradient(circle at top right, rgba(37, 211, 102, 0.12), transparent 32%),
     radial-gradient(circle at bottom left, rgba(159, 184, 182, 0.14), transparent 36%),
     linear-gradient(135deg, #f5f7f6 0%, #e8f0ef 100%);
-  text-align: center;
 }
 
 .showroom-cta::before {
@@ -979,8 +1158,8 @@ body.dark-theme .feature-card p {
   padding: 7px 12px;
   border: 1px solid rgba(32, 51, 51, 0.14);
   border-radius: 999px;
-  color: #203333;
   background-color: rgba(255, 255, 255, 0.55);
+  color: #203333;
   font-size: 0.9rem;
   font-weight: 700;
   backdrop-filter: blur(8px);
@@ -989,8 +1168,8 @@ body.dark-theme .feature-card p {
 .showroom-actions {
   display: flex;
   justify-content: center;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
 }
 
 .showroom-cta .btn-primary {
@@ -999,14 +1178,14 @@ body.dark-theme .feature-card p {
 }
 
 .showroom-cta .btn-primary:hover {
-  opacity: 1;
   transform: translateY(-2px);
+  opacity: 1;
 }
 
 .showroom-cta .btn-secondary {
   border-color: #203333;
-  color: #203333;
   background-color: rgba(255, 255, 255, 0.4);
+  color: #203333;
 }
 
 .showroom-cta .btn-secondary:hover {
@@ -1040,8 +1219,8 @@ body.dark-theme .showroom-cta p {
 
 body.dark-theme .showroom-cta-points span {
   border-color: rgba(159, 184, 182, 0.38);
-  color: #dce5e3;
   background-color: rgba(255, 255, 255, 0.045);
+  color: #dce5e3;
 }
 
 body.dark-theme .showroom-cta .btn-primary {
@@ -1052,8 +1231,8 @@ body.dark-theme .showroom-cta .btn-primary {
 
 body.dark-theme .showroom-cta .btn-secondary {
   border-color: #ffffff;
-  color: #ffffff;
   background-color: transparent;
+  color: #ffffff;
 }
 
 body.dark-theme .showroom-cta .btn-secondary:hover {
@@ -1076,10 +1255,10 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
 
   .hero {
     flex-direction: column;
-    text-align: center;
     min-height: auto;
     padding-top: 70px;
     padding-bottom: 70px;
+    text-align: center;
   }
 
   .hero-text {
@@ -1102,8 +1281,8 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
   }
 
   .hero-featured-wrap {
-    max-width: 560px;
     width: 100%;
+    max-width: 560px;
   }
 
   .hero-display-label {
@@ -1166,9 +1345,9 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
   }
 
   .hero-bike-card::after {
-    font-size: 0.7rem;
     top: 10px;
     right: 10px;
+    font-size: 0.7rem;
   }
 
   .hero-bike-info {
@@ -1226,13 +1405,14 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
   .ai-finder-card {
     display: flex;
     flex-direction: column;
+    gap: 22px;
     padding: 22px;
     border-radius: 18px;
-    gap: 22px;
   }
 
   .ai-finder-form {
     width: 100%;
+    padding: 20px;
   }
 
   .ai-finder-result {
@@ -1251,12 +1431,24 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
     line-height: 1.55;
   }
 
-  .form-group select,
-  .form-group input {
-    min-height: 48px;
+  .ai-finder-form .btn-primary {
+    width: 100%;
   }
 
-  .ai-finder-form .btn-primary {
+  .ai-recommend-card {
+    max-width: 100%;
+  }
+
+  .ai-recommend-image img {
+    height: 200px;
+  }
+
+  .ai-result-actions {
+    flex-direction: column;
+  }
+
+  .ai-result-actions .btn-primary,
+  .ai-result-actions .btn-secondary {
     width: 100%;
   }
 
@@ -1396,8 +1588,13 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
     padding: 18px;
   }
 
+  .ai-finder-form,
   .ai-finder-result {
     padding: 18px;
+  }
+
+  .ai-recommend-image img {
+    height: 180px;
   }
 
   .features {

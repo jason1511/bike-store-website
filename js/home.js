@@ -42,26 +42,46 @@ function setupBikeFinderForm() {
         throw new Error("Recommended bike not found");
       }
 
-      result.innerHTML = `
-        <p class="hero-bike-label">Rekomendasi AI</p>
-        <h3>${bike.name}</h3>
-        <p>${data.reason}</p>
+      const brandTheme = getBrandTheme(bike.brand);
 
-        <div class="ai-result-actions">
-          <button type="button" class="btn-secondary" id="openAiBikeModal">
-            Lihat Detail
-          </button>
+result.innerHTML = `
+  <div class="ai-recommend-card ${brandTheme.className}">
+    <div class="ai-recommend-image">
+      <img src="${bike.image}" alt="${bike.alt}">
+    </div>
 
-          <a 
-            href="${getWhatsAppLink(bike)}" 
-            class="btn-primary"
-            target="_blank"
-            rel="noopener"
-          >
-            Tanya WhatsApp
-          </a>
-        </div>
-      `;
+    <div class="ai-recommend-info">
+      <p class="hero-bike-label">Rekomendasi AI</p>
+      <p class="hero-bike-brand">${bike.brand}</p>
+      <h3>${bike.name}</h3>
+
+      <p class="ai-recommend-reason">
+        ${data.reason}
+      </p>
+
+      <div class="ai-recommend-specs">
+        <span>Jarak tempuh ${bike.range || "-"}</span>
+        <span>${bike.motor || "Motor belum tersedia"}</span>
+        <span>${bike.safety || "Fitur keamanan standar"}</span>
+      </div>
+
+      <div class="ai-result-actions">
+        <button type="button" class="btn-secondary" id="openAiBikeModal">
+          Lihat Detail
+        </button>
+
+        <a 
+          href="${getWhatsAppLink(bike)}" 
+          class="btn-primary"
+          target="_blank"
+          rel="noopener"
+        >
+          Tanya WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+`;
 
       const openButton = document.getElementById("openAiBikeModal");
 
