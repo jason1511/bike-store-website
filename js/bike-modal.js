@@ -1,3 +1,30 @@
+function switchBikeModalColor(button) {
+  const modalLayout = button.closest(".bike-modal-layout");
+
+  if (!modalLayout) {
+    return;
+  }
+
+  const modalImage = modalLayout.querySelector(".bike-modal-main-image");
+  const colorLabel = modalLayout.querySelector(".bike-modal-color");
+  const newImage = button.dataset.bikeColorImage;
+  const newColorName = button.dataset.bikeColorName;
+
+  if (modalImage && newImage) {
+    modalImage.src = newImage;
+  }
+
+  if (colorLabel && newColorName) {
+    colorLabel.textContent = `Warna: ${newColorName}`;
+  }
+
+  modalLayout.querySelectorAll(".bike-color-dot").forEach((dot) => {
+    dot.classList.remove("is-active");
+  });
+
+  button.classList.add("is-active");
+}
+
 function openBikeModal(bikeId) {
   const bikeModal = document.getElementById("bikeModal");
   const bikeModalBody = document.getElementById("bikeModalBody");
@@ -7,78 +34,145 @@ function openBikeModal(bikeId) {
     return;
   }
 
+  const brandTheme = getBrandTheme(bike.brand);
   const highlights = getHighlights(bike);
   const recommendedUses = getRecommendedUses(bike);
-  const brandTheme = getBrandTheme(bike.brand);
+  const colorVariants = getBikeColors(bike);
+
+  const defaultColor = colorVariants[0] || null;
+  const imageSrc = defaultColor?.image || bike.image || "images/logo.jpeg";
+  const colorName = defaultColor?.name || bike.colorName || "";
+  const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
 
   bikeModalBody.innerHTML = `
     <div class="bike-modal-layout bike-brand-theme ${brandTheme.className}">
       <div class="bike-modal-image">
-        <img src="${bike.image}" alt="${bike.alt}">
+        <img
+          src="${escapeHtml(imageSrc)}"
+          alt="${escapeHtml(imageAlt)}"
+          class="bike-modal-main-image"
+        >
       </div>
 
       <div class="bike-modal-details">
         <div class="bike-modal-brand-row">
-          ${brandTheme.logo ? `
-            <img 
-              src="${brandTheme.logo}" 
-              alt="${bike.brand} logo"
-              class="bike-modal-brand-logo"
-            >
-          ` : ""}
+          ${
+            brandTheme.logo
+              ? `
+                <img
+                  src="${escapeHtml(brandTheme.logo)}"
+                  alt="${escapeHtml(bike.brand)} logo"
+                  class="bike-modal-brand-logo"
+                >
+              `
+              : ""
+          }
 
-          <p class="bike-modal-brand">${bike.brand}</p>
+          <p class="bike-modal-brand">${escapeHtml(bike.brand)}</p>
         </div>
 
-        <h2 id="bikeModalTitle">${bike.name}</h2>
+        <h2 id="bikeModalTitle">${escapeHtml(bike.name)}</h2>
 
-        <p class="bike-modal-description">${bike.description}</p>
+        ${
+          colorName
+            ? `
+              <p class="bike-modal-color">
+                Warna: ${escapeHtml(colorName)}
+              </p>
+            `
+            : ""
+        }
 
-        ${highlights.length ? `
-          <div class="bike-highlights">
-            ${highlights.map(h => `<span class="highlight-badge">${h}</span>`).join("")}
-          </div>
-        ` : ""}
+        ${
+          colorVariants.length
+            ? `
+              <div class="bike-color-options bike-modal-color-options" aria-label="Pilihan warna ${escapeHtml(bike.name)}">
+                ${colorVariants
+                  .map((color, index) => `
+                    <button
+                      type="button"
+                      class="bike-color-dot ${index === 0 ? "is-active" : ""}"
+                      style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")};"
+                      data-bike-color-image="${escapeHtml(color.image || bike.image || "")}"
+                      data-bike-color-name="${escapeHtml(color.name || "")}"
+                      onclick="event.stopPropagation(); switchBikeModalColor(this);"
+                      aria-label="Warna ${escapeHtml(color.name || "unit")}"
+                      title="${escapeHtml(color.name || "Warna")}"
+                    ></button>
+                  `)
+                  .join("")}
+              </div>
+            `
+            : ""
+        }
 
-        ${recommendedUses.length ? `
-          <div class="bike-recommended">
-            <h3>Cocok untuk:</h3>
-            <div class="recommended-tags">
-              ${recommendedUses.map(use => `<span>${use}</span>`).join("")}
-            </div>
-          </div>
-        ` : ""}
+        <p class="bike-modal-description">
+          ${escapeHtml(bike.description || "Sepeda listrik untuk kebutuhan mobilitas harian.")}
+        </p>
+
+        ${
+          highlights.length
+            ? `
+              <div class="bike-highlights">
+                ${highlights
+                  .map((highlight) => `<span class="highlight-badge">${escapeHtml(highlight)}</span>`)
+                  .join("")}
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          recommendedUses.length
+            ? `
+              <div class="bike-recommended">
+                <h3>Cocok untuk:</h3>
+
+                <div class="recommended-tags">
+                  ${recommendedUses
+                    .map((use) => `<span>${escapeHtml(use)}</span>`)
+                    .join("")}
+                </div>
+              </div>
+            `
+            : ""
+        }
 
         <div class="bike-modal-specs">
           <div class="bike-modal-spec">
-            <strong>Jarak Tempuh:</strong> ${bike.range || "-"}
+            <strong>Jarak Tempuh:</strong> ${escapeHtml(bike.range || "-")}
           </div>
 
           <div class="bike-modal-spec">
-            <strong>Motor:</strong> ${bike.motor || "-"}
+            <strong>Motor:</strong> ${escapeHtml(bike.motor || "-")}
           </div>
 
           <div class="bike-modal-spec">
-            <strong>Waktu Pengisian:</strong> ${getChargeTime(bike)}
+            <strong>Waktu Pengisian:</strong> ${escapeHtml(getChargeTime(bike))}
           </div>
 
           <div class="bike-modal-spec">
-            <strong>Kecepatan Maks:</strong> ${bike.topSpeed || "± 40 KM/H"}
+            <strong>Kecepatan Maks:</strong> ${escapeHtml(bike.topSpeed || "± 40 KM/H")}
           </div>
 
           <div class="bike-modal-spec">
-            <strong>Kapasitas Beban:</strong> ${bike.maxWeight || "± 150 KG"}
+            <strong>Kapasitas Beban:</strong> ${escapeHtml(bike.maxWeight || "± 150 KG")}
           </div>
         </div>
 
         <p class="bike-modal-price">${formatPrice(bike.price)}</p>
 
         <div class="bike-modal-actions">
-          <a href="${getWhatsAppLink(bike)}" target="_blank" rel="noopener" class="btn-primary">
+          <a
+            href="${getWhatsAppLink(bike)}"
+            target="_blank"
+            rel="noopener"
+            class="btn-primary"
+          >
             <span class="wa-btn-content">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
-                alt="WhatsApp" 
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+                alt="WhatsApp"
                 class="wa-icon"
               >
               <span>Tanya WhatsApp</span>
@@ -128,3 +222,5 @@ function setupBikeModalControls() {
     }
   });
 }
+
+setupBikeModalControls();

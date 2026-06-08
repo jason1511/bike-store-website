@@ -191,7 +191,30 @@ function getFilteredAndSortedBikes(options = {}) {
 
   return result;
 }
+function getBikeThemeStyle(bike) {
+  const brandThemeColors = {
+    Exotic: ["#d71920", "#111111"],
+    Pacific: ["#ed1c24", "#111111"],
+    Larizz: ["#27245f", "#e31b23"],
+    Saige: ["#66bd45", "#2f6f2e"],
+    Uwinfly: ["#ed1c24", "#b91319"],
+    Nuv: ["#27bfc3", "#0f777b"]
+  };
 
+  const fallbackColors = brandThemeColors[bike.brand] || ["#203333", "#2f4f4f"];
+
+  const mainColor = bike.themeColor || fallbackColors[0];
+  const secondColor = bike.themeColorSecond || fallbackColors[1];
+
+  return `
+    --card-brand-main: ${mainColor};
+    --card-brand-second: ${secondColor};
+    --bike-theme-main: ${mainColor};
+    --bike-theme-second: ${secondColor};
+    --bike-theme-soft: ${mainColor}24;
+    --bike-theme-glow: ${mainColor}33;
+  `;
+}
 function getBrandTheme(brand) {
   const themes = {
     Exotic: {

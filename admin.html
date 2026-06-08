@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Admin Showroom | CV Niaga Bersama Abadi</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+
+<body class="admin-body">
+  <main class="admin-page">
+    <section class="admin-login" id="adminLoginPanel">
+      <div class="admin-login-card">
+        <p class="admin-eyebrow">Admin Showroom</p>
+        <h1>Masuk Admin</h1>
+        <p>
+          Halaman ini digunakan untuk mengelola data katalog sepeda listrik.
+          Masukkan token admin untuk melanjutkan.
+        </p>
+
+        <form class="admin-login-form" id="adminLoginForm">
+          <div class="admin-form-group">
+            <label for="adminTokenInput">Admin Token</label>
+            <input
+              type="password"
+              id="adminTokenInput"
+              placeholder="Masukkan token admin"
+              autocomplete="current-password"
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn-primary">
+            Masuk
+          </button>
+        </form>
+
+        <p class="admin-message" id="adminLoginMessage"></p>
+      </div>
+    </section>
+
+    <section class="admin-dashboard is-hidden" id="adminDashboard">
+      <div class="admin-dashboard-header">
+        <div>
+          <p class="admin-eyebrow">Dashboard</p>
+          <h1>Admin Katalog Sepeda</h1>
+          <p>
+            Pilih sepeda dari daftar untuk mengedit data, stok, gambar utama,
+            dan pilihan warna unit.
+          </p>
+        </div>
+
+        <button type="button" class="btn-secondary" id="adminLogoutBtn">
+          Keluar
+        </button>
+      </div>
+
+      <div class="admin-dashboard-grid">
+        <article class="admin-panel admin-list-panel">
+          <div class="admin-panel-header">
+            <div>
+              <h2>Data Sepeda</h2>
+              <p>Daftar sepeda dari katalog saat ini.</p>
+            </div>
+
+            <div class="admin-panel-actions">
+              <button type="button" class="btn-secondary" id="addBikeBtn">
+                Tambah Sepeda
+              </button>
+
+              <button type="button" class="btn-secondary" id="refreshBikesBtn">
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-bike-list" id="adminBikeList">
+            <div class="admin-empty-state">
+              Data sepeda belum dimuat.
+            </div>
+          </div>
+        </article>
+
+        <article class="admin-panel admin-editor-panel is-hidden" id="adminBikeEditorPanel">
+          <div class="admin-panel-header">
+            <div>
+              <h2 id="adminBikeEditorTitle">Tambah Sepeda</h2>
+              <p>
+                Edit data sepeda, stok, gambar utama, dan pilihan warna. Jika
+                unit tersedia, perubahan akan tampil di katalog publik.
+              </p>
+            </div>
+
+            <button type="button" class="btn-secondary" id="closeBikeEditorBtn">
+              Tutup
+            </button>
+          </div>
+
+          <form class="admin-bike-form" id="adminBikeForm">
+            <input type="hidden" id="bikeIdInput">
+
+            <div class="admin-form-grid">
+              <div class="admin-form-group">
+                <label for="bikeBrandInput">Brand</label>
+                <input
+                  type="text"
+                  id="bikeBrandInput"
+                  placeholder="Contoh: Saige"
+                  required
+                >
+              </div>
+
+              <div class="admin-form-group">
+                <label for="bikeNameInput">Nama Model</label>
+                <input
+                  type="text"
+                  id="bikeNameInput"
+                  placeholder="Contoh: SAIGE ROMA"
+                  required
+                >
+              </div>
+
+              <div class="admin-form-group">
+                <label for="bikeBatteryInput">Baterai</label>
+                <input
+                  type="text"
+                  id="bikeBatteryInput"
+                  placeholder="Contoh: 48V/ 20Ah"
+                >
+              </div>
+
+              <div class="admin-form-group">
+                <label for="bikeMotorInput">Motor</label>
+                <input
+                  type="text"
+                  id="bikeMotorInput"
+                  placeholder="Contoh: 800 WATT MOTOR"
+                >
+              </div>
+
+              <div class="admin-form-group">
+                <label for="bikeTopSpeedInput">Kecepatan Maks</label>
+                <input
+                  type="text"
+                  id="bikeTopSpeedInput"
+                  placeholder="Contoh: 40-45 KM/H"
+                >
+              </div>
+
+              <div class="admin-form-group">
+                <label for="bikeRangeInput">Jarak Tempuh</label>
+                <input
+                  type="text"
+                  id="bikeRangeInput"
+                  placeholder="Contoh: 50-60 KM"
+                >
+              </div>
+
+              <div class="admin-form-group">
+                <label for="bikeMaxWeightInput">Beban Maks</label>
+                <input
+                  type="text"
+                  id="bikeMaxWeightInput"
+                  placeholder="Contoh: 150 KG"
+                >
+              </div>
+
+              <div class="admin-form-group">
+                <label for="bikeComfortInput">Comfort</label>
+                <select id="bikeComfortInput">
+                  <option value="medium">medium</option>
+                  <option value="high">high</option>
+                </select>
+              </div>
+
+              <div class="admin-form-group admin-form-wide">
+                <label for="bikeSafetyInput">Fitur Keamanan</label>
+                <input
+                  type="text"
+                  id="bikeSafetyInput"
+                  placeholder="Contoh: NFC Card, Remote Alarm, Kunci Roda"
+                >
+              </div>
+
+              <div class="admin-form-group admin-form-wide">
+                <label for="bikeImageInput">Gambar Utama</label>
+                <input
+                  type="text"
+                  id="bikeImageInput"
+                  placeholder="Contoh: images/bikes/saige_roma.jpeg"
+                >
+              </div>
+
+              <div class="admin-form-group admin-form-wide">
+                <label for="bikeColorNameInput">Warna Default</label>
+                <input
+                  type="text"
+                  id="bikeColorNameInput"
+                  placeholder="Contoh: Merah, Hijau, Hitam Doff"
+                >
+              </div>
+
+              <section class="admin-color-variants admin-form-wide">
+                <div class="admin-subsection-header">
+                  <div>
+                    <h3>Pilihan Warna Unit</h3>
+                    <p>
+                      Tambahkan variasi warna yang bisa diklik di kartu katalog
+                      dan modal detail. Gambar bisa memakai path lokal sekarang,
+                      lalu nanti diganti dengan hasil upload R2.
+                    </p>
+                  </div>
+
+                  <button type="button" class="btn-secondary" id="addColorVariantBtn">
+                    Tambah Warna
+                  </button>
+                </div>
+
+                <div class="admin-color-variant-list" id="colorVariantList">
+                  <div class="admin-empty-state">
+                    Belum ada pilihan warna. Klik Tambah Warna untuk mulai.
+                  </div>
+                </div>
+              </section>
+
+              <div class="admin-form-group admin-form-wide">
+                <label for="bikeDescriptionInput">Deskripsi</label>
+                <textarea
+                  id="bikeDescriptionInput"
+                  rows="4"
+                  placeholder="Deskripsi singkat untuk kartu dan modal produk"
+                ></textarea>
+              </div>
+
+              <div class="admin-checkbox-row">
+                <label>
+                  <input type="checkbox" id="bikeFeaturedInput">
+                  Featured
+                </label>
+
+                <label>
+                  <input type="checkbox" id="bikeInStockInput" checked>
+                  Tersedia
+                </label>
+
+                <div class="admin-form-group admin-stock-input">
+                  <label for="bikeStockQtyInput">Jumlah Stok</label>
+                  <input type="number" id="bikeStockQtyInput" min="0" value="1">
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-form-actions">
+              <button type="submit" class="btn-primary" id="saveBikeBtn">
+                Simpan ke Database
+              </button>
+
+              <p class="admin-form-note" id="adminFormNote">
+                Perubahan akan langsung tersimpan ke database D1 dan tampil di
+                katalog publik jika unit tersedia.
+              </p>
+            </div>
+          </form>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

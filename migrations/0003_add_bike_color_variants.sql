@@ -1,0 +1,1 @@
+ALTER TABLE bikes ADD COLUMN colors TEXT DEFAULT '[]';

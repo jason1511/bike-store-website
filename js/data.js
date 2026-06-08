@@ -3,6 +3,26 @@ let bikesLoaded = false;
 
 async function loadBikes() {
   try {
+    const response = await fetch("/api/bikes");
+
+    if (!response.ok) {
+      throw new Error("Failed to load bikes from API");
+    }
+
+    const data = await response.json();
+
+    bikes = Array.isArray(data.bikes) ? data.bikes : [];
+    bikesLoaded = true;
+
+    document.dispatchEvent(new Event("bikesLoaded"));
+  } catch (error) {
+    console.error("Error loading bikes from API:", error);
+    await loadBikesFromFallback();
+  }
+}
+
+async function loadBikesFromFallback() {
+  try {
     const response = await fetch("data/bikes.json");
 
     if (!response.ok) {
@@ -14,7 +34,7 @@ async function loadBikes() {
 
     document.dispatchEvent(new Event("bikesLoaded"));
   } catch (error) {
-    console.error("Error loading bikes:", error);
+    console.error("Error loading fallback bikes:", error);
   }
 }
 

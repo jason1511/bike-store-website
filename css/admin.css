@@ -1,0 +1,613 @@
+/* =========================
+   ADMIN PAGE
+========================= */
+.admin-body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(37, 211, 102, 0.12), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(159, 184, 182, 0.16), transparent 36%),
+    linear-gradient(135deg, #101818 0%, #203030 100%);
+  color: #ffffff;
+}
+
+.admin-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: grid;
+  place-items: center;
+}
+
+.admin-login,
+.admin-dashboard {
+  width: 100%;
+  max-width: 1180px;
+}
+
+.admin-login-card,
+.admin-dashboard,
+.admin-panel {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.1), transparent 34%),
+    rgba(255, 255, 255, 0.045);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+}
+
+/* =========================
+   LOGIN
+========================= */
+.admin-login-card {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 34px;
+  border-radius: 24px;
+}
+
+.admin-eyebrow {
+  color: #9fb8b6;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.admin-login-card h1,
+.admin-dashboard-header h1 {
+  color: #ffffff;
+  line-height: 1.15;
+}
+
+.admin-login-card h1 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.admin-login-card p,
+.admin-dashboard-header p,
+.admin-panel p,
+.admin-panel li {
+  color: #dce5e3;
+}
+
+.admin-login-card > p {
+  margin-bottom: 24px;
+}
+
+.admin-login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-message {
+  min-height: 24px;
+  margin-top: 14px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.admin-message.is-error {
+  color: #ff8f8f;
+}
+
+.admin-message.is-success {
+  color: #25d366;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+.admin-dashboard {
+  padding: 34px;
+  border-radius: 24px;
+}
+
+.admin-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  padding: 26px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(37, 211, 102, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.admin-dashboard-header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+}
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.admin-panel {
+  padding: 24px;
+  border-radius: 18px;
+}
+
+.admin-list-panel,
+.admin-editor-panel {
+  min-width: 0;
+}
+
+.admin-list-panel {
+  overflow: hidden;
+}
+
+.admin-editor-panel {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 22px;
+}
+
+.admin-panel h2 {
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.admin-panel ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 18px;
+}
+
+.admin-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.admin-panel-header h2 {
+  margin-bottom: 6px;
+}
+
+.admin-editor-panel .admin-panel-header {
+  gap: 14px;
+}
+
+.admin-editor-panel .admin-panel-header h2 {
+  font-size: 1.35rem;
+}
+
+.admin-panel-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   BIKE LIST
+========================= */
+.admin-bike-list {
+  display: grid;
+  gap: 12px;
+  max-height: 720px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.admin-bike-list-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.admin-bike-list-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.admin-bike-brand {
+  color: #9fb8b6;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.admin-bike-list-card h3 {
+  color: #ffffff;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.admin-bike-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.admin-bike-meta span {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: rgba(15, 25, 25, 0.75);
+  color: #dce5e3;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.admin-bike-meta strong {
+  color: #9fb8b6;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.admin-empty-state {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  color: #dce5e3;
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
+.admin-empty-state.is-error {
+  color: #ff8f8f;
+  border-color: rgba(255, 143, 143, 0.28);
+}
+
+/* =========================
+   FORM ELEMENTS
+========================= */
+.admin-form-group {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-form-group label {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.admin-form-group input,
+.admin-form-group textarea,
+.admin-form-group select {
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background-color: #0f1919;
+  color: #ffffff;
+  font: inherit;
+  outline: none;
+}
+
+.admin-form-group textarea {
+  resize: vertical;
+}
+
+.admin-form-group input:focus,
+.admin-form-group textarea:focus,
+.admin-form-group select:focus {
+  border-color: #9fb8b6;
+}
+
+.admin-form-group input[type="color"] {
+  height: 48px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.admin-bike-form {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.admin-form-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-checkbox-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: end;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.admin-checkbox-row label {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.admin-checkbox-row input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.admin-stock-input {
+  min-width: 140px;
+}
+
+.admin-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-form-actions .btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.admin-form-note {
+  color: #b8c4c2;
+  font-size: 0.92rem;
+}
+
+.admin-form-note.is-error {
+  color: #ff8f8f;
+  font-weight: 800;
+}
+
+.admin-form-note.is-success {
+  color: #25d366;
+  font-weight: 800;
+}
+
+/* =========================
+   COLOR VARIANT EDITOR
+========================= */
+.admin-color-variants {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(159, 184, 182, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.admin-subsection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.admin-subsection-header h3 {
+  color: #ffffff;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.admin-subsection-header p {
+  color: #b8c4c2;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.admin-color-variant-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-color-variant-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(15, 25, 25, 0.58);
+}
+
+.admin-color-variant-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-color-variant-title {
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.admin-color-variant-fields {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 10px;
+}
+
+.admin-color-variant-image {
+  grid-column: 1 / -1;
+}
+
+.admin-remove-variant-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 143, 143, 0.32);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #ffb3b3;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-remove-variant-btn:hover {
+  border-color: #ff8f8f;
+  background-color: rgba(255, 143, 143, 0.12);
+}
+
+/* =========================
+   BADGES + ACTIONS
+========================= */
+.admin-stock-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.admin-stock-pill.is-in {
+  background-color: rgba(37, 211, 102, 0.14);
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.28);
+}
+
+.admin-stock-pill.is-out {
+  background-color: rgba(255, 143, 143, 0.14);
+  color: #ff8f8f;
+  border: 1px solid rgba(255, 143, 143, 0.28);
+}
+
+.admin-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(159, 184, 182, 0.3);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-action-btn:hover {
+  border-color: #9fb8b6;
+  background-color: rgba(159, 184, 182, 0.12);
+}
+
+.admin-action-btn:disabled,
+.admin-remove-variant-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-danger-btn {
+  border-color: rgba(255, 143, 143, 0.32);
+  color: #ffb3b3;
+}
+
+.admin-danger-btn:hover {
+  border-color: #ff8f8f;
+  background-color: rgba(255, 143, 143, 0.12);
+}
+
+.admin-success-btn {
+  border-color: rgba(37, 211, 102, 0.32);
+  color: #8fffc0;
+}
+
+.admin-success-btn:hover {
+  border-color: #25d366;
+  background-color: rgba(37, 211, 102, 0.12);
+}
+
+/* =========================
+   UTILS
+========================= */
+.is-hidden {
+  display: none !important;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 992px) {
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-editor-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .admin-bike-list {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-page {
+    padding: 24px 14px;
+  }
+
+  .admin-login-card,
+  .admin-dashboard {
+    padding: 24px;
+    border-radius: 20px;
+  }
+
+  .admin-dashboard-header,
+  .admin-panel-header,
+  .admin-subsection-header {
+    flex-direction: column;
+  }
+
+  .admin-dashboard-header .btn-secondary,
+  .admin-panel-header .btn-secondary,
+  .admin-subsection-header .btn-secondary {
+    width: 100%;
+  }
+
+  .admin-panel-actions {
+    width: 100%;
+  }
+
+  .admin-panel-actions .btn-secondary {
+    flex: 1;
+  }
+
+  .admin-bike-meta,
+  .admin-color-variant-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-checkbox-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

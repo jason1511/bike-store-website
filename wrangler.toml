@@ -1,0 +1,11 @@
+name = "bike-store-website"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "BIKE_DB"
+database_name = "bike-store-db"
+database_id = "a8d10cfd-b6a4-44b8-be6e-11760666dbb2"
+
+[[r2_buckets]]
+binding = "BIKE_IMAGES"
+bucket_name = "bike-store-images"
