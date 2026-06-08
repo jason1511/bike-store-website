@@ -187,13 +187,30 @@
               </div>
 
               <div class="admin-form-group admin-form-wide">
-                <label for="bikeImageInput">Gambar Utama</label>
-                <input
-                  type="text"
-                  id="bikeImageInput"
-                  placeholder="Contoh: images/bikes/saige_roma.jpeg"
-                >
-              </div>
+  <label for="bikeImageInput">Gambar Utama</label>
+  <input
+    type="text"
+    id="bikeImageInput"
+    placeholder="Contoh: images/bikes/saige_roma.jpeg"
+  >
+
+  <div class="admin-image-preview" id="mainImagePreview">
+    <span>Preview gambar utama akan muncul di sini.</span>
+  </div>
+</div>
+
+              <div class="admin-form-group admin-form-wide">
+  <label for="bikeMainImageUploadInput">Upload Gambar Utama</label>
+  <input
+    type="file"
+    id="bikeMainImageUploadInput"
+    accept="image/jpeg,image/png,image/webp"
+  >
+
+  <p class="admin-form-note" id="mainImageUploadNote">
+    Pilih gambar baru jika ingin mengganti Gambar Utama. File akan diupload saat tombol Simpan ditekan.
+  </p>
+</div>
 
               <div class="admin-form-group admin-form-wide">
                 <label for="bikeColorNameInput">Warna Default</label>
@@ -210,8 +227,8 @@
                     <h3>Pilihan Warna Unit</h3>
                     <p>
                       Tambahkan variasi warna yang bisa diklik di kartu katalog
-                      dan modal detail. Gambar bisa memakai path lokal sekarang,
-                      lalu nanti diganti dengan hasil upload R2.
+                      dan modal detail. Gambar warna bisa diupload ke R2 atau
+                      diisi manual dengan path gambar.
                     </p>
                   </div>
 

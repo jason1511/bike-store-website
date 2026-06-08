@@ -542,7 +542,72 @@
   border-color: #25d366;
   background-color: rgba(37, 211, 102, 0.12);
 }
+/* =========================
+   ADMIN IMAGE PREVIEW
+========================= */
+.admin-image-preview {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  background-color: rgba(15, 25, 25, 0.62);
+  color: #b8c4c2;
+  font-size: 0.9rem;
+  text-align: center;
+  overflow: hidden;
+}
 
+.admin-image-preview img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.admin-color-variant-preview {
+  grid-column: 1 / -1;
+}
+/* =========================
+   ADMIN IMAGE UPLOAD
+========================= */
+.admin-upload-btn {
+  width: fit-content;
+}
+
+.admin-form-group input[type="file"] {
+  min-height: auto;
+  padding: 12px;
+  border-style: dashed;
+  cursor: pointer;
+}
+
+.admin-form-group input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background-color: #9fb8b6;
+  color: #0f1919;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-form-group input[type="file"]::file-selector-button:hover {
+  opacity: 0.9;
+}
+
+.admin-color-variant-card .admin-upload-btn {
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .admin-upload-btn {
+    width: 100%;
+  }
+}
 /* =========================
    UTILS
 ========================= */
