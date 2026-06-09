@@ -335,6 +335,69 @@
             </div>
           </form>
         </article>
+        <article class="admin-panel admin-user-panel is-hidden" id="adminUserPanel">
+  <div class="admin-panel-header">
+    <div>
+      <h2>Manajemen User</h2>
+      <p>
+        Tambah dan kelola akun admin atau staff. Hanya admin yang bisa
+        mengakses bagian ini.
+      </p>
+    </div>
+
+    <button type="button" class="btn-secondary" id="refreshUsersBtn">
+      Refresh User
+    </button>
+  </div>
+
+  <form class="admin-user-form" id="adminUserForm">
+    <div class="admin-form-grid">
+      <div class="admin-form-group">
+        <label for="newUserUsernameInput">Username</label>
+        <input
+          type="text"
+          id="newUserUsernameInput"
+          placeholder="Contoh: staff-toko"
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="newUserPasswordInput">Password</label>
+        <input
+          type="password"
+          id="newUserPasswordInput"
+          placeholder="Minimal 8 karakter"
+          autocomplete="new-password"
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="newUserRoleInput">Role</label>
+        <select id="newUserRoleInput">
+          <option value="staff">Staff</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="admin-form-actions">
+      <button type="submit" class="btn-primary" id="createUserBtn">
+        Tambah User
+      </button>
+
+      <p class="admin-form-note" id="adminUserFormNote">
+        Staff bisa mengelola katalog. Admin bisa mengelola katalog dan user.
+      </p>
+    </div>
+  </form>
+
+  <div class="admin-user-list" id="adminUserList">
+    <div class="admin-empty-state">
+      Data user belum dimuat.
+    </div>
+  </div>
+</article>
       </div>
     </section>
   </main>

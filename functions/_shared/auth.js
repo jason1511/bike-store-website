@@ -1,5 +1,8 @@
 const SESSION_DURATION_SECONDS = 60 * 60 * 8;
 
+/* =========================
+   BASE64 URL HELPERS
+========================= */
 function base64UrlEncode(value) {
   const bytes = value instanceof Uint8Array
     ? value
@@ -33,6 +36,56 @@ function base64UrlDecode(value) {
   return new TextDecoder().decode(bytes);
 }
 
+function base64EncodeBytes(bytes) {
+  let binary = "";
+
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary);
+}
+
+/* =========================
+   RESPONSE HELPERS
+========================= */
+export function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+}
+
+/* =========================
+   PASSWORD HELPERS
+========================= */
+async function sha256(value) {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value)
+  );
+
+  return base64EncodeBytes(new Uint8Array(digest));
+}
+
+export async function hashPassword(password, env) {
+  if (!env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET is missing");
+  }
+
+  return sha256(`${env.SESSION_SECRET}:${password}`);
+}
+
+export async function verifyPassword(password, passwordHash, env) {
+  const incomingHash = await hashPassword(password, env);
+  return incomingHash === passwordHash;
+}
+
+/* =========================
+   SESSION TOKEN HELPERS
+========================= */
 async function createHmacSignature(payload, secret) {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -64,21 +117,12 @@ function getBearerToken(request) {
   return authHeader.replace("Bearer ", "").trim();
 }
 
-export function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-}
-
 export function getPermissions(role) {
   return {
-    canManageCatalogue: role === "admin",
-    canUploadImages: role === "admin",
-    canDeactivate: role === "admin",
-    canReactivate: role === "admin",
+    canManageCatalogue: role === "admin" || role === "staff",
+    canUploadImages: role === "admin" || role === "staff",
+    canDeactivate: role === "admin" || role === "staff",
+    canReactivate: role === "admin" || role === "staff",
     canHardDelete: role === "admin",
     canSeedDatabase: role === "admin",
     canManageUsers: role === "admin"
@@ -89,6 +133,7 @@ export async function createSessionToken(user, env) {
   const now = Math.floor(Date.now() / 1000);
 
   const payload = {
+    id: user.id || "",
     username: user.username,
     role: user.role,
     iat: now,
@@ -121,7 +166,7 @@ export async function verifySessionToken(token, env) {
       return null;
     }
 
-    if (payload.role !== "admin") {
+    if (!["admin", "staff"].includes(payload.role)) {
       return null;
     }
 

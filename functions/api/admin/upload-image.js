@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin"]);
+    const auth = await requireRole(request, env, ["admin", "staff"]);
 
     if (!auth.ok) {
       return auth.response;

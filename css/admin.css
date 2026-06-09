@@ -585,6 +585,108 @@
   }
 }
 /* =========================
+   USER MANAGEMENT
+========================= */
+.admin-user-panel {
+  grid-column: 1 / -1;
+}
+
+.admin-user-form {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(159, 184, 182, 0.16);
+  background-color: rgba(15, 25, 25, 0.42);
+}
+
+.admin-user-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-user-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.admin-user-card h3 {
+  color: #ffffff;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.admin-user-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #b8c4c2;
+  font-size: 0.86rem;
+}
+
+.admin-user-role,
+.admin-user-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.admin-user-role.is-admin {
+  color: #8fffc0;
+  border: 1px solid rgba(37, 211, 102, 0.28);
+  background-color: rgba(37, 211, 102, 0.12);
+}
+
+.admin-user-role.is-staff {
+  color: #dce5e3;
+  border: 1px solid rgba(159, 184, 182, 0.28);
+  background-color: rgba(159, 184, 182, 0.12);
+}
+
+.admin-user-status.is-active {
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.28);
+  background-color: rgba(37, 211, 102, 0.12);
+}
+
+.admin-user-status.is-inactive {
+  color: #ff8f8f;
+  border: 1px solid rgba(255, 143, 143, 0.28);
+  background-color: rgba(255, 143, 143, 0.12);
+}
+
+.admin-user-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .admin-user-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-actions {
+    justify-content: flex-start;
+  }
+}
+/* =========================
    ADMIN IMAGE PREVIEW
 ========================= */
 .admin-image-preview {
