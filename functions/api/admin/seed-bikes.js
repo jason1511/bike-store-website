@@ -1,26 +1,7 @@
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-}
-
-function getBearerToken(request) {
-  const authHeader = request.headers.get("Authorization") || "";
-
-  if (!authHeader.startsWith("Bearer ")) {
-    return "";
-  }
-
-  return authHeader.replace("Bearer ", "").trim();
-}
-
-function isAuthorized(request, env) {
-  const token = getBearerToken(request);
-  return Boolean(env.ADMIN_TOKEN) && token === env.ADMIN_TOKEN;
-}
+import {
+  jsonResponse,
+  requireRole
+} from "../../_shared/auth.js";
 
 function parseBikeColors(colors) {
   if (Array.isArray(colors)) {
@@ -70,6 +51,7 @@ function normalizeBikePayload(payload) {
     colorName: String(payload.colorName || "").trim(),
     colors: normalizeBikeColors(payload.colors),
     description: String(payload.description || "").trim(),
+    price: Number(payload.price || 0),
     featured: payload.featured ? 1 : 0,
     inStock: payload.inStock ? 1 : 0,
     stockQty: Number(payload.stockQty || 0)
@@ -80,8 +62,10 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    if (!isAuthorized(request, env)) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+    const auth = await requireRole(request, env, ["admin"]);
+
+    if (!auth.ok) {
+      return auth.response;
     }
 
     if (!env.BIKE_DB) {
@@ -123,12 +107,13 @@ export async function onRequestPost(context) {
             colorName,
             colors,
             description,
+            price,
             featured,
             inStock,
             stockQty,
             updatedAt
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `)
         .bind(
           bike.id,
@@ -146,6 +131,7 @@ export async function onRequestPost(context) {
           bike.colorName,
           bike.colors,
           bike.description,
+          bike.price,
           bike.featured,
           bike.inStock,
           bike.stockQty
@@ -156,7 +142,9 @@ export async function onRequestPost(context) {
 
     return jsonResponse({
       success: true,
-      imported: bikes.length
+      imported: bikes.length,
+      username: auth.user.username,
+      role: auth.user.role
     });
   } catch (error) {
     console.error("Seed bikes error:", error);

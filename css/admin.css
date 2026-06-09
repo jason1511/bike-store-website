@@ -543,6 +543,48 @@
   background-color: rgba(37, 211, 102, 0.12);
 }
 /* =========================
+   ADMIN FILTERS
+========================= */
+.admin-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(130px, 0.8fr) minmax(150px, 0.8fr);
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(159, 184, 182, 0.16);
+  background-color: rgba(15, 25, 25, 0.42);
+}
+
+.admin-filter-bar .admin-form-group {
+  gap: 6px;
+}
+
+.admin-filter-bar label {
+  font-size: 0.78rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.admin-filter-bar input,
+.admin-filter-bar select {
+  min-height: 42px;
+  padding: 10px 12px;
+}
+
+.admin-result-count {
+  margin-bottom: 12px;
+  color: #b8c4c2;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .admin-filter-bar {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================
    ADMIN IMAGE PREVIEW
 ========================= */
 .admin-image-preview {

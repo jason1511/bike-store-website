@@ -28,6 +28,7 @@ function rowToBike(row) {
   return {
     ...row,
     colors: parseBikeColors(row.colors),
+    price: Number(row.price || 0),
     featured: Boolean(row.featured),
     inStock: Boolean(row.inStock),
     stockQty: Number(row.stockQty || 0)

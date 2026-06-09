@@ -1,4 +1,5 @@
-const ADMIN_TOKEN_STORAGE_KEY = "nbaAdminToken";
+const ADMIN_SESSION_STORAGE_KEY = "nbaAdminSessionToken";
+const ADMIN_USER_STORAGE_KEY = "nbaAdminUser";
 
 let adminBikesCache = [];
 
@@ -6,15 +7,17 @@ let adminBikesCache = [];
    SESSION STORAGE
 ========================= */
 function getStoredAdminToken() {
-  return sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "";
+  return sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY) || "";
 }
 
-function setStoredAdminToken(token) {
-  sessionStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
+function setStoredAdminSession(token, user) {
+  sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, token);
+  sessionStorage.setItem(ADMIN_USER_STORAGE_KEY, JSON.stringify(user));
 }
 
-function clearStoredAdminToken() {
-  sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+function clearStoredAdminSession() {
+  sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
+  sessionStorage.removeItem(ADMIN_USER_STORAGE_KEY);
 }
 
 /* =========================
@@ -47,7 +50,9 @@ function buildBikeImageBaseName(extra = "") {
     .filter(Boolean)
     .join("-");
 }
-
+function normalizeSearchText(value) {
+  return String(value || "").toLowerCase().trim();
+}
 function parseBikeColors(colors) {
   if (Array.isArray(colors)) {
     return colors;
@@ -142,7 +147,28 @@ function showAdminLogin() {
 /* =========================
    ADMIN AUTH
 ========================= */
-async function verifyAdminToken(token) {
+async function loginAdmin(username, password) {
+  const response = await fetch("/api/admin/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      password
+    })
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Username atau password salah");
+  }
+
+  return data;
+}
+
+async function verifyAdminSession(token) {
   const response = await fetch("/api/admin/verify", {
     method: "POST",
     headers: {
@@ -153,7 +179,7 @@ async function verifyAdminToken(token) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.error || "Token admin tidak valid");
+    throw new Error(data?.error || "Session admin tidak valid");
   }
 
   return data;
@@ -161,32 +187,40 @@ async function verifyAdminToken(token) {
 
 function setupAdminLogin() {
   const form = document.getElementById("adminLoginForm");
-  const tokenInput = document.getElementById("adminTokenInput");
+  const usernameInput = document.getElementById("adminUsernameInput");
+  const passwordInput = document.getElementById("adminPasswordInput");
 
-  if (!form || !tokenInput) {
+  if (!form || !usernameInput || !passwordInput) {
     return;
   }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const token = tokenInput.value.trim();
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
 
-    if (!token) {
-      setAdminMessage("Masukkan token admin terlebih dahulu.", "is-error");
+    if (!username || !password) {
+      setAdminMessage("Masukkan username dan password terlebih dahulu.", "is-error");
       return;
     }
 
-    setAdminMessage("Memeriksa token admin...");
+    setAdminMessage("Memeriksa akun admin...");
 
     try {
-      await verifyAdminToken(token);
+      const data = await loginAdmin(username, password);
 
-      setStoredAdminToken(token);
+      setStoredAdminSession(data.token, {
+        username: data.username,
+        role: data.role,
+        permissions: data.permissions
+      });
+
+      passwordInput.value = "";
       setAdminMessage("Login berhasil.", "is-success");
       showAdminDashboard();
     } catch (error) {
-      clearStoredAdminToken();
+      clearStoredAdminSession();
       setAdminMessage(error.message, "is-error");
     }
   });
@@ -200,7 +234,7 @@ function setupAdminLogout() {
   }
 
   logoutButton.addEventListener("click", () => {
-    clearStoredAdminToken();
+    clearStoredAdminSession();
     adminBikesCache = [];
     hideBikeEditor();
     showAdminLogin();
@@ -217,10 +251,10 @@ async function restoreAdminSession() {
   }
 
   try {
-    await verifyAdminToken(token);
+    await verifyAdminSession(token);
     showAdminDashboard();
   } catch (error) {
-    clearStoredAdminToken();
+    clearStoredAdminSession();
     showAdminLogin();
   }
 }
@@ -334,7 +368,122 @@ function renderAdminBikes(bikes) {
     })
     .join("");
 }
+function getAvailableBrands(bikes) {
+  return [...new Set(
+    bikes
+      .map((bike) => bike.brand)
+      .filter(Boolean)
+      .map((brand) => brand.trim())
+  )].sort((a, b) => a.localeCompare(b));
+}
 
+function populateBrandFilter(bikes) {
+  const brandFilter = document.getElementById("adminBikeBrandFilter");
+
+  if (!brandFilter) {
+    return;
+  }
+
+  const currentValue = brandFilter.value || "all";
+  const brands = getAvailableBrands(bikes);
+
+  brandFilter.innerHTML = `
+    <option value="all">Semua Brand</option>
+    ${brands
+      .map((brand) => `
+        <option value="${escapeHtml(brand)}">
+          ${escapeHtml(brand)}
+        </option>
+      `)
+      .join("")}
+  `;
+
+  const hasCurrentValue = currentValue === "all" || brands.includes(currentValue);
+  brandFilter.value = hasCurrentValue ? currentValue : "all";
+}
+
+function getFilteredAdminBikes() {
+  const searchInput = document.getElementById("adminBikeSearchInput");
+  const statusFilter = document.getElementById("adminBikeStatusFilter");
+  const brandFilter = document.getElementById("adminBikeBrandFilter");
+
+  const searchTerm = normalizeSearchText(searchInput?.value);
+  const statusValue = statusFilter?.value || "all";
+  const brandValue = brandFilter?.value || "all";
+
+  return adminBikesCache.filter((bike) => {
+    const isInStock = bike.inStock && Number(bike.stockQty) > 0;
+
+    if (statusValue === "active" && !isInStock) {
+      return false;
+    }
+
+    if (statusValue === "inactive" && isInStock) {
+      return false;
+    }
+
+    if (brandValue !== "all" && bike.brand !== brandValue) {
+      return false;
+    }
+
+    if (!searchTerm) {
+      return true;
+    }
+
+    const searchableText = normalizeSearchText([
+      bike.brand,
+      bike.name,
+      bike.battery,
+      bike.motor,
+      bike.range,
+      bike.maxWeight,
+      bike.colorName,
+      bike.description
+    ].join(" "));
+
+    return searchableText.includes(searchTerm);
+  });
+}
+
+function updateAdminResultCount(filteredCount, totalCount) {
+  const resultCount = document.getElementById("adminBikeResultCount");
+
+  if (!resultCount) {
+    return;
+  }
+
+  if (filteredCount === totalCount) {
+    resultCount.textContent = `Menampilkan semua ${totalCount} sepeda.`;
+    return;
+  }
+
+  resultCount.textContent = `Menampilkan ${filteredCount} dari ${totalCount} sepeda.`;
+}
+
+function applyAdminBikeFilters() {
+  const filteredBikes = getFilteredAdminBikes();
+
+  renderAdminBikes(filteredBikes);
+  updateAdminResultCount(filteredBikes.length, adminBikesCache.length);
+}
+
+function setupAdminBikeFilters() {
+  const searchInput = document.getElementById("adminBikeSearchInput");
+  const statusFilter = document.getElementById("adminBikeStatusFilter");
+  const brandFilter = document.getElementById("adminBikeBrandFilter");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", applyAdminBikeFilters);
+  }
+
+  if (statusFilter) {
+    statusFilter.addEventListener("change", applyAdminBikeFilters);
+  }
+
+  if (brandFilter) {
+    brandFilter.addEventListener("change", applyAdminBikeFilters);
+  }
+}
 async function loadAdminBikes() {
   const bikeList = document.getElementById("adminBikeList");
 
@@ -350,7 +499,8 @@ async function loadAdminBikes() {
     const bikes = await fetchAdminBikes();
 
     adminBikesCache = bikes;
-    renderAdminBikes(bikes);
+    populateBrandFilter(adminBikesCache);
+    applyAdminBikeFilters();
   } catch (error) {
     adminBikesCache = [];
 
@@ -361,6 +511,8 @@ async function loadAdminBikes() {
         </div>
       `;
     }
+
+    updateAdminResultCount(0, 0);
   }
 }
 
@@ -784,10 +936,12 @@ function getBikeFormData() {
     safety: document.getElementById("bikeSafetyInput")?.value.trim() || "",
     image: document.getElementById("bikeImageInput")?.value.trim() || colors[0]?.image || "",
     alt: `Sepeda listrik ${name} di showroom Lumajang`,
-    comfort: document.getElementById("bikeComfortInput")?.value || "medium",
-    colorName: defaultColorName,
-    colors,
-    description: document.getElementById("bikeDescriptionInput")?.value.trim() || "",
+   comfort: document.getElementById("bikeComfortInput")?.value || "medium",
+price: Number(document.getElementById("bikePriceInput")?.value || 0),
+colorName: defaultColorName,
+colors,
+description: document.getElementById("bikeDescriptionInput")?.value.trim() || "",
+featured: Boolean(document.getElementById("bikeFeaturedInput")?.checked),
     featured: Boolean(document.getElementById("bikeFeaturedInput")?.checked),
     inStock: Boolean(document.getElementById("bikeInStockInput")?.checked),
     stockQty: Number(document.getElementById("bikeStockQtyInput")?.value || 0)
@@ -803,6 +957,7 @@ function validateBikeFormData(bike) {
   if (!bike.image) errors.push("Gambar utama atau gambar warna pertama wajib diisi.");
   if (!bike.description) errors.push("Deskripsi wajib diisi.");
   if (bike.stockQty < 0) errors.push("Jumlah stok tidak boleh negatif.");
+  if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
 
   bike.colors.forEach((color, index) => {
     if (!color.name && color.image) {
@@ -871,6 +1026,7 @@ function resetBikeEditorForm() {
 
   setBikeFormValue("bikeIdInput", "");
   setBikeFormValue("bikeComfortInput", "medium");
+  setBikeFormValue("bikePriceInput", "0");
   setBikeFormValue("bikeColorNameInput", "");
   setBikeFormChecked("bikeFeaturedInput", false);
   setBikeFormChecked("bikeInStockInput", true);
@@ -907,6 +1063,7 @@ function fillBikeEditorForm(bike) {
   setBikeFormValue("bikeRangeInput", bike.range);
   setBikeFormValue("bikeMaxWeightInput", bike.maxWeight);
   setBikeFormValue("bikeComfortInput", bike.comfort || "medium");
+  setBikeFormValue("bikePriceInput", bike.price ?? 0);
   setBikeFormValue("bikeSafetyInput", bike.safety);
   setBikeFormValue("bikeImageInput", bike.image);
   setBikeFormValue("bikeColorNameInput", bike.colorName);
@@ -1167,4 +1324,5 @@ setupImagePreviewInputs();
 setupColorVariantEditor();
 setupBikeEditor();
 setupBikeFormSave();
+setupAdminBikeFilters();
 restoreAdminSession();

@@ -23,21 +23,32 @@
         </p>
 
         <form class="admin-login-form" id="adminLoginForm">
-          <div class="admin-form-group">
-            <label for="adminTokenInput">Admin Token</label>
-            <input
-              type="password"
-              id="adminTokenInput"
-              placeholder="Masukkan token admin"
-              autocomplete="current-password"
-              required
-            >
-          </div>
+  <div class="admin-form-group">
+    <label for="adminUsernameInput">Username</label>
+    <input
+      type="text"
+      id="adminUsernameInput"
+      placeholder="Masukkan username admin"
+      autocomplete="username"
+      required
+    >
+  </div>
 
-          <button type="submit" class="btn-primary">
-            Masuk
-          </button>
-        </form>
+  <div class="admin-form-group">
+    <label for="adminPasswordInput">Password</label>
+    <input
+      type="password"
+      id="adminPasswordInput"
+      placeholder="Masukkan password admin"
+      autocomplete="current-password"
+      required
+    >
+  </div>
+
+  <button type="submit" class="btn-primary">
+    Masuk
+  </button>
+</form>
 
         <p class="admin-message" id="adminLoginMessage"></p>
       </div>
@@ -62,23 +73,55 @@
       <div class="admin-dashboard-grid">
         <article class="admin-panel admin-list-panel">
           <div class="admin-panel-header">
-            <div>
-              <h2>Data Sepeda</h2>
-              <p>Daftar sepeda dari katalog saat ini.</p>
-            </div>
+  <div>
+    <h2>Data Sepeda</h2>
+    <p>Daftar sepeda dari katalog saat ini.</p>
+  </div>
 
-            <div class="admin-panel-actions">
-              <button type="button" class="btn-secondary" id="addBikeBtn">
-                Tambah Sepeda
-              </button>
+  <div class="admin-panel-actions">
+    <button type="button" class="btn-secondary" id="addBikeBtn">
+      Tambah Sepeda
+    </button>
 
-              <button type="button" class="btn-secondary" id="refreshBikesBtn">
-                Refresh
-              </button>
-            </div>
-          </div>
+    <button type="button" class="btn-secondary" id="refreshBikesBtn">
+      Refresh
+    </button>
+  </div>
+</div>
 
-          <div class="admin-bike-list" id="adminBikeList">
+<div class="admin-filter-bar">
+  <div class="admin-form-group">
+    <label for="adminBikeSearchInput">Cari Sepeda</label>
+    <input
+      type="search"
+      id="adminBikeSearchInput"
+      placeholder="Cari brand, model, baterai, motor..."
+    >
+  </div>
+
+  <div class="admin-form-group">
+    <label for="adminBikeStatusFilter">Status</label>
+    <select id="adminBikeStatusFilter">
+      <option value="all">Semua</option>
+      <option value="active">Aktif</option>
+      <option value="inactive">Nonaktif</option>
+    </select>
+  </div>
+
+  <div class="admin-form-group">
+    <label for="adminBikeBrandFilter">Brand</label>
+    <select id="adminBikeBrandFilter">
+      <option value="all">Semua Brand</option>
+    </select>
+  </div>
+</div>
+
+<p class="admin-result-count" id="adminBikeResultCount">
+  Menampilkan semua sepeda.
+</p>
+
+<div class="admin-bike-list" id="adminBikeList">
+
             <div class="admin-empty-state">
               Data sepeda belum dimuat.
             </div>
@@ -176,7 +219,16 @@
                   <option value="high">high</option>
                 </select>
               </div>
-
+              <div class="admin-form-group">
+  <label for="bikePriceInput">Harga</label>
+  <input
+    type="number"
+    id="bikePriceInput"
+    min="0"
+    step="1000"
+    placeholder="Contoh: 8500000"
+  >
+</div>
               <div class="admin-form-group admin-form-wide">
                 <label for="bikeSafetyInput">Fitur Keamanan</label>
                 <input

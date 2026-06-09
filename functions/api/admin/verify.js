@@ -1,51 +1,36 @@
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-}
-
-function getBearerToken(request) {
-  const authHeader = request.headers.get("Authorization") || "";
-
-  if (!authHeader.startsWith("Bearer ")) {
-    return "";
-  }
-
-  return authHeader.replace("Bearer ", "").trim();
-}
+import {
+  getAuthUser,
+  getPermissions,
+  jsonResponse
+} from "../../_shared/auth.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const token = getBearerToken(request);
+    const user = await getAuthUser(request, env);
 
-    if (!env.ADMIN_TOKEN) {
+    if (!user) {
       return jsonResponse(
-        { error: "Admin token is not configured" },
-        500
-      );
-    }
-
-    if (!token || token !== env.ADMIN_TOKEN) {
-      return jsonResponse(
-        { error: "Invalid admin token" },
+        {
+          success: false,
+          error: "Session tidak valid atau sudah expired"
+        },
         401
       );
     }
 
     return jsonResponse({
       success: true,
-      message: "Admin verified"
+      username: user.username,
+      role: user.role,
+      permissions: getPermissions(user.role)
     });
   } catch (error) {
-    console.error("Admin verification error:", error);
+    console.error("Admin verify error:", error);
 
     return jsonResponse(
-      { error: "Admin verification failed" },
+      { error: "Failed to verify session" },
       500
     );
   }

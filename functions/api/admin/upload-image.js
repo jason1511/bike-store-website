@@ -1,26 +1,7 @@
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-}
-
-function getBearerToken(request) {
-  const authHeader = request.headers.get("Authorization") || "";
-
-  if (!authHeader.startsWith("Bearer ")) {
-    return "";
-  }
-
-  return authHeader.replace("Bearer ", "").trim();
-}
-
-function isAuthorized(request, env) {
-  const token = getBearerToken(request);
-  return Boolean(env.ADMIN_TOKEN) && token === env.ADMIN_TOKEN;
-}
+import {
+  jsonResponse,
+  requireRole
+} from "../../_shared/auth.js";
 
 function slugify(value) {
   return String(value || "")
@@ -60,8 +41,10 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    if (!isAuthorized(request, env)) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+    const auth = await requireRole(request, env, ["admin"]);
+
+    if (!auth.ok) {
+      return auth.response;
     }
 
     if (!env.BIKE_IMAGES) {
@@ -107,7 +90,8 @@ export async function onRequestPost(context) {
         contentType: file.type
       },
       customMetadata: {
-        uploadedBy: "admin",
+        uploadedBy: auth.user.username,
+        uploadedRole: auth.user.role,
         originalName: file.name,
         fileBaseName: baseName
       }

@@ -8,13 +8,9 @@ function escapeHtml(value) {
 }
 
 function formatPrice(price) {
-  if (price === undefined || price === null || price === "") {
-    return "Hubungi untuk harga";
-  }
+  const numericPrice = Number(price || 0);
 
-  const numericPrice = Number(price);
-
-  if (Number.isNaN(numericPrice)) {
+  if (!numericPrice || Number.isNaN(numericPrice)) {
     return "Hubungi untuk harga";
   }
 
