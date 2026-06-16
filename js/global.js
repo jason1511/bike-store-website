@@ -21,9 +21,17 @@ const STORE_WHATSAPP_NUMBER = "6282122065168";
 
 function getWhatsAppLink(bike) {
   const bikeName = bike?.name || "sepeda listrik";
-  const message = `Halo, saya tertarik dengan ${bikeName}. Apakah unit ini tersedia?`;
+  const isUnavailable = isBikeUnavailable(bike);
+
+  const message = isUnavailable
+    ? `Halo, saya tertarik dengan ${bikeName}. Apakah unit ini bisa dipesan atau kapan tersedia kembali?`
+    : `Halo, saya tertarik dengan ${bikeName}. Apakah unit ini tersedia?`;
 
   return `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
+function isBikeUnavailable(bike) {
+  return Boolean(bike?.inStock) && Number(bike?.stockQty || 0) <= 0;
 }
 
 function getBikeColors(bike) {
@@ -43,6 +51,9 @@ function getBikeColors(bike) {
   return [];
 }
 
+/* =========================
+   BIKE CARD COLOR SWITCHER
+========================= */
 function switchBikeCardColor(button) {
   const card = button.closest(".bike-card");
 
@@ -70,29 +81,45 @@ function switchBikeCardColor(button) {
   button.classList.add("is-active");
 }
 
+/* =========================
+   BIKE CARD
+========================= */
 function createBikeCard(bike) {
   const brandTheme = getBrandTheme(bike.brand);
   const badges = getHighlights(bike).slice(0, 2);
   const colorVariants = getBikeColors(bike);
-
   const defaultColor = colorVariants[0] || null;
   const imageSrc = defaultColor?.image || bike.image || "images/logo.jpeg";
   const colorName = defaultColor?.name || bike.colorName || "";
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
+  const isUnavailable = isBikeUnavailable(bike);
+  const whatsappLabel = isUnavailable ? "Tanya Ketersediaan" : "Tanya WhatsApp";
 
   return `
     <div
-      class="bike-card ${brandTheme.className}"
+      class="bike-card ${brandTheme.className} ${isUnavailable ? "is-unavailable" : ""}"
       data-bike-id="${escapeHtml(bike.id)}"
       tabindex="0"
       role="button"
     >
-      <img
-        src="${escapeHtml(imageSrc)}"
-        alt="${escapeHtml(imageAlt)}"
-        class="bike-card-image"
-        loading="lazy"
-      >
+      <div class="bike-card-image-wrap">
+        <img
+          src="${escapeHtml(imageSrc)}"
+          alt="${escapeHtml(imageAlt)}"
+          class="bike-card-image"
+          loading="lazy"
+        >
+
+        ${
+          isUnavailable
+            ? `
+              <span class="bike-stock-badge">
+                Stok Habis
+              </span>
+            `
+            : ""
+        }
+      </div>
 
       <div class="bike-info">
         <p class="bike-brand">${escapeHtml(bike.brand)}</p>
@@ -164,7 +191,7 @@ function createBikeCard(bike) {
               alt="WhatsApp"
               class="wa-icon"
             >
-            <span>Tanya WhatsApp</span>
+            <span>${escapeHtml(whatsappLabel)}</span>
           </span>
         </a>
       </div>
@@ -172,6 +199,9 @@ function createBikeCard(bike) {
   `;
 }
 
+/* =========================
+   THEME TOGGLE
+========================= */
 function setupThemeToggle() {
   const themeToggle = document.getElementById("themeToggle");
 
@@ -200,4 +230,108 @@ function setupThemeToggle() {
   });
 }
 
+/* =========================
+   ADMIN PORTAL NAV LINK
+========================= */
+const SITE_ADMIN_SESSION_STORAGE_KEY = "nbaAdminSessionToken";
+const SITE_ADMIN_USER_STORAGE_KEY = "nbaAdminUser";
+
+function getStoredSiteAdminToken() {
+  return sessionStorage.getItem(SITE_ADMIN_SESSION_STORAGE_KEY) || "";
+}
+
+function getStoredSiteAdminUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SITE_ADMIN_USER_STORAGE_KEY) || "null");
+  } catch (error) {
+    return null;
+  }
+}
+
+function isValidSiteAdminUser(user) {
+  return user && ["admin", "staff"].includes(user.role);
+}
+
+function removeAdminPortalLink() {
+  document.querySelectorAll("[data-admin-portal-link]").forEach((element) => {
+    element.remove();
+  });
+}
+
+function renderAdminPortalLink(user) {
+  const navLinks = document.querySelector(".nav-links");
+
+  if (!navLinks || !isValidSiteAdminUser(user)) {
+    return;
+  }
+
+  removeAdminPortalLink();
+
+  const adminItem = document.createElement("li");
+  adminItem.setAttribute("data-admin-portal-link", "true");
+
+  adminItem.innerHTML = `
+    <a href="admin.html" class="admin-portal-link">
+      Admin
+      <span>${escapeHtml(user.role)}</span>
+    </a>
+  `;
+
+  navLinks.appendChild(adminItem);
+}
+
+async function verifySiteAdminSession(token) {
+  const response = await fetch("/api/admin/verify", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Session admin tidak valid");
+  }
+
+  return data;
+}
+
+async function setupAdminPortalLink() {
+  const token = getStoredSiteAdminToken();
+  const storedUser = getStoredSiteAdminUser();
+
+  if (!token || !isValidSiteAdminUser(storedUser)) {
+    removeAdminPortalLink();
+    return;
+  }
+
+  renderAdminPortalLink(storedUser);
+
+  try {
+    const verifiedUser = await verifySiteAdminSession(token);
+
+    const updatedUser = {
+      username: verifiedUser.username,
+      role: verifiedUser.role,
+      permissions: verifiedUser.permissions
+    };
+
+    sessionStorage.setItem(
+      SITE_ADMIN_USER_STORAGE_KEY,
+      JSON.stringify(updatedUser)
+    );
+
+    renderAdminPortalLink(updatedUser);
+  } catch (error) {
+    sessionStorage.removeItem(SITE_ADMIN_SESSION_STORAGE_KEY);
+    sessionStorage.removeItem(SITE_ADMIN_USER_STORAGE_KEY);
+    removeAdminPortalLink();
+  }
+}
+
+/* =========================
+   INIT
+========================= */
 setupThemeToggle();
+setupAdminPortalLink();

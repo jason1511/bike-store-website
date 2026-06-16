@@ -66,7 +66,7 @@ function validateBike(bike) {
   if (!bike.brand) errors.push("Brand wajib diisi.");
   if (!bike.name) errors.push("Nama model wajib diisi.");
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
-  if (bike.stockQty < 0) errors.push("Jumlah unit display tidak boleh negatif.");
+  if (bike.stockQty < 0) errors.push("Jumlah stok tidak boleh negatif.");
 
   return errors;
 }
@@ -134,7 +134,6 @@ async function deactivateBikeById(db, id) {
       UPDATE bikes
       SET
         inStock = 0,
-        stockQty = 0,
         updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
     `)
@@ -150,10 +149,6 @@ async function reactivateBikeById(db, id) {
       UPDATE bikes
       SET
         inStock = 1,
-        stockQty = CASE
-          WHEN stockQty IS NULL OR stockQty < 1 THEN 1
-          ELSE stockQty
-        END,
         updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
     `)
@@ -161,6 +156,21 @@ async function reactivateBikeById(db, id) {
     .run();
 
   return getBikeById(db, id);
+}
+
+function assertStockPermission(auth, existingBike, nextBike) {
+  const oldStockQty = Number(existingBike.stockQty || 0);
+  const newStockQty = Number(nextBike.stockQty || 0);
+  const isIncreasingStock = newStockQty > oldStockQty;
+
+  if (auth.user.role !== "admin" && isIncreasingStock) {
+    return jsonResponse(
+      { error: "Hanya admin yang bisa menambah stok." },
+      403
+    );
+  }
+
+  return null;
 }
 
 export async function onRequestGet(context) {
@@ -216,6 +226,13 @@ export async function onRequestPost(context) {
 
     if (errors.length) {
       return jsonResponse({ error: "Invalid bike data", errors }, 400);
+    }
+
+    if (auth.user.role !== "admin" && Number(bike.stockQty || 0) > 0) {
+      return jsonResponse(
+        { error: "Hanya admin yang bisa membuat sepeda dengan stok awal." },
+        403
+      );
     }
 
     const existingBike = await getBikeById(env.BIKE_DB, bike.id);
@@ -283,7 +300,8 @@ export async function onRequestPost(context) {
         brand: createdBike.brand,
         name: createdBike.name,
         price: createdBike.price,
-        inStock: createdBike.inStock
+        inStock: createdBike.inStock,
+        stockQty: createdBike.stockQty
       }
     });
 
@@ -324,6 +342,12 @@ export async function onRequestPut(context) {
 
     if (!existingBike) {
       return jsonResponse({ error: "Bike not found" }, 404);
+    }
+
+    const stockPermissionError = assertStockPermission(auth, existingBike, bike);
+
+    if (stockPermissionError) {
+      return stockPermissionError;
     }
 
     await env.BIKE_DB
@@ -460,7 +484,8 @@ export async function onRequestDelete(context) {
         targetLabel: getBikeLabel(existingBike),
         details: {
           brand: existingBike.brand,
-          name: existingBike.name
+          name: existingBike.name,
+          stockQty: existingBike.stockQty
         }
       });
 
@@ -482,7 +507,7 @@ export async function onRequestDelete(context) {
         details: {
           previousInStock: existingBike.inStock,
           newInStock: bike.inStock,
-          newStockQty: bike.stockQty
+          stockQty: bike.stockQty
         }
       });
 
@@ -503,9 +528,8 @@ export async function onRequestDelete(context) {
       targetLabel: getBikeLabel(bike),
       details: {
         previousInStock: existingBike.inStock,
-        previousStockQty: existingBike.stockQty,
         newInStock: bike.inStock,
-        newStockQty: bike.stockQty
+        stockQty: bike.stockQty
       }
     });
 

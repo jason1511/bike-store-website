@@ -88,9 +88,7 @@ function parseBikeColors(colors) {
 function setAdminMessage(message, type = "") {
   const messageElement = document.getElementById("adminLoginMessage");
 
-  if (!messageElement) {
-    return;
-  }
+  if (!messageElement) return;
 
   messageElement.textContent = message;
   messageElement.classList.remove("is-error", "is-success");
@@ -103,9 +101,7 @@ function setAdminMessage(message, type = "") {
 function setAdminFormNote(message, type = "") {
   const note = document.getElementById("adminFormNote");
 
-  if (!note) {
-    return;
-  }
+  if (!note) return;
 
   note.textContent = message;
   note.classList.remove("is-error", "is-success");
@@ -116,9 +112,7 @@ function setAdminFormNote(message, type = "") {
 }
 
 function setUploadNote(noteElement, message, type = "") {
-  if (!noteElement) {
-    return;
-  }
+  if (!noteElement) return;
 
   noteElement.textContent = message;
   noteElement.classList.remove("is-error", "is-success");
@@ -126,6 +120,65 @@ function setUploadNote(noteElement, message, type = "") {
   if (type) {
     noteElement.classList.add(type);
   }
+}
+
+/* =========================
+   FAKE PAGE NAVIGATION
+========================= */
+function configureAdminNavigationForRole() {
+  const isAdmin = isCurrentUserAdmin();
+  const adminOnlyLinks = document.querySelectorAll("[data-admin-only]");
+  const adminOnlyViews = document.querySelectorAll("[data-admin-only-view]");
+
+  adminOnlyLinks.forEach((element) => {
+    element.classList.toggle("is-hidden", !isAdmin);
+  });
+
+  adminOnlyViews.forEach((element) => {
+    element.classList.toggle("is-hidden", !isAdmin);
+  });
+}
+
+function showAdminView(viewId) {
+  const isAdmin = isCurrentUserAdmin();
+  const targetView = document.getElementById(viewId);
+
+  if (!targetView) {
+    return;
+  }
+
+  if (targetView.hasAttribute("data-admin-only-view") && !isAdmin) {
+    showAdminView("adminCatalogueView");
+    return;
+  }
+
+  document.querySelectorAll(".admin-view").forEach((view) => {
+    view.classList.toggle("is-active", view.id === viewId);
+  });
+
+  document.querySelectorAll("[data-admin-view-target]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.adminViewTarget === viewId);
+  });
+
+  if (viewId === "adminCatalogueView") {
+    loadAdminBikes();
+  }
+
+  if (viewId === "adminUsersView" && isAdmin) {
+    loadAdminUsers();
+  }
+
+  if (viewId === "adminAuditView" && isAdmin) {
+    loadAuditLogs();
+  }
+}
+
+function setupAdminViewNavigation() {
+  document.querySelectorAll("[data-admin-view-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      showAdminView(button.dataset.adminViewTarget);
+    });
+  });
 }
 
 /* =========================
@@ -143,9 +196,8 @@ function showAdminDashboard() {
     dashboard.classList.remove("is-hidden");
   }
 
-  loadAdminBikes();
-  showUserPanelIfAllowed();
-  showAuditPanelIfAllowed();
+  configureAdminNavigationForRole();
+  showAdminView("adminCatalogueView");
 }
 
 function showAdminLogin() {
@@ -255,18 +307,6 @@ function setupAdminLogout() {
     adminBikesCache = [];
 
     hideBikeEditor();
-
-    const userPanel = document.getElementById("adminUserPanel");
-    const auditPanel = document.getElementById("adminAuditPanel");
-
-    if (userPanel) {
-      userPanel.classList.add("is-hidden");
-    }
-
-    if (auditPanel) {
-      auditPanel.classList.add("is-hidden");
-    }
-
     showAdminLogin();
     setAdminMessage("Anda sudah keluar dari dashboard admin.");
   });
@@ -336,7 +376,9 @@ function renderAdminBikes(bikes) {
 
   bikeList.innerHTML = bikes
     .map((bike) => {
-      const isInStock = bike.inStock && Number(bike.stockQty) > 0;
+      const isActive = Boolean(bike.inStock);
+      const stockQty = Number(bike.stockQty || 0);
+      const isAvailable = isActive && stockQty > 0;
       const colorCount = parseBikeColors(bike.colors).length;
 
       return `
@@ -347,8 +389,14 @@ function renderAdminBikes(bikes) {
               <h3>${escapeHtml(bike.name)}</h3>
             </div>
 
-            <span class="admin-stock-pill ${isInStock ? "is-in" : "is-out"}">
-              ${isInStock ? "Tampil" : "Nonaktif"}
+            <span class="admin-stock-pill ${isAvailable ? "is-in" : "is-out"}">
+              ${
+                !isActive
+                  ? "Nonaktif"
+                  : isAvailable
+                    ? `Stok ${stockQty}`
+                    : "Stok Habis"
+              }
             </span>
           </div>
 
@@ -379,7 +427,7 @@ function renderAdminBikes(bikes) {
             </button>
 
             ${
-              isInStock
+              isActive
                 ? `
                   <button
                     type="button"
@@ -451,13 +499,13 @@ function getFilteredAdminBikes() {
   const brandValue = brandFilter?.value || "all";
 
   return adminBikesCache.filter((bike) => {
-    const isInStock = bike.inStock && Number(bike.stockQty) > 0;
+    const isActive = Boolean(bike.inStock);
 
-    if (statusValue === "active" && !isInStock) {
+    if (statusValue === "active" && !isActive) {
       return false;
     }
 
-    if (statusValue === "inactive" && isInStock) {
+    if (statusValue === "inactive" && isActive) {
       return false;
     }
 
@@ -996,7 +1044,7 @@ function validateBikeFormData(bike) {
   if (!bike.image) errors.push("Gambar utama atau gambar warna pertama wajib diisi.");
   if (!bike.description) errors.push("Deskripsi wajib diisi.");
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
-  if (bike.stockQty < 0) errors.push("Jumlah unit display tidak boleh negatif.");
+  if (bike.stockQty < 0) errors.push("Stok internal tidak boleh negatif.");
 
   bike.colors.forEach((color, index) => {
     if (!color.name && color.image) {
@@ -1069,12 +1117,17 @@ function resetBikeEditorForm() {
   setBikeFormValue("bikeColorNameInput", "");
   setBikeFormChecked("bikeFeaturedInput", false);
   setBikeFormChecked("bikeInStockInput", true);
-  setBikeFormValue("bikeStockQtyInput", "1");
+  setBikeFormValue("bikeStockQtyInput", isCurrentUserAdmin() ? "1" : "0");
 
   renderColorVariants([]);
   updateMainImagePreview();
 
-  setAdminFormNote("Perubahan akan langsung tersimpan ke database D1.");
+  setAdminFormNote(
+    isCurrentUserAdmin()
+      ? "Admin bisa mengatur stok internal."
+      : "Staff bisa mengedit katalog, tetapi tidak bisa menambah stok internal."
+  );
+
   setUploadNote(
     document.getElementById("mainImageUploadNote"),
     "Pilih gambar baru jika ingin mengganti Gambar Utama. File akan diupload saat tombol Simpan ditekan."
@@ -1114,7 +1167,12 @@ function fillBikeEditorForm(bike) {
   renderColorVariants(bike.colors);
   updateMainImagePreview();
 
-  setAdminFormNote("Perubahan akan langsung tersimpan ke database D1.");
+  setAdminFormNote(
+    isCurrentUserAdmin()
+      ? "Admin bisa mengatur stok internal."
+      : "Staff bisa mengedit katalog, tetapi tidak bisa menambah stok internal."
+  );
+
   setUploadNote(
     document.getElementById("mainImageUploadNote"),
     "Pilih gambar baru jika ingin mengganti Gambar Utama. File akan diupload saat tombol Simpan ditekan."
@@ -1226,7 +1284,10 @@ function setupBikeFormSave() {
 
       setAdminFormNote("Data sepeda berhasil disimpan.", "is-success");
       await loadAdminBikes();
-      loadAuditLogs();
+
+      if (isCurrentUserAdmin()) {
+        loadAuditLogs();
+      }
 
       if (!isEditing) {
         fillBikeEditorForm(bike);
@@ -1269,17 +1330,13 @@ function setupBikeEditor() {
       const bikeId = reactivateButton.dataset.adminReactivateBike;
       const bike = adminBikesCache.find((item) => item.id === bikeId);
 
-      if (!bike) {
-        return;
-      }
+      if (!bike) return;
 
       const confirmed = window.confirm(
         `Aktifkan lagi ${bike.name}? Unit ini akan kembali muncul di katalog publik.`
       );
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
 
       reactivateButton.disabled = true;
       reactivateButton.textContent = "Memproses...";
@@ -1287,7 +1344,10 @@ function setupBikeEditor() {
       try {
         await reactivateBike(bikeId);
         await loadAdminBikes();
-        loadAuditLogs();
+
+        if (isCurrentUserAdmin()) {
+          loadAuditLogs();
+        }
       } catch (error) {
         window.alert(error.message);
         reactivateButton.disabled = false;
@@ -1303,17 +1363,13 @@ function setupBikeEditor() {
       const bikeId = deactivateButton.dataset.adminDeactivateBike;
       const bike = adminBikesCache.find((item) => item.id === bikeId);
 
-      if (!bike) {
-        return;
-      }
+      if (!bike) return;
 
       const confirmed = window.confirm(
         `Nonaktifkan ${bike.name}? Unit ini akan hilang dari katalog publik, tetapi datanya tetap tersimpan di admin.`
       );
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
 
       deactivateButton.disabled = true;
       deactivateButton.textContent = "Memproses...";
@@ -1322,7 +1378,10 @@ function setupBikeEditor() {
         await deactivateBike(bikeId);
         hideBikeEditor();
         await loadAdminBikes();
-        loadAuditLogs();
+
+        if (isCurrentUserAdmin()) {
+          loadAuditLogs();
+        }
       } catch (error) {
         window.alert(error.message);
         deactivateButton.disabled = false;
@@ -1353,27 +1412,10 @@ function setupBikeEditor() {
 /* =========================
    USER MANAGEMENT
 ========================= */
-function showUserPanelIfAllowed() {
-  const userPanel = document.getElementById("adminUserPanel");
-
-  if (!userPanel) {
-    return;
-  }
-
-  if (isCurrentUserAdmin()) {
-    userPanel.classList.remove("is-hidden");
-    loadAdminUsers();
-  } else {
-    userPanel.classList.add("is-hidden");
-  }
-}
-
 function setAdminUserFormNote(message, type = "") {
   const note = document.getElementById("adminUserFormNote");
 
-  if (!note) {
-    return;
-  }
+  if (!note) return;
 
   note.textContent = message;
   note.classList.remove("is-error", "is-success");
@@ -1588,9 +1630,7 @@ function setupAdminUserManagement() {
     userList.addEventListener("click", async (event) => {
       const toggleButton = event.target.closest("[data-toggle-user-status]");
 
-      if (!toggleButton) {
-        return;
-      }
+      if (!toggleButton) return;
 
       const id = toggleButton.dataset.toggleUserStatus;
       const role = toggleButton.dataset.userRole;
@@ -1601,9 +1641,7 @@ function setupAdminUserManagement() {
         `${nextStatus ? "Aktifkan" : "Nonaktifkan"} user ini?`
       );
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
 
       toggleButton.disabled = true;
       toggleButton.textContent = "Memproses...";
@@ -1629,21 +1667,6 @@ function setupAdminUserManagement() {
 /* =========================
    AUDIT LOGS
 ========================= */
-function showAuditPanelIfAllowed() {
-  const auditPanel = document.getElementById("adminAuditPanel");
-
-  if (!auditPanel) {
-    return;
-  }
-
-  if (isCurrentUserAdmin()) {
-    auditPanel.classList.remove("is-hidden");
-    loadAuditLogs();
-  } else {
-    auditPanel.classList.add("is-hidden");
-  }
-}
-
 function getAuditActionLabel(action) {
   const labels = {
     bike_create: "Tambah Sepeda",
@@ -1652,7 +1675,8 @@ function getAuditActionLabel(action) {
     bike_reactivate: "Aktifkan Sepeda",
     bike_hard_delete: "Hapus Permanen",
     user_create: "Tambah User",
-    user_update: "Edit User"
+    user_update: "Edit User",
+    invoice_create: "Buat Invoice"
   };
 
   return labels[action] || action || "Aktivitas";
@@ -1698,6 +1722,10 @@ function createAuditDetailsText(log) {
 
   if (Array.isArray(details.changedFields) && details.changedFields.length) {
     return `Field berubah: ${details.changedFields.join(", ")}`;
+  }
+
+  if (details.customerName && details.bikeName) {
+    return `${details.customerName} membeli ${details.bikeName}. Total: Rp ${Number(details.totalPrice || 0).toLocaleString("id-ID")}`;
   }
 
   if (details.username && details.role) {
@@ -1834,6 +1862,7 @@ function setupAuditLogs() {
 ========================= */
 setupAdminLogin();
 setupAdminLogout();
+setupAdminViewNavigation();
 setupBikeRefresh();
 setupImagePreviewInputs();
 setupColorVariantEditor();
