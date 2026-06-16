@@ -7,130 +7,138 @@ function jsonResponse(data, status = 200) {
   });
 }
 
-function cleanBikeForAI(bike) {
+function rowToBike(row) {
   return {
-    id: bike.id,
-    brand: bike.brand,
-    name: bike.name,
-    battery: bike.battery || "-",
-    motor: bike.motor || "-",
-    topSpeed: bike.topSpeed || "-",
-    range: bike.range || "-",
-    maxWeight: bike.maxWeight || "-",
-    safety: bike.safety || "Kunci Manual, Sistem Keamanan Standar",
-    comfort: bike.comfort || "-",
-    description: bike.description || "-"
+    ...row,
+    price: Number(row.price || 0),
+    featured: Boolean(row.featured),
+    inStock: Boolean(row.inStock),
+    stockQty: Number(row.stockQty || 0)
   };
 }
 
-function cleanJsonText(text) {
-  return text
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/```$/i, "")
-    .trim();
+function getOutputText(openAiData) {
+  return (
+    openAiData.output_text ||
+    openAiData.output?.[0]?.content?.[0]?.text ||
+    openAiData.output?.[1]?.content?.[0]?.text ||
+    ""
+  );
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const { bikeOne, bikeTwo } = await request.json();
+    if (!env.OPENAI_API_KEY) {
+      return jsonResponse({ error: "OpenAI API key is missing" }, 500);
+    }
 
-    if (!bikeOne || !bikeTwo) {
+    if (!env.BIKE_DB) {
+      return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
+    }
+
+    const body = await request.json().catch(() => null);
+
+    if (!body) {
+      return jsonResponse({ error: "Invalid request body" }, 400);
+    }
+
+    const bikeIds = Array.isArray(body.bikeIds)
+      ? body.bikeIds.map((id) => String(id).trim()).filter(Boolean)
+      : [];
+
+    const usage = String(body.usage || body.need || "").trim();
+
+    if (bikeIds.length < 2) {
       return jsonResponse(
-        { error: "Two bikes are required" },
+        { error: "Pilih minimal 2 sepeda untuk dibandingkan" },
         400
       );
     }
 
-    if (!env.OPENAI_API_KEY) {
+    const placeholders = bikeIds.map(() => "?").join(", ");
+
+    const result = await env.BIKE_DB
+      .prepare(`
+        SELECT *
+        FROM bikes
+        WHERE inStock = 1
+          AND id IN (${placeholders})
+        ORDER BY brand ASC, name ASC
+      `)
+      .bind(...bikeIds)
+      .all();
+
+    const bikes = (result.results || []).map(rowToBike);
+
+    if (bikes.length < 2) {
       return jsonResponse(
-        { error: "OpenAI API key is missing" },
-        500
+        { error: "Data sepeda yang dipilih tidak lengkap atau tidak tersedia" },
+        404
       );
     }
 
-    const bikeOneForAI = cleanBikeForAI(bikeOne);
-    const bikeTwoForAI = cleanBikeForAI(bikeTwo);
+    const bikesForAI = bikes.map((bike) => ({
+      id: bike.id,
+      brand: bike.brand,
+      name: bike.name,
+      battery: bike.battery,
+      motor: bike.motor,
+      topSpeed: bike.topSpeed,
+      range: bike.range,
+      maxWeight: bike.maxWeight,
+      safety: bike.safety,
+      comfort: bike.comfort,
+      price: bike.price || 0,
+      description: bike.description
+    }));
 
     const prompt = `
 Anda adalah asisten showroom sepeda listrik CV Niaga Bersama Abadi.
 
 Tugas:
-Bandingkan dua sepeda listrik untuk membantu pelanggan memilih model yang lebih sesuai.
+Bandingkan sepeda listrik yang dipilih pelanggan dan berikan rekomendasi singkat.
 
-Sepeda pertama:
-${JSON.stringify(bikeOneForAI, null, 2)}
+Kebutuhan pelanggan:
+${usage || "Tidak disebutkan"}
 
-Sepeda kedua:
-${JSON.stringify(bikeTwoForAI, null, 2)}
+Daftar sepeda yang dibandingkan:
+${JSON.stringify(bikesForAI, null, 2)}
 
 Aturan:
+- Bandingkan hanya sepeda dari daftar.
+- Jika harga 0, anggap harga tidak ditampilkan dan jangan jadikan harga sebagai alasan utama.
 - Gunakan Bahasa Indonesia.
-- Jangan membahas harga.
-- Jangan mengarang data di luar spesifikasi yang diberikan.
-- Jika data kosong atau "-", sebutkan bahwa informasinya belum tersedia.
-- Fokus pada kenyamanan, keamanan, tenaga, jarak tempuh, dan kecocokan penggunaan.
-- Kembalikan JSON valid saja.
-- Jangan gunakan markdown.
-- Jangan bungkus jawaban dengan code block.
-- Isi "winner" hanya dengan "bikeOne", "bikeTwo", atau "tie".
-- Gunakan kalimat singkat dan mudah dipahami.
-
-Format JSON:
+- Jawaban harus singkat, jelas, dan membantu pelanggan awam.
+- Kembalikan JSON valid saja tanpa markdown dengan format:
 {
-  "summary": "Ringkasan singkat 1-2 kalimat.",
-  "rows": [
+  "summary": "ringkasan perbandingan singkat",
+  "bestBikeId": "id-sepeda-terbaik",
+  "reason": "alasan memilih sepeda tersebut",
+  "comparisonPoints": [
     {
-      "label": "Kenyamanan",
-      "bikeOne": "Penjelasan singkat untuk sepeda pertama",
-      "bikeTwo": "Penjelasan singkat untuk sepeda kedua",
-      "winner": "bikeOne"
-    },
-    {
-      "label": "Keamanan",
-      "bikeOne": "Penjelasan singkat untuk sepeda pertama",
-      "bikeTwo": "Penjelasan singkat untuk sepeda kedua",
-      "winner": "bikeTwo"
-    },
-    {
-      "label": "Tenaga",
-      "bikeOne": "Penjelasan singkat untuk sepeda pertama",
-      "bikeTwo": "Penjelasan singkat untuk sepeda kedua",
-      "winner": "tie"
-    },
-    {
-      "label": "Jarak tempuh",
-      "bikeOne": "Penjelasan singkat untuk sepeda pertama",
-      "bikeTwo": "Penjelasan singkat untuk sepeda kedua",
-      "winner": "tie"
-    },
-    {
-      "label": "Cocok untuk",
-      "bikeOne": "Cocok untuk siapa",
-      "bikeTwo": "Cocok untuk siapa",
-      "winner": "tie"
+      "label": "Performa",
+      "text": "penjelasan singkat"
     }
-  ],
-  "finalRecommendation": "Rekomendasi akhir singkat."
+  ]
 }
 `;
 
-    const openAIResponse = await fetch("https://api.openai.com/v1/responses", {
+    const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "gpt-5.4-mini",
         input: prompt
       })
     });
 
-    if (!openAIResponse.ok) {
-      const errorText = await openAIResponse.text();
+    if (!openAiResponse.ok) {
+      const errorText = await openAiResponse.text();
       console.error("OpenAI API error:", errorText);
 
       return jsonResponse(
@@ -139,35 +147,34 @@ Format JSON:
       );
     }
 
-    const openAIData = await openAIResponse.json();
+    const openAiData = await openAiResponse.json();
+    const text = getOutputText(openAiData).trim();
 
-    const outputText =
-      openAIData.output_text ||
-      openAIData.output?.[0]?.content?.[0]?.text ||
-      "";
-
-    if (!outputText) {
-      return jsonResponse(
-        { error: "AI comparison is empty" },
-        500
-      );
+    if (!text) {
+      return jsonResponse({ error: "AI returned empty response" }, 500);
     }
 
-    let comparison;
+    let parsed;
 
     try {
-      comparison = JSON.parse(cleanJsonText(outputText));
+      parsed = JSON.parse(text);
     } catch (error) {
-      console.error("Failed to parse AI comparison JSON:", outputText);
-
-      return jsonResponse(
-        { error: "AI comparison format is invalid" },
-        500
-      );
+      console.error("AI JSON parse error:", text);
+      return jsonResponse({ error: "AI returned invalid JSON" }, 500);
     }
 
+    const bestBike = bikes.find((bike) => bike.id === parsed.bestBikeId);
+
     return jsonResponse({
-      comparison
+      success: true,
+      bikes,
+      summary: parsed.summary || "Berikut perbandingan sepeda yang dipilih.",
+      bestBikeId: bestBike ? bestBike.id : bikes[0].id,
+      bestBike: bestBike || bikes[0],
+      reason: parsed.reason || "Sepeda ini paling seimbang untuk kebutuhan yang dipilih.",
+      comparisonPoints: Array.isArray(parsed.comparisonPoints)
+        ? parsed.comparisonPoints
+        : []
     });
   } catch (error) {
     console.error("Compare bikes error:", error);

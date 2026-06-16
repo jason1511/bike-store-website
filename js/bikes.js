@@ -2,15 +2,9 @@ let currentBrand = "all";
 let currentSort = "default";
 let currentSearch = "";
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
+/* =========================
+   FILTER + SORT
+========================= */
 function getInitialBrandFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const brand = params.get("brand");
@@ -75,13 +69,13 @@ function updateBikeStatus() {
 
   if (currentSearch.trim()) {
     bikeStatus.innerHTML = `
-      Menampilkan <strong>${brandLabel}</strong> untuk 
+      Menampilkan <strong>${escapeHtml(brandLabel)}</strong> untuk
       <strong>“${escapeHtml(currentSearch.trim())}”</strong> (${visibleCount})
     `;
     return;
   }
 
-  bikeStatus.innerHTML = `Menampilkan <strong>${brandLabel}</strong> (${visibleCount})`;
+  bikeStatus.innerHTML = `Menampilkan <strong>${escapeHtml(brandLabel)}</strong> (${visibleCount})`;
 }
 
 function updateActiveFilterButton() {
@@ -173,6 +167,9 @@ function setupClearFilters() {
   });
 }
 
+/* =========================
+   BIKE MODAL
+========================= */
 function setupBikeModal() {
   const bikeGrid = document.getElementById("bikeGrid");
 
@@ -204,249 +201,445 @@ function setupBikeModal() {
   });
 }
 
-function setupCompareBikeDropdowns() {
-  const compareBikeOne = document.getElementById("compareBikeOne");
-  const compareBikeTwo = document.getElementById("compareBikeTwo");
+/* =========================
+   COMPARE BIKES
+========================= */
+function getCompareElements() {
+  return {
+    form:
+      document.getElementById("compareBikeForm") ||
+      document.getElementById("compareForm"),
 
-  if (!compareBikeOne || !compareBikeTwo) {
+    bikeOne: document.getElementById("compareBikeOne"),
+    bikeTwo: document.getElementById("compareBikeTwo"),
+
+    usage:
+      document.getElementById("compareUsageInput") ||
+      document.getElementById("compareNeedInput"),
+
+    button:
+      document.getElementById("compareBikeBtn") ||
+      document.querySelector("#compareBikeForm button[type='submit']") ||
+      document.getElementById("compareBikesBtn"),
+
+    result:
+      document.getElementById("compareBikeResult") ||
+      document.getElementById("compareResult") ||
+      document.getElementById("compareResultPanel") ||
+      document.getElementById("compareOutput")
+  };
+}
+
+function setupCompareBikeDropdowns() {
+  const { bikeOne, bikeTwo } = getCompareElements();
+
+  if (!bikeOne || !bikeTwo) {
     return;
   }
 
   const bikeOptions = bikes
-    .map((bike) => {
-      return `
-        <option value="${escapeHtml(bike.id)}">
-          ${escapeHtml(bike.brand)} - ${escapeHtml(bike.name)}
-        </option>
-      `;
-    })
+    .map((bike) => `
+      <option value="${escapeHtml(bike.id)}">
+        ${escapeHtml(bike.brand)} - ${escapeHtml(bike.name)}
+      </option>
+    `)
     .join("");
 
-  compareBikeOne.innerHTML = `
+  bikeOne.innerHTML = `
     <option value="">Pilih sepeda pertama</option>
     ${bikeOptions}
   `;
 
-  compareBikeTwo.innerHTML = `
+  bikeTwo.innerHTML = `
     <option value="">Pilih sepeda kedua</option>
     ${bikeOptions}
   `;
 }
 
-function getCompareCellClass(winner, side) {
-  if (winner === "tie") {
-    return "compare-neutral";
-  }
-
-  if (winner === side) {
-    return "compare-win";
-  }
-
-  return "compare-lose";
-}
-
-function createCompareBikePreview(bike, label, buttonId) {
-  const brandClass = getBrandTheme(bike.brand).className;
+function createCompareBikePreview(bike, label) {
+  const brandTheme = getBrandTheme(bike.brand);
+  const colors = getBikeColors(bike);
+  const defaultColor = colors[0] || null;
+  const imageSrc = defaultColor?.image || bike.image || "images/logo.jpeg";
+  const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
 
   return `
     <button
       type="button"
-      class="compare-bike-preview ${brandClass}"
-      id="${buttonId}"
+      class="compare-bike-preview ${brandTheme.className}"
+      data-bike-id="${escapeHtml(bike.id)}"
       aria-label="Lihat detail ${escapeHtml(bike.name)}"
     >
       <div class="compare-bike-preview-image">
-        <img src="${escapeHtml(bike.image)}" alt="${escapeHtml(bike.alt)}">
+        <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(imageAlt)}">
       </div>
 
       <div class="compare-bike-preview-info">
-        <p class="hero-bike-label">${escapeHtml(label)}</p>
-        <p class="hero-bike-brand">${escapeHtml(bike.brand)}</p>
-        <h4>${escapeHtml(bike.name)}</h4>
-
-        <div class="compare-bike-preview-specs">
-          <span>${escapeHtml(bike.range || "Jarak belum tersedia")}</span>
-          <span>${escapeHtml(bike.motor || "Motor belum tersedia")}</span>
-          <span>${escapeHtml(bike.safety || "Keamanan standar")}</span>
-        </div>
-
-        <p class="compare-click-hint">Klik untuk lihat detail</p>
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(bike.brand)} ${escapeHtml(bike.name)}</strong>
+        <small>${escapeHtml(bike.range || "-")} • ${escapeHtml(bike.motor || "-")}</small>
       </div>
     </button>
   `;
 }
 
-function renderComparisonResult(result, bikeOne, bikeTwo, comparison) {
-  const rows = Array.isArray(comparison.rows) ? comparison.rows : [];
+function createComparisonPoints(points) {
+  if (!Array.isArray(points) || !points.length) {
+    return "";
+  }
 
-  const rowsHtml = rows
-    .map((row) => {
-      const winner = ["bikeOne", "bikeTwo", "tie"].includes(row.winner)
-        ? row.winner
-        : "tie";
-
-      return `
-        <tr>
-          <th>${escapeHtml(row.label)}</th>
-          <td class="${getCompareCellClass(winner, "bikeOne")}">
-            ${escapeHtml(row.bikeOne)}
-          </td>
-          <td class="${getCompareCellClass(winner, "bikeTwo")}">
-            ${escapeHtml(row.bikeTwo)}
-          </td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  result.innerHTML = `
-    <p class="hero-bike-label">Hasil Perbandingan AI</p>
-    <h3>${escapeHtml(bikeOne.name)} vs ${escapeHtml(bikeTwo.name)}</h3>
-
-    <div class="compare-preview-grid">
-  ${createCompareBikePreview(bikeOne, "Sepeda Pertama", "openCompareBikeOne")}
-
-  <div class="compare-vs-badge">VS</div>
-
-  ${createCompareBikePreview(bikeTwo, "Sepeda Kedua", "openCompareBikeTwo")}
-</div>
-
-    <div class="compare-summary">
-      <p>${escapeHtml(comparison.summary || "Ringkasan belum tersedia.")}</p>
-    </div>
-
-    <div class="compare-table-wrap">
-      <table class="compare-table">
-        <thead>
-          <tr>
-            <th>Aspek</th>
-            <th>${escapeHtml(bikeOne.name)}</th>
-            <th>${escapeHtml(bikeTwo.name)}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="compare-final">
-      <strong>Rekomendasi akhir:</strong>
-      <p>${escapeHtml(comparison.finalRecommendation || "Rekomendasi akhir belum tersedia.")}</p>
+  return `
+    <div class="compare-ai-points">
+      ${points
+        .map((point) => `
+          <div class="compare-ai-point">
+            <strong>${escapeHtml(point.label || "Catatan")}</strong>
+            <p>${escapeHtml(point.text || "")}</p>
+          </div>
+        `)
+        .join("")}
     </div>
   `;
-
-  const openBikeOneButton = document.getElementById("openCompareBikeOne");
-  const openBikeTwoButton = document.getElementById("openCompareBikeTwo");
-
-  if (openBikeOneButton) {
-    openBikeOneButton.addEventListener("click", () => {
-      openBikeModal(bikeOne.id);
-    });
-  }
-
-  if (openBikeTwoButton) {
-    openBikeTwoButton.addEventListener("click", () => {
-      openBikeModal(bikeTwo.id);
-    });
-  }
 }
 
-function setupCompareBikeForm() {
-  const form = document.getElementById("compareBikeForm");
-  const result = document.getElementById("compareBikeResult");
-  const compareBikeOne = document.getElementById("compareBikeOne");
-  const compareBikeTwo = document.getElementById("compareBikeTwo");
+function extractNumber(value) {
+  const match = String(value || "").match(/\d+/);
 
-  if (!form || !result || !compareBikeOne || !compareBikeTwo) {
+  return match ? Number(match[0]) : 0;
+}
+
+function getCompareCellClass(type, bike, otherBike, winnerId) {
+  if (type === "winner") {
+    return bike.id === winnerId ? "is-better" : "is-weaker";
+  }
+
+  if (type === "range") {
+    const bikeValue = extractNumber(bike.range);
+    const otherValue = extractNumber(otherBike.range);
+
+    if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
+    return bikeValue > otherValue ? "is-better" : "is-weaker";
+  }
+
+  if (type === "motor") {
+    const bikeValue = extractNumber(bike.motor);
+    const otherValue = extractNumber(otherBike.motor);
+
+    if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
+    return bikeValue > otherValue ? "is-better" : "is-weaker";
+  }
+
+  if (type === "battery") {
+    const bikeValue = extractNumber(bike.battery);
+    const otherValue = extractNumber(otherBike.battery);
+
+    if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
+    return bikeValue > otherValue ? "is-better" : "is-weaker";
+  }
+
+  if (type === "speed") {
+    const bikeValue = extractNumber(bike.topSpeed);
+    const otherValue = extractNumber(otherBike.topSpeed);
+
+    if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
+    return bikeValue > otherValue ? "is-better" : "is-weaker";
+  }
+
+  if (type === "comfort") {
+    const bikeValue = bike.comfort === "high" ? 2 : 1;
+    const otherValue = otherBike.comfort === "high" ? 2 : 1;
+
+    if (bikeValue === otherValue) return "";
+    return bikeValue > otherValue ? "is-better" : "is-weaker";
+  }
+
+  return "";
+}
+
+function createCompareTableRow(label, bikeOneValue, bikeTwoValue, bikeOneClass = "", bikeTwoClass = "") {
+  return `
+    <tr>
+      <td>${escapeHtml(label)}</td>
+      <td class="${bikeOneClass}">${escapeHtml(bikeOneValue || "-")}</td>
+      <td class="${bikeTwoClass}">${escapeHtml(bikeTwoValue || "-")}</td>
+    </tr>
+  `;
+}
+
+function createCompareTableRows(bikeOne, bikeTwo, winnerId) {
+  return [
+    createCompareTableRow(
+      "Rekomendasi",
+      bikeOne.id === winnerId ? "Direkomendasikan" : "Alternatif",
+      bikeTwo.id === winnerId ? "Direkomendasikan" : "Alternatif",
+      getCompareCellClass("winner", bikeOne, bikeTwo, winnerId),
+      getCompareCellClass("winner", bikeTwo, bikeOne, winnerId)
+    ),
+    createCompareTableRow(
+      "Jarak Tempuh",
+      bikeOne.range,
+      bikeTwo.range,
+      getCompareCellClass("range", bikeOne, bikeTwo, winnerId),
+      getCompareCellClass("range", bikeTwo, bikeOne, winnerId)
+    ),
+    createCompareTableRow(
+      "Motor",
+      bikeOne.motor,
+      bikeTwo.motor,
+      getCompareCellClass("motor", bikeOne, bikeTwo, winnerId),
+      getCompareCellClass("motor", bikeTwo, bikeOne, winnerId)
+    ),
+    createCompareTableRow(
+      "Baterai",
+      bikeOne.battery,
+      bikeTwo.battery,
+      getCompareCellClass("battery", bikeOne, bikeTwo, winnerId),
+      getCompareCellClass("battery", bikeTwo, bikeOne, winnerId)
+    ),
+    createCompareTableRow(
+      "Kecepatan Maks",
+      bikeOne.topSpeed,
+      bikeTwo.topSpeed,
+      getCompareCellClass("speed", bikeOne, bikeTwo, winnerId),
+      getCompareCellClass("speed", bikeTwo, bikeOne, winnerId)
+    ),
+    createCompareTableRow(
+      "Kenyamanan",
+      bikeOne.comfort || "-",
+      bikeTwo.comfort || "-",
+      getCompareCellClass("comfort", bikeOne, bikeTwo, winnerId),
+      getCompareCellClass("comfort", bikeTwo, bikeOne, winnerId)
+    ),
+    createCompareTableRow(
+      "Fitur Keamanan",
+      bikeOne.safety,
+      bikeTwo.safety
+    )
+  ].join("");
+}
+
+function renderCompareLoading() {
+  const { result } = getCompareElements();
+
+  if (!result) {
     return;
   }
 
-  form.addEventListener("submit", async (event) => {
+  result.innerHTML = `
+    <div class="compare-result-card">
+      <h3>Membandingkan sepeda...</h3>
+      <p>AI sedang membantu memilih sepeda yang paling sesuai.</p>
+    </div>
+  `;
+}
+
+function renderCompareError(message) {
+  const { result } = getCompareElements();
+
+  if (!result) {
+    return;
+  }
+
+  result.innerHTML = `
+    <div class="compare-result-card is-error">
+      <h3>Perbandingan gagal</h3>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  `;
+}
+
+function renderCompareResult(data) {
+  const { result } = getCompareElements();
+
+  if (!result) {
+    return;
+  }
+
+  const bikesToPreview = Array.isArray(data.bikes) ? data.bikes : [];
+  const bikeOne = bikesToPreview[0];
+  const bikeTwo = bikesToPreview[1];
+  const bestBike =
+    data.bestBike ||
+    bikesToPreview.find((bike) => bike.id === data.bestBikeId);
+
+  if (!bikeOne || !bikeTwo) {
+    renderCompareError("Data sepeda tidak lengkap untuk dibandingkan.");
+    return;
+  }
+
+  const winnerId = bestBike?.id || data.bestBikeId || "";
+  const comparisonRows = createCompareTableRows(bikeOne, bikeTwo, winnerId);
+
+  result.innerHTML = `
+    <div class="compare-result-card">
+      <div class="compare-preview-grid">
+        ${createCompareBikePreview(bikeOne, "Pilihan 1")}
+        ${createCompareBikePreview(bikeTwo, "Pilihan 2")}
+      </div>
+
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Aspek</th>
+              <th>${escapeHtml(bikeOne.brand)} ${escapeHtml(bikeOne.name)}</th>
+              <th>${escapeHtml(bikeTwo.brand)} ${escapeHtml(bikeTwo.name)}</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${comparisonRows}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="compare-ai-summary">
+        <p class="compare-eyebrow">Rekomendasi AI</p>
+        <h3>${escapeHtml(data.summary || "Hasil perbandingan sepeda")}</h3>
+
+        ${
+          bestBike
+            ? `
+              <p>
+                Rekomendasi utama:
+                <strong>${escapeHtml(bestBike.brand)} ${escapeHtml(bestBike.name)}</strong>
+              </p>
+            `
+            : ""
+        }
+
+        <p>${escapeHtml(data.reason || "Pilih sepeda yang paling sesuai dengan kebutuhan harian Anda.")}</p>
+
+        ${createComparisonPoints(data.comparisonPoints)}
+      </div>
+    </div>
+  `;
+
+  result.querySelectorAll("[data-bike-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      openBikeModal(button.dataset.bikeId);
+    });
+  });
+}
+
+async function compareSelectedBikesWithAI(bikeIds, usage = "") {
+  const response = await fetch("/api/compare-bikes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      bikeIds,
+      usage
+    })
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Gagal membandingkan sepeda.");
+  }
+
+  return data;
+}
+
+function setupCompareBikes() {
+  const { form, bikeOne, bikeTwo, usage, button } = getCompareElements();
+
+  if (!bikeOne || !bikeTwo) {
+    return;
+  }
+
+  const handleCompare = async (event) => {
     event.preventDefault();
 
-    const bikeOneId = compareBikeOne.value;
-    const bikeTwoId = compareBikeTwo.value;
+    const bikeOneId = bikeOne.value;
+    const bikeTwoId = bikeTwo.value;
+    const usageText = usage?.value.trim() || "";
 
     if (!bikeOneId || !bikeTwoId) {
-      result.innerHTML = `
-        <h3>Pilih dua sepeda terlebih dahulu</h3>
-        <p>Silakan pilih sepeda pertama dan sepeda kedua untuk dibandingkan.</p>
-      `;
+      renderCompareError("Pilih dua sepeda terlebih dahulu.");
       return;
     }
 
     if (bikeOneId === bikeTwoId) {
-      result.innerHTML = `
-        <h3>Pilih dua model yang berbeda</h3>
-        <p>Perbandingan akan lebih berguna jika Anda memilih dua sepeda yang berbeda.</p>
-      `;
+      renderCompareError("Pilih dua sepeda yang berbeda untuk dibandingkan.");
       return;
     }
 
-    const bikeOne = getBikeById(bikeOneId);
-    const bikeTwo = getBikeById(bikeTwoId);
-
-    if (!bikeOne || !bikeTwo) {
-      result.innerHTML = `
-        <h3>Data sepeda tidak ditemukan</h3>
-        <p>Silakan pilih ulang sepeda yang ingin dibandingkan.</p>
-      `;
-      return;
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Membandingkan...";
     }
 
-    result.innerHTML = `
-      <h3>Membandingkan sepeda...</h3>
-      <p>Sedang membandingkan spesifikasi, kenyamanan, keamanan, dan kecocokan penggunaan.</p>
-    `;
+    renderCompareLoading();
 
     try {
-      const response = await fetch("/api/compare-bikes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          bikeOne,
-          bikeTwo
-        })
-      });
+      const data = await compareSelectedBikesWithAI(
+        [bikeOneId, bikeTwoId],
+        usageText
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error("Compare API error response:", errorData);
-        throw new Error(errorData?.error || "Failed to compare bikes");
-      }
-
-      const data = await response.json();
-
-      if (!data.comparison) {
-        throw new Error("Comparison data missing");
-      }
-
-      renderComparisonResult(result, bikeOne, bikeTwo, data.comparison);
+      renderCompareResult(data);
     } catch (error) {
-      console.error(error);
-
-      result.innerHTML = `
-        <h3>Perbandingan belum tersedia</h3>
-        <p>Silakan coba lagi, atau buka detail masing-masing sepeda untuk membandingkan secara manual.</p>
-      `;
+      renderCompareError(error.message);
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Bandingkan";
+      }
     }
-  });
+  };
+
+  if (form) {
+    form.addEventListener("submit", handleCompare);
+    return;
+  }
+
+  if (button) {
+    button.addEventListener("click", handleCompare);
+  }
 }
 
-whenBikesLoaded(() => {
-  currentBrand = getInitialBrandFromUrl();
+/* =========================
+   PAGE INIT
+========================= */
+async function initializeBikesPage() {
+  try {
+    if (typeof loadBikes === "function") {
+      await loadBikes();
+    } else if (typeof loadBikeData === "function") {
+      await loadBikeData();
+    } else if (typeof initializeBikeData === "function") {
+      await initializeBikeData();
+    }
 
-  renderBikes();
-  updateActiveFilterButton();
-  setupBikeFilters();
-  setupBikeSort();
-  setupBikeSearch();
-  setupClearFilters();
-  setupBikeModal();
-  setupBikeModalControls();
-  setupCompareBikeDropdowns();
-  setupCompareBikeForm();
-});
+    currentBrand = getInitialBrandFromUrl();
+
+    setupBikeFilters();
+    setupBikeSearch();
+    setupBikeSort();
+    setupClearFilters();
+    setupBikeModal();
+    setupCompareBikeDropdowns();
+    setupCompareBikes();
+
+    updateActiveFilterButton();
+    renderBikes();
+  } catch (error) {
+    console.error("Failed to initialize bikes page:", error);
+
+    const bikeGrid = document.getElementById("bikeGrid");
+
+    if (bikeGrid) {
+      bikeGrid.innerHTML = `
+        <div class="bike-empty-state">
+          <h3>Gagal memuat katalog</h3>
+          <p>Silakan refresh halaman atau coba lagi nanti.</p>
+        </div>
+      `;
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", initializeBikesPage);
