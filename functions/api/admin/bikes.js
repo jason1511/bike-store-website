@@ -1,106 +1,173 @@
 import {
-  hashPassword,
   jsonResponse,
   requireRole,
   writeAuditLog
 } from "../../_shared/auth.js";
 
-function createUserId(username) {
-  return `user_${String(username || "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")}`;
-}
-
-function normalizeRole(role) {
-  const normalizedRole = String(role || "").trim().toLowerCase();
-
-  if (["admin", "staff"].includes(normalizedRole)) {
-    return normalizedRole;
+function parseBikeColors(colors) {
+  if (Array.isArray(colors)) {
+    return colors;
   }
 
-  return "";
+  if (typeof colors === "string") {
+    try {
+      const parsedColors = JSON.parse(colors);
+      return Array.isArray(parsedColors) ? parsedColors : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  return [];
 }
 
-function rowToUser(row) {
+function normalizeBikeColors(colors) {
+  const parsedColors = parseBikeColors(colors);
+
+  const cleanedColors = parsedColors
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim()
+    }))
+    .filter((color) => color.name || color.image);
+
+  return JSON.stringify(cleanedColors);
+}
+
+function normalizeBikePayload(payload) {
   return {
-    id: row.id,
-    username: row.username,
-    role: row.role,
-    isActive: Boolean(row.is_active),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
+    id: String(payload.id || "").trim(),
+    brand: String(payload.brand || "").trim(),
+    name: String(payload.name || "").trim(),
+    battery: String(payload.battery || "").trim(),
+    motor: String(payload.motor || "").trim(),
+    topSpeed: String(payload.topSpeed || "").trim(),
+    range: String(payload.range || "").trim(),
+    maxWeight: String(payload.maxWeight || "").trim(),
+    safety: String(payload.safety || "").trim(),
+    image: String(payload.image || "").trim(),
+    alt: String(payload.alt || "").trim(),
+    comfort: String(payload.comfort || "medium").trim(),
+    colorName: String(payload.colorName || "").trim(),
+    colors: normalizeBikeColors(payload.colors),
+    description: String(payload.description || "").trim(),
+    price: Number(payload.price || 0),
+    featured: payload.featured ? 1 : 0,
+    inStock: payload.inStock ? 1 : 0,
+    stockQty: Number(payload.stockQty || 0)
   };
 }
 
-function getUserLabel(user) {
-  return `${user.username || ""} (${user.role || ""})`.trim();
+function validateBike(bike) {
+  const errors = [];
+
+  if (!bike.id) errors.push("ID sepeda wajib diisi.");
+  if (!bike.brand) errors.push("Brand wajib diisi.");
+  if (!bike.name) errors.push("Nama model wajib diisi.");
+  if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
+  if (bike.stockQty < 0) errors.push("Jumlah unit display tidak boleh negatif.");
+
+  return errors;
 }
 
-function getChangedUserFields(beforeUser, afterUser, passwordChanged = false) {
-  const changedFields = [];
-
-  if (beforeUser.role !== afterUser.role) {
-    changedFields.push("role");
-  }
-
-  if (beforeUser.isActive !== afterUser.isActive) {
-    changedFields.push("isActive");
-  }
-
-  if (passwordChanged) {
-    changedFields.push("password");
-  }
-
-  return changedFields;
+function rowToBike(row) {
+  return {
+    ...row,
+    colors: parseBikeColors(row.colors),
+    price: Number(row.price || 0),
+    featured: Boolean(row.featured),
+    inStock: Boolean(row.inStock),
+    stockQty: Number(row.stockQty || 0)
+  };
 }
 
-async function getUserByUsername(db, username) {
+function getBikeLabel(bike) {
+  return `${bike.brand || ""} ${bike.name || ""}`.trim();
+}
+
+function getChangedBikeFields(beforeBike, afterBike) {
+  if (!beforeBike || !afterBike) {
+    return [];
+  }
+
+  const fields = [
+    "brand",
+    "name",
+    "battery",
+    "motor",
+    "topSpeed",
+    "range",
+    "maxWeight",
+    "safety",
+    "image",
+    "alt",
+    "comfort",
+    "colorName",
+    "description",
+    "price",
+    "featured",
+    "inStock",
+    "stockQty"
+  ];
+
+  return fields.filter((field) => {
+    const beforeValue = beforeBike[field];
+    const afterValue = afterBike[field];
+
+    return String(beforeValue ?? "") !== String(afterValue ?? "");
+  });
+}
+
+async function getBikeById(db, id) {
   const row = await db
-    .prepare(`
-      SELECT
-        id,
-        username,
-        role,
-        is_active,
-        created_at,
-        updated_at
-      FROM admin_users
-      WHERE username = ?
-      LIMIT 1
-    `)
-    .bind(username)
-    .first();
-
-  return row ? rowToUser(row) : null;
-}
-
-async function getUserById(db, id) {
-  const row = await db
-    .prepare(`
-      SELECT
-        id,
-        username,
-        role,
-        is_active,
-        created_at,
-        updated_at
-      FROM admin_users
-      WHERE id = ?
-      LIMIT 1
-    `)
+    .prepare("SELECT * FROM bikes WHERE id = ?")
     .bind(id)
     .first();
 
-  return row ? rowToUser(row) : null;
+  return row ? rowToBike(row) : null;
+}
+
+async function deactivateBikeById(db, id) {
+  await db
+    .prepare(`
+      UPDATE bikes
+      SET
+        inStock = 0,
+        stockQty = 0,
+        updatedAt = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    .bind(id)
+    .run();
+
+  return getBikeById(db, id);
+}
+
+async function reactivateBikeById(db, id) {
+  await db
+    .prepare(`
+      UPDATE bikes
+      SET
+        inStock = 1,
+        stockQty = CASE
+          WHEN stockQty IS NULL OR stockQty < 1 THEN 1
+          ELSE stockQty
+        END,
+        updatedAt = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    .bind(id)
+    .run();
+
+  return getBikeById(db, id);
 }
 
 export async function onRequestGet(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin"]);
+    const auth = await requireRole(request, env, ["admin", "staff"]);
 
     if (!auth.ok) {
       return auth.response;
@@ -112,29 +179,20 @@ export async function onRequestGet(context) {
 
     const result = await env.BIKE_DB
       .prepare(`
-        SELECT
-          id,
-          username,
-          role,
-          is_active,
-          created_at,
-          updated_at
-        FROM admin_users
-        ORDER BY datetime(created_at) DESC
+        SELECT *
+        FROM bikes
+        ORDER BY brand ASC, name ASC
       `)
       .all();
 
     return jsonResponse({
-      success: true,
-      users: (result.results || []).map(rowToUser)
+      role: auth.user.role,
+      username: auth.user.username,
+      bikes: (result.results || []).map(rowToBike)
     });
   } catch (error) {
-    console.error("Admin users GET error:", error);
-
-    return jsonResponse(
-      { error: "Failed to load users" },
-      500
-    );
+    console.error("Admin bikes GET error:", error);
+    return jsonResponse({ error: "Failed to load bikes from D1" }, 500);
   }
 }
 
@@ -142,7 +200,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin"]);
+    const auth = await requireRole(request, env, ["admin", "staff"]);
 
     if (!auth.ok) {
       return auth.response;
@@ -152,87 +210,91 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
     }
 
-    const payload = await request.json().catch(() => null);
-
-    if (!payload) {
-      return jsonResponse({ error: "Invalid user data" }, 400);
-    }
-
-    const username = String(payload.username || "").trim();
-    const password = String(payload.password || "");
-    const role = normalizeRole(payload.role);
-
-    const errors = [];
-
-    if (!username) errors.push("Username wajib diisi.");
-    if (username.length < 3) errors.push("Username minimal 3 karakter.");
-    if (!password) errors.push("Password wajib diisi.");
-    if (password.length < 8) errors.push("Password minimal 8 karakter.");
-    if (!role) errors.push("Role harus admin atau staff.");
+    const payload = await request.json();
+    const bike = normalizeBikePayload(payload);
+    const errors = validateBike(bike);
 
     if (errors.length) {
-      return jsonResponse(
-        { error: "Invalid user data", errors },
-        400
-      );
+      return jsonResponse({ error: "Invalid bike data", errors }, 400);
     }
 
-    const existingUser = await getUserByUsername(env.BIKE_DB, username);
+    const existingBike = await getBikeById(env.BIKE_DB, bike.id);
 
-    if (existingUser) {
-      return jsonResponse(
-        { error: "Username sudah digunakan." },
-        409
-      );
+    if (existingBike) {
+      return jsonResponse({ error: "Bike ID already exists" }, 409);
     }
-
-    const userId = createUserId(username);
-    const passwordHash = await hashPassword(password, env);
 
     await env.BIKE_DB
       .prepare(`
-        INSERT INTO admin_users (
+        INSERT INTO bikes (
           id,
-          username,
-          password_hash,
-          role,
-          is_active
+          brand,
+          name,
+          battery,
+          motor,
+          topSpeed,
+          range,
+          maxWeight,
+          safety,
+          image,
+          alt,
+          comfort,
+          colorName,
+          colors,
+          description,
+          price,
+          featured,
+          inStock,
+          stockQty
         )
-        VALUES (?, ?, ?, ?, 1)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
-        userId,
-        username,
-        passwordHash,
-        role
+        bike.id,
+        bike.brand,
+        bike.name,
+        bike.battery,
+        bike.motor,
+        bike.topSpeed,
+        bike.range,
+        bike.maxWeight,
+        bike.safety,
+        bike.image,
+        bike.alt,
+        bike.comfort,
+        bike.colorName,
+        bike.colors,
+        bike.description,
+        bike.price,
+        bike.featured,
+        bike.inStock,
+        bike.stockQty
       )
       .run();
 
-    const createdUser = await getUserByUsername(env.BIKE_DB, username);
+    const createdBike = await getBikeById(env.BIKE_DB, bike.id);
 
     await writeAuditLog(env, auth.user, {
-      action: "user_create",
-      targetType: "user",
-      targetId: createdUser.id,
-      targetLabel: getUserLabel(createdUser),
+      action: "bike_create",
+      targetType: "bike",
+      targetId: createdBike.id,
+      targetLabel: getBikeLabel(createdBike),
       details: {
-        username: createdUser.username,
-        role: createdUser.role,
-        isActive: createdUser.isActive
+        brand: createdBike.brand,
+        name: createdBike.name,
+        price: createdBike.price,
+        inStock: createdBike.inStock
       }
     });
 
     return jsonResponse({
       success: true,
-      user: createdUser
+      role: auth.user.role,
+      bike: createdBike
     });
   } catch (error) {
-    console.error("Admin users POST error:", error);
-
-    return jsonResponse(
-      { error: "Failed to create user" },
-      500
-    );
+    console.error("Admin bikes POST error:", error);
+    return jsonResponse({ error: "Failed to create bike" }, 500);
   }
 }
 
@@ -240,7 +302,7 @@ export async function onRequestPut(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin"]);
+    const auth = await requireRole(request, env, ["admin", "staff"]);
 
     if (!auth.ok) {
       return auth.response;
@@ -250,123 +312,211 @@ export async function onRequestPut(context) {
       return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
     }
 
-    const payload = await request.json().catch(() => null);
+    const payload = await request.json();
+    const bike = normalizeBikePayload(payload);
+    const errors = validateBike(bike);
 
-    if (!payload) {
-      return jsonResponse({ error: "Invalid user data" }, 400);
+    if (errors.length) {
+      return jsonResponse({ error: "Invalid bike data", errors }, 400);
     }
 
-    const id = String(payload.id || "").trim();
-    const role = normalizeRole(payload.role);
-    const isActive = payload.isActive ? 1 : 0;
-    const password = String(payload.password || "");
+    const existingBike = await getBikeById(env.BIKE_DB, bike.id);
 
-    if (!id) {
-      return jsonResponse({ error: "User ID wajib diisi." }, 400);
+    if (!existingBike) {
+      return jsonResponse({ error: "Bike not found" }, 404);
     }
 
-    if (!role) {
-      return jsonResponse({ error: "Role harus admin atau staff." }, 400);
-    }
-
-    const existingUser = await getUserById(env.BIKE_DB, id);
-
-    if (!existingUser) {
-      return jsonResponse({ error: "User tidak ditemukan." }, 404);
-    }
-
-    const activeAdminCountRow = await env.BIKE_DB
+    await env.BIKE_DB
       .prepare(`
-        SELECT COUNT(*) AS total
-        FROM admin_users
-        WHERE role = 'admin'
-          AND is_active = 1
+        UPDATE bikes
+        SET
+          brand = ?,
+          name = ?,
+          battery = ?,
+          motor = ?,
+          topSpeed = ?,
+          range = ?,
+          maxWeight = ?,
+          safety = ?,
+          image = ?,
+          alt = ?,
+          comfort = ?,
+          colorName = ?,
+          colors = ?,
+          description = ?,
+          price = ?,
+          featured = ?,
+          inStock = ?,
+          stockQty = ?,
+          updatedAt = CURRENT_TIMESTAMP
+        WHERE id = ?
       `)
-      .first();
+      .bind(
+        bike.brand,
+        bike.name,
+        bike.battery,
+        bike.motor,
+        bike.topSpeed,
+        bike.range,
+        bike.maxWeight,
+        bike.safety,
+        bike.image,
+        bike.alt,
+        bike.comfort,
+        bike.colorName,
+        bike.colors,
+        bike.description,
+        bike.price,
+        bike.featured,
+        bike.inStock,
+        bike.stockQty,
+        bike.id
+      )
+      .run();
 
-    const activeAdminCount = Number(activeAdminCountRow?.total || 0);
-    const isEditingActiveAdmin = existingUser.role === "admin" && existingUser.isActive;
-    const willStopBeingActiveAdmin = role !== "admin" || !Boolean(isActive);
-
-    if (isEditingActiveAdmin && willStopBeingActiveAdmin && activeAdminCount <= 1) {
-      return jsonResponse(
-        { error: "Tidak bisa menonaktifkan atau mengubah role admin terakhir." },
-        400
-      );
-    }
-
-    const passwordChanged = Boolean(password);
-
-    if (passwordChanged) {
-      if (password.length < 8) {
-        return jsonResponse({ error: "Password minimal 8 karakter." }, 400);
-      }
-
-      const passwordHash = await hashPassword(password, env);
-
-      await env.BIKE_DB
-        .prepare(`
-          UPDATE admin_users
-          SET
-            password_hash = ?,
-            role = ?,
-            is_active = ?,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
-        `)
-        .bind(passwordHash, role, isActive, id)
-        .run();
-    } else {
-      await env.BIKE_DB
-        .prepare(`
-          UPDATE admin_users
-          SET
-            role = ?,
-            is_active = ?,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
-        `)
-        .bind(role, isActive, id)
-        .run();
-    }
-
-    const updatedUser = await getUserById(env.BIKE_DB, id);
-    const changedFields = getChangedUserFields(
-      existingUser,
-      updatedUser,
-      passwordChanged
-    );
+    const updatedBike = await getBikeById(env.BIKE_DB, bike.id);
+    const changedFields = getChangedBikeFields(existingBike, updatedBike);
 
     await writeAuditLog(env, auth.user, {
-      action: "user_update",
-      targetType: "user",
-      targetId: updatedUser.id,
-      targetLabel: getUserLabel(updatedUser),
+      action: "bike_update",
+      targetType: "bike",
+      targetId: updatedBike.id,
+      targetLabel: getBikeLabel(updatedBike),
       details: {
         changedFields,
         before: {
-          username: existingUser.username,
-          role: existingUser.role,
-          isActive: existingUser.isActive
+          brand: existingBike.brand,
+          name: existingBike.name,
+          price: existingBike.price,
+          inStock: existingBike.inStock,
+          stockQty: existingBike.stockQty
         },
         after: {
-          username: updatedUser.username,
-          role: updatedUser.role,
-          isActive: updatedUser.isActive
+          brand: updatedBike.brand,
+          name: updatedBike.name,
+          price: updatedBike.price,
+          inStock: updatedBike.inStock,
+          stockQty: updatedBike.stockQty
         }
       }
     });
 
     return jsonResponse({
       success: true,
-      user: updatedUser
+      role: auth.user.role,
+      bike: updatedBike
     });
   } catch (error) {
-    console.error("Admin users PUT error:", error);
+    console.error("Admin bikes PUT error:", error);
+    return jsonResponse({ error: "Failed to update bike" }, 500);
+  }
+}
 
-    return jsonResponse(
-      { error: "Failed to update user" },
-      500
-    );
+export async function onRequestDelete(context) {
+  const { request, env } = context;
+
+  try {
+    const auth = await requireRole(request, env, ["admin", "staff"]);
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.BIKE_DB) {
+      return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
+    }
+
+    const url = new URL(request.url);
+    const id = url.searchParams.get("id");
+    const mode = url.searchParams.get("mode") || "deactivate";
+
+    if (!id) {
+      return jsonResponse({ error: "Bike ID is required" }, 400);
+    }
+
+    const existingBike = await getBikeById(env.BIKE_DB, id);
+
+    if (!existingBike) {
+      return jsonResponse({ error: "Bike not found" }, 404);
+    }
+
+    if (mode === "hard-delete") {
+      if (auth.user.role !== "admin") {
+        return jsonResponse(
+          { error: "Only admin can hard delete bikes" },
+          403
+        );
+      }
+
+      await env.BIKE_DB
+        .prepare("DELETE FROM bikes WHERE id = ?")
+        .bind(id)
+        .run();
+
+      await writeAuditLog(env, auth.user, {
+        action: "bike_hard_delete",
+        targetType: "bike",
+        targetId: existingBike.id,
+        targetLabel: getBikeLabel(existingBike),
+        details: {
+          brand: existingBike.brand,
+          name: existingBike.name
+        }
+      });
+
+      return jsonResponse({
+        success: true,
+        role: auth.user.role,
+        mode: "hard-delete"
+      });
+    }
+
+    if (mode === "reactivate") {
+      const bike = await reactivateBikeById(env.BIKE_DB, id);
+
+      await writeAuditLog(env, auth.user, {
+        action: "bike_reactivate",
+        targetType: "bike",
+        targetId: bike.id,
+        targetLabel: getBikeLabel(bike),
+        details: {
+          previousInStock: existingBike.inStock,
+          newInStock: bike.inStock,
+          newStockQty: bike.stockQty
+        }
+      });
+
+      return jsonResponse({
+        success: true,
+        role: auth.user.role,
+        mode: "reactivate",
+        bike
+      });
+    }
+
+    const bike = await deactivateBikeById(env.BIKE_DB, id);
+
+    await writeAuditLog(env, auth.user, {
+      action: "bike_deactivate",
+      targetType: "bike",
+      targetId: bike.id,
+      targetLabel: getBikeLabel(bike),
+      details: {
+        previousInStock: existingBike.inStock,
+        previousStockQty: existingBike.stockQty,
+        newInStock: bike.inStock,
+        newStockQty: bike.stockQty
+      }
+    });
+
+    return jsonResponse({
+      success: true,
+      role: auth.user.role,
+      mode: "deactivate",
+      bike
+    });
+  } catch (error) {
+    console.error("Admin bikes DELETE error:", error);
+    return jsonResponse({ error: "Failed to deactivate bike" }, 500);
   }
 }
