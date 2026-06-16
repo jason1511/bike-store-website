@@ -198,3 +198,40 @@ export async function requireRole(request, env, allowedRoles = []) {
     response: null
   };
 }
+export function createAuditId() {
+  return `audit_${Date.now()}_${crypto.randomUUID()}`;
+}
+
+export async function writeAuditLog(env, user, entry) {
+  if (!env.BIKE_DB || !user) {
+    return;
+  }
+
+  await env.BIKE_DB
+    .prepare(`
+      INSERT INTO audit_logs (
+        id,
+        actor_id,
+        actor_username,
+        actor_role,
+        action,
+        target_type,
+        target_id,
+        target_label,
+        details
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    .bind(
+      createAuditId(),
+      user.id || "",
+      user.username || "unknown",
+      user.role || "unknown",
+      entry.action || "unknown",
+      entry.targetType || "unknown",
+      entry.targetId || "",
+      entry.targetLabel || "",
+      entry.details ? JSON.stringify(entry.details) : ""
+    )
+    .run();
+}

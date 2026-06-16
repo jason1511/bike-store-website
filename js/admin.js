@@ -10,6 +10,14 @@ function getStoredAdminToken() {
   return sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY) || "";
 }
 
+function getStoredAdminUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem(ADMIN_USER_STORAGE_KEY) || "null");
+  } catch (error) {
+    return null;
+  }
+}
+
 function setStoredAdminSession(token, user) {
   sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, token);
   sessionStorage.setItem(ADMIN_USER_STORAGE_KEY, JSON.stringify(user));
@@ -18,6 +26,11 @@ function setStoredAdminSession(token, user) {
 function clearStoredAdminSession() {
   sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
   sessionStorage.removeItem(ADMIN_USER_STORAGE_KEY);
+}
+
+function isCurrentUserAdmin() {
+  const user = getStoredAdminUser();
+  return user?.role === "admin";
 }
 
 /* =========================
@@ -40,6 +53,10 @@ function createSlugFromName(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeSearchText(value) {
+  return String(value || "").toLowerCase().trim();
+}
+
 function buildBikeImageBaseName(extra = "") {
   const brand = document.getElementById("bikeBrandInput")?.value.trim() || "";
   const name = document.getElementById("bikeNameInput")?.value.trim() || "";
@@ -50,9 +67,7 @@ function buildBikeImageBaseName(extra = "") {
     .filter(Boolean)
     .join("-");
 }
-function normalizeSearchText(value) {
-  return String(value || "").toLowerCase().trim();
-}
+
 function parseBikeColors(colors) {
   if (Array.isArray(colors)) {
     return colors;
@@ -129,7 +144,8 @@ function showAdminDashboard() {
   }
 
   loadAdminBikes();
-showUserPanelIfAllowed();
+  showUserPanelIfAllowed();
+  showAuditPanelIfAllowed();
 }
 
 function showAdminLogin() {
@@ -237,12 +253,20 @@ function setupAdminLogout() {
   logoutButton.addEventListener("click", () => {
     clearStoredAdminSession();
     adminBikesCache = [];
-    const userPanel = document.getElementById("adminUserPanel");
 
-if (userPanel) {
-  userPanel.classList.add("is-hidden");
-}
     hideBikeEditor();
+
+    const userPanel = document.getElementById("adminUserPanel");
+    const auditPanel = document.getElementById("adminAuditPanel");
+
+    if (userPanel) {
+      userPanel.classList.add("is-hidden");
+    }
+
+    if (auditPanel) {
+      auditPanel.classList.add("is-hidden");
+    }
+
     showAdminLogin();
     setAdminMessage("Anda sudah keluar dari dashboard admin.");
   });
@@ -257,7 +281,14 @@ async function restoreAdminSession() {
   }
 
   try {
-    await verifyAdminSession(token);
+    const data = await verifyAdminSession(token);
+
+    setStoredAdminSession(token, {
+      username: data.username,
+      role: data.role,
+      permissions: data.permissions
+    });
+
     showAdminDashboard();
   } catch (error) {
     clearStoredAdminSession();
@@ -317,7 +348,7 @@ function renderAdminBikes(bikes) {
             </div>
 
             <span class="admin-stock-pill ${isInStock ? "is-in" : "is-out"}">
-              ${isInStock ? `Stok ${escapeHtml(bike.stockQty)}` : "Kosong"}
+              ${isInStock ? "Tampil" : "Nonaktif"}
             </span>
           </div>
 
@@ -374,6 +405,7 @@ function renderAdminBikes(bikes) {
     })
     .join("");
 }
+
 function getAvailableBrands(bikes) {
   return [...new Set(
     bikes
@@ -404,8 +436,9 @@ function populateBrandFilter(bikes) {
       .join("")}
   `;
 
-  const hasCurrentValue = currentValue === "all" || brands.includes(currentValue);
-  brandFilter.value = hasCurrentValue ? currentValue : "all";
+  brandFilter.value = currentValue === "all" || brands.includes(currentValue)
+    ? currentValue
+    : "all";
 }
 
 function getFilteredAdminBikes() {
@@ -473,23 +506,6 @@ function applyAdminBikeFilters() {
   updateAdminResultCount(filteredBikes.length, adminBikesCache.length);
 }
 
-function setupAdminBikeFilters() {
-  const searchInput = document.getElementById("adminBikeSearchInput");
-  const statusFilter = document.getElementById("adminBikeStatusFilter");
-  const brandFilter = document.getElementById("adminBikeBrandFilter");
-
-  if (searchInput) {
-    searchInput.addEventListener("input", applyAdminBikeFilters);
-  }
-
-  if (statusFilter) {
-    statusFilter.addEventListener("change", applyAdminBikeFilters);
-  }
-
-  if (brandFilter) {
-    brandFilter.addEventListener("change", applyAdminBikeFilters);
-  }
-}
 async function loadAdminBikes() {
   const bikeList = document.getElementById("adminBikeList");
 
@@ -530,6 +546,24 @@ function setupBikeRefresh() {
   }
 
   refreshButton.addEventListener("click", loadAdminBikes);
+}
+
+function setupAdminBikeFilters() {
+  const searchInput = document.getElementById("adminBikeSearchInput");
+  const statusFilter = document.getElementById("adminBikeStatusFilter");
+  const brandFilter = document.getElementById("adminBikeBrandFilter");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", applyAdminBikeFilters);
+  }
+
+  if (statusFilter) {
+    statusFilter.addEventListener("change", applyAdminBikeFilters);
+  }
+
+  if (brandFilter) {
+    brandFilter.addEventListener("change", applyAdminBikeFilters);
+  }
 }
 
 /* =========================
@@ -942,12 +976,11 @@ function getBikeFormData() {
     safety: document.getElementById("bikeSafetyInput")?.value.trim() || "",
     image: document.getElementById("bikeImageInput")?.value.trim() || colors[0]?.image || "",
     alt: `Sepeda listrik ${name} di showroom Lumajang`,
-   comfort: document.getElementById("bikeComfortInput")?.value || "medium",
-price: Number(document.getElementById("bikePriceInput")?.value || 0),
-colorName: defaultColorName,
-colors,
-description: document.getElementById("bikeDescriptionInput")?.value.trim() || "",
-featured: Boolean(document.getElementById("bikeFeaturedInput")?.checked),
+    comfort: document.getElementById("bikeComfortInput")?.value || "medium",
+    price: Number(document.getElementById("bikePriceInput")?.value || 0),
+    colorName: defaultColorName,
+    colors,
+    description: document.getElementById("bikeDescriptionInput")?.value.trim() || "",
     featured: Boolean(document.getElementById("bikeFeaturedInput")?.checked),
     inStock: Boolean(document.getElementById("bikeInStockInput")?.checked),
     stockQty: Number(document.getElementById("bikeStockQtyInput")?.value || 0)
@@ -962,8 +995,8 @@ function validateBikeFormData(bike) {
   if (!bike.id) errors.push("ID sepeda gagal dibuat.");
   if (!bike.image) errors.push("Gambar utama atau gambar warna pertama wajib diisi.");
   if (!bike.description) errors.push("Deskripsi wajib diisi.");
-  if (bike.stockQty < 0) errors.push("Jumlah stok tidak boleh negatif.");
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
+  if (bike.stockQty < 0) errors.push("Jumlah unit display tidak boleh negatif.");
 
   bike.colors.forEach((color, index) => {
     if (!color.name && color.image) {
@@ -1157,9 +1190,6 @@ async function reactivateBike(id) {
   return data;
 }
 
-/* =========================
-   SETUP: FORM SAVE
-========================= */
 function setupBikeFormSave() {
   const form = document.getElementById("adminBikeForm");
   const saveButton = document.getElementById("saveBikeBtn");
@@ -1196,6 +1226,7 @@ function setupBikeFormSave() {
 
       setAdminFormNote("Data sepeda berhasil disimpan.", "is-success");
       await loadAdminBikes();
+      loadAuditLogs();
 
       if (!isEditing) {
         fillBikeEditorForm(bike);
@@ -1211,9 +1242,6 @@ function setupBikeFormSave() {
   });
 }
 
-/* =========================
-   SETUP: BIKE CARD ACTIONS
-========================= */
 function setupBikeEditor() {
   const addButton = document.getElementById("addBikeBtn");
   const closeButton = document.getElementById("closeBikeEditorBtn");
@@ -1246,7 +1274,7 @@ function setupBikeEditor() {
       }
 
       const confirmed = window.confirm(
-        `Aktifkan lagi ${bike.name}? Unit ini akan kembali muncul di katalog publik dengan stok minimal 1.`
+        `Aktifkan lagi ${bike.name}? Unit ini akan kembali muncul di katalog publik.`
       );
 
       if (!confirmed) {
@@ -1259,6 +1287,7 @@ function setupBikeEditor() {
       try {
         await reactivateBike(bikeId);
         await loadAdminBikes();
+        loadAuditLogs();
       } catch (error) {
         window.alert(error.message);
         reactivateButton.disabled = false;
@@ -1293,6 +1322,7 @@ function setupBikeEditor() {
         await deactivateBike(bikeId);
         hideBikeEditor();
         await loadAdminBikes();
+        loadAuditLogs();
       } catch (error) {
         window.alert(error.message);
         deactivateButton.disabled = false;
@@ -1319,22 +1349,10 @@ function setupBikeEditor() {
     showBikeEditor();
   });
 }
+
 /* =========================
    USER MANAGEMENT
 ========================= */
-function getStoredAdminUser() {
-  try {
-    return JSON.parse(sessionStorage.getItem(ADMIN_USER_STORAGE_KEY) || "null");
-  } catch (error) {
-    return null;
-  }
-}
-
-function isCurrentUserAdmin() {
-  const user = getStoredAdminUser();
-  return user?.role === "admin";
-}
-
 function showUserPanelIfAllowed() {
   const userPanel = document.getElementById("adminUserPanel");
 
@@ -1554,6 +1572,7 @@ function setupAdminUserManagement() {
 
         setAdminUserFormNote("User berhasil dibuat.", "is-success");
         await loadAdminUsers();
+        loadAuditLogs();
       } catch (error) {
         setAdminUserFormNote(error.message, "is-error");
       } finally {
@@ -1597,6 +1616,7 @@ function setupAdminUserManagement() {
         });
 
         await loadAdminUsers();
+        loadAuditLogs();
       } catch (error) {
         window.alert(error.message);
         toggleButton.disabled = false;
@@ -1605,6 +1625,210 @@ function setupAdminUserManagement() {
     });
   }
 }
+
+/* =========================
+   AUDIT LOGS
+========================= */
+function showAuditPanelIfAllowed() {
+  const auditPanel = document.getElementById("adminAuditPanel");
+
+  if (!auditPanel) {
+    return;
+  }
+
+  if (isCurrentUserAdmin()) {
+    auditPanel.classList.remove("is-hidden");
+    loadAuditLogs();
+  } else {
+    auditPanel.classList.add("is-hidden");
+  }
+}
+
+function getAuditActionLabel(action) {
+  const labels = {
+    bike_create: "Tambah Sepeda",
+    bike_update: "Edit Sepeda",
+    bike_deactivate: "Nonaktifkan Sepeda",
+    bike_reactivate: "Aktifkan Sepeda",
+    bike_hard_delete: "Hapus Permanen",
+    user_create: "Tambah User",
+    user_update: "Edit User"
+  };
+
+  return labels[action] || action || "Aktivitas";
+}
+
+function getAuditActionClass(action) {
+  const actionText = String(action || "");
+
+  if (actionText.includes("create") || actionText.includes("reactivate")) {
+    return "is-create";
+  }
+
+  if (actionText.includes("delete") || actionText.includes("deactivate")) {
+    return "is-delete";
+  }
+
+  if (actionText.includes("update")) {
+    return "is-update";
+  }
+
+  return "";
+}
+
+function formatAuditDate(value) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+}
+
+function createAuditDetailsText(log) {
+  const details = log.details || {};
+
+  if (Array.isArray(details.changedFields) && details.changedFields.length) {
+    return `Field berubah: ${details.changedFields.join(", ")}`;
+  }
+
+  if (details.username && details.role) {
+    return `User ${details.username} dibuat sebagai ${details.role}.`;
+  }
+
+  if (details.brand && details.name) {
+    return `${details.brand} ${details.name}`;
+  }
+
+  if (details.previousInStock !== undefined || details.newInStock !== undefined) {
+    return "Status katalog berubah.";
+  }
+
+  return "";
+}
+
+async function fetchAuditLogs() {
+  const token = getStoredAdminToken();
+
+  const response = await fetch("/api/admin/audit-logs?limit=50", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Gagal memuat audit log.");
+  }
+
+  return data.logs || [];
+}
+
+function renderAuditLogs(logs) {
+  const auditList = document.getElementById("adminAuditList");
+
+  if (!auditList) {
+    return;
+  }
+
+  if (!logs.length) {
+    auditList.innerHTML = `
+      <div class="admin-empty-state">
+        Belum ada aktivitas.
+      </div>
+    `;
+    return;
+  }
+
+  auditList.innerHTML = logs
+    .map((log) => {
+      const actionClass = getAuditActionClass(log.action);
+      const detailsText = createAuditDetailsText(log);
+
+      return `
+        <article class="admin-audit-card">
+          <div class="admin-audit-main">
+            <div>
+              <h3>${escapeHtml(log.targetLabel || log.targetId || "Target tidak diketahui")}</h3>
+
+              <div class="admin-audit-meta">
+                <span class="admin-audit-action ${actionClass}">
+                  ${escapeHtml(getAuditActionLabel(log.action))}
+                </span>
+
+                <span>
+                  Oleh ${escapeHtml(log.actorUsername)} (${escapeHtml(log.actorRole)})
+                </span>
+
+                <span>
+                  ${escapeHtml(formatAuditDate(log.createdAt))}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          ${
+            detailsText
+              ? `
+                <p class="admin-audit-details">
+                  ${escapeHtml(detailsText)}
+                </p>
+              `
+              : ""
+          }
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function loadAuditLogs() {
+  const auditList = document.getElementById("adminAuditList");
+
+  if (!isCurrentUserAdmin()) {
+    return;
+  }
+
+  if (auditList) {
+    auditList.innerHTML = `
+      <div class="admin-empty-state">
+        Memuat aktivitas...
+      </div>
+    `;
+  }
+
+  try {
+    const logs = await fetchAuditLogs();
+    renderAuditLogs(logs);
+  } catch (error) {
+    if (auditList) {
+      auditList.innerHTML = `
+        <div class="admin-empty-state is-error">
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+    }
+  }
+}
+
+function setupAuditLogs() {
+  const refreshButton = document.getElementById("refreshAuditLogsBtn");
+
+  if (refreshButton) {
+    refreshButton.addEventListener("click", loadAuditLogs);
+  }
+}
+
 /* =========================
    INIT
 ========================= */
@@ -1617,4 +1841,5 @@ setupBikeEditor();
 setupBikeFormSave();
 setupAdminBikeFilters();
 setupAdminUserManagement();
+setupAuditLogs();
 restoreAdminSession();

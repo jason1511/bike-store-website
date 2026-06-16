@@ -687,6 +687,100 @@
   }
 }
 /* =========================
+   AUDIT LOGS
+========================= */
+.admin-audit-panel {
+  grid-column: 1 / -1;
+}
+
+.admin-audit-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-audit-card {
+  display: grid;
+  gap: 10px;
+  padding: 15px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.admin-audit-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.admin-audit-card h3 {
+  color: #ffffff;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.admin-audit-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #b8c4c2;
+  font-size: 0.84rem;
+}
+
+.admin-audit-action {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid rgba(159, 184, 182, 0.28);
+  background-color: rgba(159, 184, 182, 0.12);
+  color: #dce5e3;
+}
+
+.admin-audit-action.is-create {
+  color: #8fffc0;
+  border-color: rgba(37, 211, 102, 0.28);
+  background-color: rgba(37, 211, 102, 0.12);
+}
+
+.admin-audit-action.is-update {
+  color: #dce5e3;
+  border-color: rgba(159, 184, 182, 0.28);
+  background-color: rgba(159, 184, 182, 0.12);
+}
+
+.admin-audit-action.is-delete,
+.admin-audit-action.is-deactivate {
+  color: #ffb3b3;
+  border-color: rgba(255, 143, 143, 0.28);
+  background-color: rgba(255, 143, 143, 0.12);
+}
+
+.admin-audit-details {
+  color: #b8c4c2;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.admin-audit-details strong {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .admin-audit-main {
+    flex-direction: column;
+  }
+}
+/* =========================
    ADMIN IMAGE PREVIEW
 ========================= */
 .admin-image-preview {
