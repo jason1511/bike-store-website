@@ -19,6 +19,10 @@ function formatPrice(price) {
 
 const STORE_WHATSAPP_NUMBER = "6282122065168";
 
+function isBikeUnavailable(bike) {
+  return Boolean(bike?.inStock) && Number(bike?.stockQty || 0) <= 0;
+}
+
 function getWhatsAppLink(bike) {
   const bikeName = bike?.name || "sepeda listrik";
   const isUnavailable = isBikeUnavailable(bike);
@@ -28,10 +32,6 @@ function getWhatsAppLink(bike) {
     : `Halo, saya tertarik dengan ${bikeName}. Apakah unit ini tersedia?`;
 
   return `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-}
-
-function isBikeUnavailable(bike) {
-  return Boolean(bike?.inStock) && Number(bike?.stockQty || 0) <= 0;
 }
 
 function getBikeColors(bike) {
@@ -231,7 +231,8 @@ function setupThemeToggle() {
 }
 
 /* =========================
-   ADMIN PORTAL NAV LINK
+   SHARED ADMIN NAV LINK
+   Used by index.html, bikes.html, contact.html
 ========================= */
 const SITE_ADMIN_SESSION_STORAGE_KEY = "nbaAdminSessionToken";
 const SITE_ADMIN_USER_STORAGE_KEY = "nbaAdminUser";
@@ -252,32 +253,42 @@ function isValidSiteAdminUser(user) {
   return user && ["admin", "staff"].includes(user.role);
 }
 
-function removeAdminPortalLink() {
-  document.querySelectorAll("[data-admin-portal-link]").forEach((element) => {
+function removeAdminNavbarItem() {
+  document.querySelectorAll("[data-admin-navbar-item]").forEach((element) => {
     element.remove();
   });
 }
 
-function renderAdminPortalLink(user) {
-  const navLinks = document.querySelector(".nav-links");
+function createAdminNavbarItem(user) {
+  const item = document.createElement("li");
+  item.setAttribute("data-admin-navbar-item", "true");
 
-  if (!navLinks || !isValidSiteAdminUser(user)) {
-    return;
-  }
+  const username = user.username || "user";
+  const role = user.role || "";
 
-  removeAdminPortalLink();
-
-  const adminItem = document.createElement("li");
-  adminItem.setAttribute("data-admin-portal-link", "true");
-
-  adminItem.innerHTML = `
-    <a href="admin.html" class="admin-portal-link">
-      Admin
-      <span>${escapeHtml(user.role)}</span>
+  item.innerHTML = `
+    <a href="admin.html" class="admin-portal-link" title="Masuk ke dashboard admin">
+      <span class="admin-portal-icon">Admin</span>
+      <span class="admin-portal-identity">
+        <strong>${escapeHtml(username)}</strong>
+        <small>${escapeHtml(role)}</small>
+      </span>
     </a>
   `;
 
-  navLinks.appendChild(adminItem);
+  return item;
+}
+
+function renderAdminNavbarItem(user) {
+  const navLinks = document.querySelector(".nav-links");
+
+  if (!navLinks || !isValidSiteAdminUser(user)) {
+    removeAdminNavbarItem();
+    return;
+  }
+
+  removeAdminNavbarItem();
+  navLinks.appendChild(createAdminNavbarItem(user));
 }
 
 async function verifySiteAdminSession(token) {
@@ -297,16 +308,16 @@ async function verifySiteAdminSession(token) {
   return data;
 }
 
-async function setupAdminPortalLink() {
+async function setupAdminNavbarItem() {
   const token = getStoredSiteAdminToken();
   const storedUser = getStoredSiteAdminUser();
 
   if (!token || !isValidSiteAdminUser(storedUser)) {
-    removeAdminPortalLink();
+    removeAdminNavbarItem();
     return;
   }
 
-  renderAdminPortalLink(storedUser);
+  renderAdminNavbarItem(storedUser);
 
   try {
     const verifiedUser = await verifySiteAdminSession(token);
@@ -322,11 +333,11 @@ async function setupAdminPortalLink() {
       JSON.stringify(updatedUser)
     );
 
-    renderAdminPortalLink(updatedUser);
+    renderAdminNavbarItem(updatedUser);
   } catch (error) {
     sessionStorage.removeItem(SITE_ADMIN_SESSION_STORAGE_KEY);
     sessionStorage.removeItem(SITE_ADMIN_USER_STORAGE_KEY);
-    removeAdminPortalLink();
+    removeAdminNavbarItem();
   }
 }
 
@@ -334,4 +345,4 @@ async function setupAdminPortalLink() {
    INIT
 ========================= */
 setupThemeToggle();
-setupAdminPortalLink();
+setupAdminNavbarItem();

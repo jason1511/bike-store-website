@@ -879,7 +879,34 @@
 .admin-audit-details strong {
   color: #ffffff;
 }
+.admin-site-link {
+  text-decoration: none;
+}
 
+.admin-current-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #dce5e3;
+  border: 1px solid rgba(159, 184, 182, 0.28);
+  background-color: rgba(255, 255, 255, 0.055);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.admin-current-user strong {
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #8fffc0;
+  background-color: rgba(37, 211, 102, 0.14);
+  border: 1px solid rgba(37, 211, 102, 0.28);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 /* =========================
    EMPTY STATE
 ========================= */

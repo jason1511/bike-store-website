@@ -56,44 +56,52 @@
 
     <section class="admin-dashboard is-hidden" id="adminDashboard">
       <nav class="admin-navbar">
-        <a href="index.html" class="admin-navbar-brand">
-          <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
-          <span>CV Niaga Bersama Abadi</span>
-          <strong>Admin</strong>
-        </a>
+  <a href="index.html" class="admin-navbar-brand">
+    <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
+    <span>CV Niaga Bersama Abadi</span>
+    <strong>Admin</strong>
+  </a>
 
-        <div class="admin-navbar-links">
-          <button
-            type="button"
-            class="admin-nav-link is-active"
-            data-admin-view-target="adminCatalogueView"
-          >
-            Katalog
-          </button>
+  <div class="admin-navbar-links">
+    <a href="index.html" class="admin-nav-link admin-site-link">
+      Website
+    </a>
 
-          <button
-            type="button"
-            class="admin-nav-link"
-            data-admin-view-target="adminUsersView"
-            data-admin-only
-          >
-            User
-          </button>
+    <button
+      type="button"
+      class="admin-nav-link is-active"
+      data-admin-view-target="adminCatalogueView"
+    >
+      Katalog
+    </button>
 
-          <button
-            type="button"
-            class="admin-nav-link"
-            data-admin-view-target="adminAuditView"
-            data-admin-only
-          >
-            Aktivitas
-          </button>
+    <button
+      type="button"
+      class="admin-nav-link"
+      data-admin-view-target="adminUsersView"
+      data-admin-only
+    >
+      User
+    </button>
 
-          <button type="button" class="admin-nav-link admin-logout-link" id="adminLogoutBtn">
-            Keluar
-          </button>
-        </div>
-      </nav>
+    <button
+      type="button"
+      class="admin-nav-link"
+      data-admin-view-target="adminAuditView"
+      data-admin-only
+    >
+      Aktivitas
+    </button>
+
+    <span class="admin-current-user" id="adminCurrentUserLabel">
+      User
+    </span>
+
+    <button type="button" class="admin-nav-link admin-logout-link" id="adminLogoutBtn">
+      Keluar
+    </button>
+  </div>
+</nav>
 
       <section class="admin-view is-active" id="adminCatalogueView">
         <div class="admin-dashboard-header">

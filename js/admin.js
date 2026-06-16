@@ -195,7 +195,7 @@ function showAdminDashboard() {
   if (dashboard) {
     dashboard.classList.remove("is-hidden");
   }
-
+  renderAdminCurrentUserLabel();
   configureAdminNavigationForRole();
   showAdminView("adminCatalogueView");
 }
@@ -1571,7 +1571,19 @@ async function updateAdminUser(userData) {
 
   return data.user;
 }
+function renderAdminCurrentUserLabel() {
+  const label = document.getElementById("adminCurrentUserLabel");
+  const user = getStoredAdminUser();
 
+  if (!label || !user) {
+    return;
+  }
+
+  label.innerHTML = `
+    <span>${escapeHtml(user.username || "user")}</span>
+    <strong>${escapeHtml(user.role || "")}</strong>
+  `;
+}
 function setupAdminUserManagement() {
   const form = document.getElementById("adminUserForm");
   const refreshButton = document.getElementById("refreshUsersBtn");

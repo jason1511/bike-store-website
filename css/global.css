@@ -361,33 +361,67 @@ body.dark-theme .bike-modal-color {
   color: #ffffff;
 }
 /* =========================
-   ADMIN PORTAL NAV LINK
+   SHARED ADMIN NAV LINK
 ========================= */
 .admin-portal-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: rgba(37, 211, 102, 0.12);
+  border: 1px solid rgba(37, 211, 102, 0.28);
 }
 
-.admin-portal-link span {
+.admin-portal-icon {
   display: inline-flex;
   align-items: center;
-  padding: 3px 7px;
-  border-radius: 999px;
-  background-color: rgba(37, 211, 102, 0.14);
-  border: 1px solid rgba(37, 211, 102, 0.28);
   color: #25d366;
-  font-size: 0.68rem;
-  font-weight: 900;
+  font-size: 0.78rem;
+  font-weight: 950;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-body.dark-theme .admin-portal-link span {
-  color: #8fffc0;
-  background-color: rgba(37, 211, 102, 0.16);
+.admin-portal-identity {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
 }
 
+.admin-portal-identity strong {
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.admin-portal-identity small {
+  color: #8fffc0;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+body.dark-theme .admin-portal-link {
+  background-color: rgba(37, 211, 102, 0.16);
+  border-color: rgba(37, 211, 102, 0.34);
+}
+
+body.dark-theme .admin-portal-icon {
+  color: #8fffc0;
+}
+
+@media (max-width: 768px) {
+  .admin-portal-link {
+    width: fit-content;
+  }
+}
 /* =========================
    BIKE STOCK BADGE
 ========================= */
