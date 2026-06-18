@@ -23,6 +23,18 @@ function isBikeUnavailable(bike) {
   return Boolean(bike?.inStock) && Number(bike?.stockQty || 0) <= 0;
 }
 
+function getBikeAvailabilityLabel(bike) {
+  if (!bike?.inStock) {
+    return "Tidak aktif";
+  }
+
+  if (isBikeUnavailable(bike)) {
+    return "Stok Habis";
+  }
+
+  return "Tersedia";
+}
+
 function getWhatsAppLink(bike) {
   const bikeName = bike?.name || "sepeda listrik";
   const isUnavailable = isBikeUnavailable(bike);
@@ -89,10 +101,13 @@ function createBikeCard(bike) {
   const badges = getHighlights(bike).slice(0, 2);
   const colorVariants = getBikeColors(bike);
   const defaultColor = colorVariants[0] || null;
+
   const imageSrc = defaultColor?.image || bike.image || "images/logo.jpeg";
   const colorName = defaultColor?.name || bike.colorName || "";
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
+
   const isUnavailable = isBikeUnavailable(bike);
+  const availabilityLabel = getBikeAvailabilityLabel(bike);
   const whatsappLabel = isUnavailable ? "Tanya Ketersediaan" : "Tanya WhatsApp";
 
   return `
@@ -110,15 +125,9 @@ function createBikeCard(bike) {
           loading="lazy"
         >
 
-        ${
-          isUnavailable
-            ? `
-              <span class="bike-stock-badge">
-                Stok Habis
-              </span>
-            `
-            : ""
-        }
+        <span class="bike-availability-badge ${isUnavailable ? "is-unavailable" : "is-available"}">
+          ${escapeHtml(availabilityLabel)}
+        </span>
       </div>
 
       <div class="bike-info">
@@ -178,9 +187,19 @@ function createBikeCard(bike) {
 
         <p class="bike-price">${formatPrice(bike.price)}</p>
 
+        ${
+          isUnavailable
+            ? `
+              <p class="bike-unavailable-note">
+                Unit sedang kosong. Silakan hubungi showroom untuk jadwal restock atau pemesanan.
+              </p>
+            `
+            : ""
+        }
+
         <a
           href="${getWhatsAppLink(bike)}"
-          class="bike-whatsapp-btn"
+          class="bike-whatsapp-btn ${isUnavailable ? "is-unavailable" : ""}"
           target="_blank"
           rel="noopener"
           onclick="event.stopPropagation();"
@@ -254,9 +273,11 @@ function isValidSiteAdminUser(user) {
 }
 
 function removeAdminNavbarItem() {
-  document.querySelectorAll("[data-admin-navbar-item]").forEach((element) => {
-    element.remove();
-  });
+  document
+    .querySelectorAll("[data-admin-navbar-item], [data-admin-portal-link]")
+    .forEach((element) => {
+      element.remove();
+    });
 }
 
 function createAdminNavbarItem(user) {
@@ -282,12 +303,12 @@ function createAdminNavbarItem(user) {
 function renderAdminNavbarItem(user) {
   const navLinks = document.querySelector(".nav-links");
 
+  removeAdminNavbarItem();
+
   if (!navLinks || !isValidSiteAdminUser(user)) {
-    removeAdminNavbarItem();
     return;
   }
 
-  removeAdminNavbarItem();
   navLinks.appendChild(createAdminNavbarItem(user));
 }
 
@@ -312,8 +333,9 @@ async function setupAdminNavbarItem() {
   const token = getStoredSiteAdminToken();
   const storedUser = getStoredSiteAdminUser();
 
+  removeAdminNavbarItem();
+
   if (!token || !isValidSiteAdminUser(storedUser)) {
-    removeAdminNavbarItem();
     return;
   }
 
