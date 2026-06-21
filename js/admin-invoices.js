@@ -1,6 +1,9 @@
 /* =========================
    ADMIN INVOICES / SALES
 ========================= */
+
+let adminInvoicesCache = [];
+
 function getSelectedInvoiceBike() {
   const select = document.getElementById("invoiceBikeInput");
   const bikeId = select?.value || "";
@@ -192,7 +195,69 @@ async function createInvoice(invoice) {
 
   return data.invoice;
 }
+function getFilteredInvoices() {
+  const searchInput = document.getElementById("invoiceSearchInput");
+  const paymentFilter = document.getElementById("invoicePaymentFilter");
 
+  const searchTerm = normalizeSearchText(searchInput?.value || "");
+  const paymentValue = paymentFilter?.value ?? "all";
+
+  return adminInvoicesCache.filter((invoice) => {
+    if (paymentValue !== "all") {
+      const invoicePayment = invoice.paymentMethod || "";
+
+      if (invoicePayment !== paymentValue) {
+        return false;
+      }
+    }
+
+    if (!searchTerm) {
+      return true;
+    }
+
+    const searchableText = normalizeSearchText([
+      invoice.invoiceNumber,
+      invoice.customerName,
+      invoice.customerPhone,
+      invoice.customerAddress,
+      invoice.bikeBrand,
+      invoice.bikeName,
+      invoice.paymentMethod,
+      invoice.createdByUsername,
+      invoice.createdByRole,
+      invoice.notes
+    ].join(" "));
+
+    return searchableText.includes(searchTerm);
+  });
+}
+
+function updateInvoiceResultCount(filteredCount, totalCount) {
+  const resultCount = document.getElementById("adminInvoiceResultCount");
+
+  if (!resultCount) {
+    return;
+  }
+
+  if (!totalCount) {
+    resultCount.textContent = "Belum ada invoice.";
+    return;
+  }
+
+  if (filteredCount === totalCount) {
+    resultCount.textContent = `Menampilkan semua ${totalCount} invoice.`;
+    return;
+  }
+
+  resultCount.textContent = `Menampilkan ${filteredCount} dari ${totalCount} invoice.`;
+}
+
+function applyInvoiceFilters() {
+  const filteredInvoices = getFilteredInvoices();
+
+  renderInvoices(filteredInvoices);
+  updateInvoiceResultCount(filteredInvoices.length, adminInvoicesCache.length);
+}
 function renderInvoices(invoices) {
   const list = document.getElementById("adminInvoiceList");
 
@@ -284,8 +349,15 @@ async function loadInvoices() {
 
   try {
     const invoices = await fetchInvoices();
-    renderInvoices(invoices);
+
+    adminInvoicesCache = invoices;
+    window.adminInvoicesCache = invoices;
+
+    applyInvoiceFilters();
   } catch (error) {
+    adminInvoicesCache = [];
+    window.adminInvoicesCache = [];
+
     if (list) {
       list.innerHTML = `
         <div class="admin-empty-state is-error">
@@ -293,6 +365,8 @@ async function loadInvoices() {
         </div>
       `;
     }
+
+    updateInvoiceResultCount(0, 0);
   }
 }
 
@@ -313,7 +387,8 @@ function setupInvoiceForm() {
   const unitPriceInput = document.getElementById("invoiceUnitPriceInput");
   const refreshButton = document.getElementById("refreshInvoicesBtn");
   const createButton = document.getElementById("createInvoiceBtn");
-
+const searchInput = document.getElementById("invoiceSearchInput");
+const paymentFilter = document.getElementById("invoicePaymentFilter");
   if (bikeInput) {
     bikeInput.addEventListener("change", () => {
       const selectedBike = getSelectedInvoiceBike();
@@ -337,7 +412,13 @@ function setupInvoiceForm() {
   if (refreshButton) {
     refreshButton.addEventListener("click", loadInvoices);
   }
+if (searchInput) {
+  searchInput.addEventListener("input", applyInvoiceFilters);
+}
 
+if (paymentFilter) {
+  paymentFilter.addEventListener("change", applyInvoiceFilters);
+}
   if (!form) {
     return;
   }
@@ -391,7 +472,7 @@ function setupInvoiceForm() {
    PRINTABLE INVOICE MODAL
 ========================= */
 function getInvoiceByIdFromCache(invoiceId) {
-  return window.adminInvoicesCache?.find((invoice) => invoice.id === invoiceId) || null;
+  return adminInvoicesCache.find((invoice) => invoice.id === invoiceId) || null;
 }
 
 function setPrintText(id, value) {
@@ -455,6 +536,7 @@ function closeInvoiceModal() {
 }
 
 function printCurrentInvoice() {
+  document.body.classList.add("is-printing-invoice");
   window.print();
 }
 
@@ -494,7 +576,10 @@ function setupInvoiceModal() {
       openInvoiceModal(invoice);
     });
   }
-
+  window.addEventListener("afterprint", () => {
+  document.body.classList.remove("is-printing-invoice");
+  document.body.classList.remove("is-printing-service");
+});
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeInvoiceModal();

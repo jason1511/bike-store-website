@@ -518,20 +518,45 @@
 
           <article class="admin-panel admin-invoice-history-panel">
             <div class="admin-panel-header">
-              <div>
-                <h2>Invoice Terakhir</h2>
-                <p>Riwayat invoice terbaru dari admin dan staff.</p>
-              </div>
+  <div>
+    <h2>Invoice Terakhir</h2>
+    <p>Riwayat invoice terbaru dari admin dan staff.</p>
+  </div>
 
-              <button type="button" class="btn-secondary" id="refreshInvoicesBtn">
-                Refresh
-              </button>
-            </div>
+  <button type="button" class="btn-secondary" id="refreshInvoicesBtn">
+    Refresh
+  </button>
+</div>
 
-            <div class="admin-invoice-list" id="adminInvoiceList">
-              <div class="admin-empty-state">
-                Invoice belum dimuat.
-              </div>
+<div class="admin-invoice-tools">
+  <div class="admin-form-group">
+    <label for="invoiceSearchInput">Cari Invoice</label>
+    <input
+      type="search"
+      id="invoiceSearchInput"
+      placeholder="Cari nomor invoice, customer, sepeda, petugas..."
+    >
+  </div>
+
+  <div class="admin-form-group">
+    <label for="invoicePaymentFilter">Pembayaran</label>
+    <select id="invoicePaymentFilter">
+      <option value="all">Semua Metode</option>
+      <option value="Tunai">Tunai</option>
+      <option value="Transfer">Transfer</option>
+      <option value="QRIS">QRIS</option>
+      <option value="Cicilan">Cicilan</option>
+      <option value="Lainnya">Lainnya</option>
+      <option value="">Belum diisi</option>
+    </select>
+  </div>
+</div>
+
+<p class="admin-result-count" id="adminInvoiceResultCount">
+  Invoice belum dimuat.
+</p>
+
+<div class="admin-invoice-list" id="adminInvoiceList">
             </div>
           </article>
         </div>
@@ -662,31 +687,43 @@
 
     <article class="admin-panel admin-service-history-panel">
       <div class="admin-panel-header">
-        <div>
-          <h2>Riwayat Service</h2>
-          <p>Daftar service terbaru dari admin dan staff.</p>
-        </div>
+  <div>
+    <h2>Riwayat Service</h2>
+    <p>Daftar service terbaru dari admin dan staff.</p>
+  </div>
 
-        <div class="admin-panel-actions">
-          <select id="serviceStatusFilter" class="admin-small-select">
-            <option value="all">Semua Status</option>
-            <option value="received">Diterima</option>
-            <option value="in_progress">Dikerjakan</option>
-            <option value="completed">Selesai</option>
-            <option value="cancelled">Dibatalkan</option>
-          </select>
+  <button type="button" class="btn-secondary" id="refreshServicesBtn">
+    Refresh
+  </button>
+</div>
 
-          <button type="button" class="btn-secondary" id="refreshServicesBtn">
-            Refresh
-          </button>
-        </div>
-      </div>
+<div class="admin-service-tools">
+  <div class="admin-form-group">
+    <label for="serviceSearchInput">Cari Service</label>
+    <input
+      type="search"
+      id="serviceSearchInput"
+      placeholder="Cari nomor service, customer, no. HP, unit, jenis service..."
+    >
+  </div>
 
-      <div class="admin-service-list" id="adminServiceList">
-        <div class="admin-empty-state">
-          Service belum dimuat.
-        </div>
-      </div>
+  <div class="admin-form-group">
+    <label for="serviceStatusFilter">Status</label>
+    <select id="serviceStatusFilter">
+      <option value="all">Semua Status</option>
+      <option value="received">Diterima</option>
+      <option value="in_progress">Dikerjakan</option>
+      <option value="completed">Selesai</option>
+      <option value="cancelled">Dibatalkan</option>
+    </select>
+  </div>
+</div>
+
+<p class="admin-result-count" id="adminServiceResultCount">
+  Service belum dimuat.
+</p>
+
+<div class="admin-service-list" id="adminServiceList">
     </article>
   </div>
 </section>
@@ -917,6 +954,133 @@
           <p>Petugas</p>
           <span></span>
           <strong id="printInvoiceStaffSignature">-</strong>
+        </div>
+      </footer>
+    </article>
+  </section>
+</div>
+<div class="admin-service-modal is-hidden" id="adminServiceModal" aria-hidden="true">
+  <div class="admin-service-modal-overlay" id="adminServiceModalOverlay"></div>
+
+  <section
+    class="admin-service-modal-content"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="adminServiceModalTitle"
+  >
+    <div class="admin-service-modal-actions no-print">
+      <button type="button" class="btn-secondary" id="printServiceBtn">
+        Cetak Nota Service
+      </button>
+
+      <button type="button" class="btn-secondary" id="closeServiceModalBtn">
+        Tutup
+      </button>
+    </div>
+
+    <article class="printable-invoice printable-service" id="printableService">
+      <header class="printable-invoice-header">
+        <div class="printable-invoice-brand">
+          <img src="images/logo.jpeg" alt="Logo CV Niaga Bersama Abadi">
+
+          <div>
+            <h1>CV Niaga Bersama Abadi</h1>
+            <p>Showroom & Service Sepeda Listrik</p>
+            <p>Lumajang, Jawa Timur</p>
+          </div>
+        </div>
+
+        <div class="printable-invoice-title">
+          <p>Nota Service</p>
+          <h2 id="printServiceNumber">SRV-000000</h2>
+        </div>
+      </header>
+
+      <div class="printable-invoice-meta">
+        <div>
+          <span>Tanggal Masuk</span>
+          <strong id="printServiceDate">-</strong>
+        </div>
+
+        <div>
+          <span>Petugas</span>
+          <strong id="printServiceCreatedBy">-</strong>
+        </div>
+
+        <div>
+          <span>Status Service</span>
+          <strong id="printServiceStatus">-</strong>
+        </div>
+      </div>
+
+      <section class="printable-invoice-section">
+        <h3>Data Pelanggan</h3>
+
+        <div class="printable-invoice-customer">
+          <div>
+            <span>Nama Pelanggan</span>
+            <strong id="printServiceCustomerName">-</strong>
+          </div>
+
+          <div>
+            <span>No. HP</span>
+            <strong id="printServiceCustomerPhone">-</strong>
+          </div>
+
+          <div class="printable-invoice-wide">
+            <span>Alamat</span>
+            <strong id="printServiceCustomerAddress">-</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="printable-invoice-section">
+        <h3>Data Unit & Service</h3>
+
+        <div class="printable-invoice-table-wrap">
+          <table class="printable-invoice-table">
+            <thead>
+              <tr>
+                <th>Unit Sepeda</th>
+                <th>Jenis Service</th>
+                <th>Status</th>
+                <th>Biaya</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td id="printServiceBikeLabel">-</td>
+                <td id="printServiceType">-</td>
+                <td id="printServiceStatusTable">-</td>
+                <td id="printServiceCostTable">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="printable-invoice-total-box">
+        <span>Biaya Service</span>
+        <strong id="printServiceCost">Rp 0</strong>
+      </section>
+
+      <section class="printable-invoice-section" id="printServiceNotesSection">
+        <h3>Catatan Service</h3>
+        <p id="printServiceNotes">-</p>
+      </section>
+
+      <footer class="printable-invoice-footer">
+        <div>
+          <p>Pelanggan</p>
+          <span></span>
+          <strong id="printServiceCustomerSignature">-</strong>
+        </div>
+
+        <div>
+          <p>Petugas</p>
+          <span></span>
+          <strong id="printServiceStaffSignature">-</strong>
         </div>
       </footer>
     </article>

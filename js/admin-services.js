@@ -99,19 +99,18 @@ function validateServiceFormData(service) {
   return errors;
 }
 
+/* =========================
+   SERVICE API
+========================= */
 async function fetchServices() {
   const token = getStoredAdminToken();
-  const statusFilter = document.getElementById("serviceStatusFilter")?.value || "all";
 
-  const response = await fetch(
-    `/api/admin/services?limit=50&status=${encodeURIComponent(statusFilter)}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+  const response = await fetch("/api/admin/services?limit=100&status=all", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`
     }
-  );
+  });
 
   const data = await response.json().catch(() => null);
 
@@ -148,14 +147,78 @@ async function saveService(service) {
   return data.service;
 }
 
+/* =========================
+   SERVICE FILTERS
+========================= */
+function getFilteredServices() {
+  const searchInput = document.getElementById("serviceSearchInput");
+  const statusFilter = document.getElementById("serviceStatusFilter");
+
+  const searchTerm = normalizeSearchText(searchInput?.value || "");
+  const statusValue = statusFilter?.value || "all";
+
+  return adminServicesCache.filter((service) => {
+    if (statusValue !== "all" && service.serviceStatus !== statusValue) {
+      return false;
+    }
+
+    if (!searchTerm) {
+      return true;
+    }
+
+    const searchableText = normalizeSearchText([
+      service.serviceNumber,
+      service.customerName,
+      service.customerPhone,
+      service.customerAddress,
+      service.bikeLabel,
+      service.serviceType,
+      getServiceStatusLabel(service.serviceStatus),
+      service.createdByUsername,
+      service.createdByRole,
+      service.notes
+    ].join(" "));
+
+    return searchableText.includes(searchTerm);
+  });
+}
+
+function updateServiceResultCount(filteredCount, totalCount) {
+  const resultCount = document.getElementById("adminServiceResultCount");
+
+  if (!resultCount) {
+    return;
+  }
+
+  if (!totalCount) {
+    resultCount.textContent = "Belum ada service.";
+    return;
+  }
+
+  if (filteredCount === totalCount) {
+    resultCount.textContent = `Menampilkan semua ${totalCount} service.`;
+    return;
+  }
+
+  resultCount.textContent = `Menampilkan ${filteredCount} dari ${totalCount} service.`;
+}
+
+function applyServiceFilters() {
+  const filteredServices = getFilteredServices();
+
+  renderServices(filteredServices);
+  updateServiceResultCount(filteredServices.length, adminServicesCache.length);
+}
+
+/* =========================
+   SERVICE LIST
+========================= */
 function renderServices(services) {
   const list = document.getElementById("adminServiceList");
 
   if (!list) {
     return;
   }
-
-  adminServicesCache = services;
 
   if (!services.length) {
     list.innerHTML = `
@@ -242,6 +305,14 @@ function renderServices(services) {
           <button
             type="button"
             class="admin-action-btn"
+            data-open-service="${escapeHtml(service.id)}"
+          >
+            Lihat / Print
+          </button>
+
+          <button
+            type="button"
+            class="admin-action-btn"
             data-edit-service="${escapeHtml(service.id)}"
           >
             Edit Service
@@ -265,8 +336,12 @@ async function loadServices() {
 
   try {
     const services = await fetchServices();
-    renderServices(services);
+
+    adminServicesCache = services;
+    applyServiceFilters();
   } catch (error) {
+    adminServicesCache = [];
+
     if (list) {
       list.innerHTML = `
         <div class="admin-empty-state is-error">
@@ -274,6 +349,8 @@ async function loadServices() {
         </div>
       `;
     }
+
+    updateServiceResultCount(0, 0);
   }
 }
 
@@ -281,6 +358,9 @@ function loadServicePage() {
   loadServices();
 }
 
+/* =========================
+   SERVICE FORM
+========================= */
 function fillServiceForm(service) {
   const setValue = (id, value) => {
     const input = document.getElementById(id);
@@ -314,6 +394,7 @@ function setupServiceForm() {
   const saveButton = document.getElementById("saveServiceBtn");
   const resetButton = document.getElementById("resetServiceFormBtn");
   const refreshButton = document.getElementById("refreshServicesBtn");
+  const searchInput = document.getElementById("serviceSearchInput");
   const statusFilter = document.getElementById("serviceStatusFilter");
   const serviceList = document.getElementById("adminServiceList");
 
@@ -325,21 +406,37 @@ function setupServiceForm() {
     refreshButton.addEventListener("click", loadServices);
   }
 
+  if (searchInput) {
+    searchInput.addEventListener("input", applyServiceFilters);
+  }
+
   if (statusFilter) {
-    statusFilter.addEventListener("change", loadServices);
+    statusFilter.addEventListener("change", applyServiceFilters);
   }
 
   if (serviceList) {
     serviceList.addEventListener("click", (event) => {
+      const openButton = event.target.closest("[data-open-service]");
+
+      if (openButton) {
+        const service = getServiceByIdFromCache(openButton.dataset.openService);
+
+        if (!service) {
+          window.alert("Data service tidak ditemukan. Coba refresh service.");
+          return;
+        }
+
+        openServiceModal(service);
+        return;
+      }
+
       const editButton = event.target.closest("[data-edit-service]");
 
       if (!editButton) {
         return;
       }
 
-      const service = adminServicesCache.find(
-        (item) => item.id === editButton.dataset.editService
-      );
+      const service = getServiceByIdFromCache(editButton.dataset.editService);
 
       if (!service) {
         window.alert("Data service tidak ditemukan. Coba refresh service.");
@@ -395,6 +492,102 @@ function setupServiceForm() {
           ? "Update Service"
           : "Simpan Service";
       }
+    }
+  });
+}
+
+/* =========================
+   PRINTABLE SERVICE MODAL
+========================= */
+function getServiceByIdFromCache(serviceId) {
+  return adminServicesCache.find((service) => service.id === serviceId) || null;
+}
+
+function setServicePrintText(id, value) {
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.textContent = value || "-";
+  }
+}
+
+function openServiceModal(service) {
+  const modal = document.getElementById("adminServiceModal");
+
+  if (!modal || !service) {
+    return;
+  }
+
+  setServicePrintText("printServiceNumber", service.serviceNumber);
+  setServicePrintText("printServiceDate", formatAuditDate(service.createdAt));
+  setServicePrintText("printServiceCreatedBy", service.createdByUsername || "-");
+  setServicePrintText("printServiceStatus", getServiceStatusLabel(service.serviceStatus));
+
+  setServicePrintText("printServiceCustomerName", service.customerName);
+  setServicePrintText("printServiceCustomerPhone", service.customerPhone || "-");
+  setServicePrintText("printServiceCustomerAddress", service.customerAddress || "-");
+
+  setServicePrintText("printServiceBikeLabel", service.bikeLabel);
+  setServicePrintText("printServiceType", service.serviceType);
+  setServicePrintText("printServiceStatusTable", getServiceStatusLabel(service.serviceStatus));
+  setServicePrintText("printServiceCostTable", formatRupiah(service.serviceCost));
+  setServicePrintText("printServiceCost", formatRupiah(service.serviceCost));
+
+  setServicePrintText("printServiceNotes", service.notes || "-");
+  setServicePrintText("printServiceCustomerSignature", service.customerName || "-");
+  setServicePrintText("printServiceStaffSignature", service.createdByUsername || "-");
+
+  const notesSection = document.getElementById("printServiceNotesSection");
+
+  if (notesSection) {
+    notesSection.classList.toggle("is-hidden", !service.notes);
+  }
+
+  modal.classList.remove("is-hidden");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeServiceModal() {
+  const modal = document.getElementById("adminServiceModal");
+
+  if (!modal) {
+    return;
+  }
+
+  modal.classList.add("is-hidden");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function printCurrentService() {
+  document.body.classList.add("is-printing-service");
+  window.print();
+}
+
+function setupServiceModal() {
+  const closeButton = document.getElementById("closeServiceModalBtn");
+  const overlay = document.getElementById("adminServiceModalOverlay");
+  const printButton = document.getElementById("printServiceBtn");
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closeServiceModal);
+  }
+
+  if (overlay) {
+    overlay.addEventListener("click", closeServiceModal);
+  }
+
+  if (printButton) {
+    printButton.addEventListener("click", printCurrentService);
+  }
+
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("is-printing-service");
+    document.body.classList.remove("is-printing-invoice");
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeServiceModal();
     }
   });
 }

@@ -16,6 +16,7 @@ setupInvoiceForm();
 setupInvoiceModal();
 
 setupServiceForm();
+setupServiceModal();
 
 setupAdminUserManagement();
 setupAuditLogs();
