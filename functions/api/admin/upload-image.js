@@ -3,6 +3,10 @@ import {
   requireRole
 } from "../../_shared/auth.js";
 
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
+
 function slugify(value) {
   return String(value || "")
     .toLowerCase()
@@ -17,11 +21,9 @@ function getFileExtension(fileName, fallback = "jpg") {
     .pop()
     ?.toLowerCase();
 
-  if (["jpg", "jpeg", "png", "webp"].includes(extension)) {
-    return extension;
-  }
-
-  return fallback;
+  return ALLOWED_IMAGE_EXTENSIONS.includes(extension)
+    ? extension
+    : fallback;
 }
 
 function createSafeFolderName(folder) {
@@ -33,44 +35,19 @@ function createSafeFolderName(folder) {
     .replace(/^\/+|\/+$/g, "") || "bikes";
 }
 
-function isAllowedImageTypeFromParts(fileName, contentType) {
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
-
-  const type = String(contentType || "").toLowerCase();
+function isAllowedImage(fileName, fileType) {
   const extension = getFileExtension(fileName, "");
+  const type = String(fileType || "").toLowerCase();
 
-  return allowedTypes.includes(type) || allowedExtensions.includes(extension);
-}
-
-function isFileLike(value) {
-  return (
-    value &&
-    typeof value !== "string" &&
-    typeof value.arrayBuffer === "function"
-  );
-}
-
-function getUploadedFileFromFormData(formData) {
-  let file = formData.get("image");
-
-  if (!isFileLike(file)) {
-    file = formData.get("file");
-  }
-
-  if (!isFileLike(file)) {
-    const fileEntry = Array.from(formData.entries()).find(([, value]) => {
-      return isFileLike(value);
-    });
-
-    file = fileEntry?.[1] || null;
-  }
-
-  return isFileLike(file) ? file : null;
+  return ALLOWED_IMAGE_TYPES.includes(type) || ALLOWED_IMAGE_EXTENSIONS.includes(extension);
 }
 
 function decodeBase64Image(imageBase64) {
-  const value = String(imageBase64 || "");
+  const value = String(imageBase64 || "").trim();
+
+  if (!value) {
+    return new Uint8Array();
+  }
 
   const cleanBase64 = value.includes(",")
     ? value.split(",").pop()
@@ -86,58 +63,37 @@ function decodeBase64Image(imageBase64) {
   return bytes;
 }
 
-async function readUploadPayload(request) {
-  const contentType = request.headers.get("content-type") || "";
+async function readJsonUpload(request) {
+  const payload = await request.json().catch(() => null);
 
-  if (contentType.includes("application/json")) {
-    const payload = await request.json();
-
-    const fileName = String(payload.fileName || "bike-image.jpg");
-    const fileType = String(payload.fileType || "application/octet-stream");
-    const folder = createSafeFolderName(payload.folder || "bikes");
-    const requestedBaseName = slugify(payload.fileBaseName || "");
-    const bytes = decodeBase64Image(payload.imageBase64 || "");
-
+  if (!payload) {
     return {
-      source: "json",
-      fileName,
-      fileType,
-      folder,
-      requestedBaseName,
-      size: bytes.byteLength,
-      body: bytes
+      error: "Invalid upload payload."
     };
   }
 
-  const formData = await request.formData();
-  const file = getUploadedFileFromFormData(formData);
+  const imageBase64 = String(payload.imageBase64 || "");
+  const fileName = String(payload.fileName || "bike-image.jpg");
+  const fileType = String(payload.fileType || "application/octet-stream");
+  const folder = createSafeFolderName(payload.folder || "bikes");
+  const fileBaseName = slugify(payload.fileBaseName || "");
 
-  if (!file) {
+  if (!imageBase64) {
     return {
-      source: "form",
-      file: null,
-      folder: createSafeFolderName(formData.get("folder") || "bikes"),
-      requestedBaseName: slugify(formData.get("fileBaseName") || ""),
-      receivedFields: Array.from(formData.entries()).map(([key, value]) => ({
-        key,
-        type: typeof value,
-        isFileLike: isFileLike(value),
-        name: value?.name || "",
-        size: value?.size || 0,
-        contentType: value?.type || ""
-      }))
+      error: "Image data is required."
     };
   }
+
+  const bytes = decodeBase64Image(imageBase64);
 
   return {
-    source: "form",
-    file,
-    fileName: file.name || "bike-image.jpg",
-    fileType: file.type || "application/octet-stream",
-    folder: createSafeFolderName(formData.get("folder") || "bikes"),
-    requestedBaseName: slugify(formData.get("fileBaseName") || ""),
-    size: file.size || 0,
-    body: new Uint8Array(await file.arrayBuffer())
+    imageBase64,
+    bytes,
+    fileName,
+    fileType,
+    folder,
+    fileBaseName,
+    size: bytes.byteLength
   };
 }
 
@@ -153,43 +109,50 @@ export async function onRequestPost(context) {
 
     if (!env.BIKE_IMAGES) {
       return jsonResponse(
-        { error: "R2 binding BIKE_IMAGES is missing" },
+        { error: "R2 binding BIKE_IMAGES is missing." },
         500
       );
     }
 
-    const upload = await readUploadPayload(request);
+    const contentType = request.headers.get("content-type") || "";
 
-    if (!upload.body) {
+    if (!contentType.includes("application/json")) {
       return jsonResponse(
         {
-          error: "Image file is required",
-          receivedFields: upload.receivedFields || []
+          error: "This endpoint only accepts JSON image uploads.",
+          expected: "application/json"
         },
         400
       );
     }
 
-    if (!isAllowedImageTypeFromParts(upload.fileName, upload.fileType)) {
+    const upload = await readJsonUpload(request);
+
+    if (upload.error) {
+      return jsonResponse({ error: upload.error }, 400);
+    }
+
+    if (!upload.bytes || upload.size <= 0) {
+      return jsonResponse(
+        { error: "Image data is empty." },
+        400
+      );
+    }
+
+    if (upload.size > MAX_IMAGE_SIZE_BYTES) {
       return jsonResponse(
         {
-          error: "Only JPG, PNG, and WEBP images are allowed",
-          receivedFile: {
-            name: upload.fileName,
-            type: upload.fileType,
-            size: upload.size
-          }
+          error: "Image must be smaller than 5MB.",
+          receivedSize: upload.size
         },
         400
       );
     }
 
-    const maxSize = 5 * 1024 * 1024;
-
-    if (upload.size > maxSize) {
+    if (!isAllowedImage(upload.fileName, upload.fileType)) {
       return jsonResponse(
         {
-          error: "Image must be smaller than 5MB",
+          error: "Only JPG, PNG, and WEBP images are allowed.",
           receivedFile: {
             name: upload.fileName,
             type: upload.fileType,
@@ -202,21 +165,22 @@ export async function onRequestPost(context) {
 
     const extension = getFileExtension(upload.fileName);
     const timestamp = Date.now();
-    const originalBaseName = String(upload.fileName || "").replace(/\.[^/.]+$/, "");
-    const baseName = upload.requestedBaseName || slugify(originalBaseName) || "bike-image";
+    const originalBaseName = upload.fileName.replace(/\.[^/.]+$/, "");
+    const baseName = upload.fileBaseName || slugify(originalBaseName) || "bike-image";
+
     const objectKey = `${upload.folder}/${baseName}-${timestamp}.${extension}`;
     const imagePath = `/api/images/${objectKey}`;
 
-    await env.BIKE_IMAGES.put(objectKey, upload.body, {
+    await env.BIKE_IMAGES.put(objectKey, upload.bytes, {
       httpMetadata: {
         contentType: upload.fileType || "application/octet-stream"
       },
       customMetadata: {
         uploadedBy: auth.user.username,
         uploadedRole: auth.user.role,
-        originalName: upload.fileName || "",
+        originalName: upload.fileName,
         fileBaseName: baseName,
-        uploadSource: upload.source
+        uploadSource: "json-base64"
       }
     });
 
@@ -226,11 +190,11 @@ export async function onRequestPost(context) {
       imagePath
     });
   } catch (error) {
-    console.error("Upload image error:", error);
+    console.error("Upload bike image error:", error);
 
     return jsonResponse(
       {
-        error: "Failed to upload image",
+        error: "Failed to upload image.",
         message: error.message
       },
       500

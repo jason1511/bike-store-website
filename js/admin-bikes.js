@@ -306,7 +306,7 @@ async function uploadImageToR2(file, folder = "bikes", fileBaseName = "") {
   const token = getStoredAdminToken();
   const imageBase64 = await fileToBase64(file);
 
-  const response = await fetch("/api/admin/upload-image", {
+  const response = await fetch("/api/admin/upload-bike-image", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -325,6 +325,10 @@ async function uploadImageToR2(file, folder = "bikes", fileBaseName = "") {
 
   if (!response.ok) {
     throw new Error(data?.error || "Gagal upload gambar.");
+  }
+
+  if (!data?.imagePath) {
+    throw new Error("Upload berhasil, tetapi path gambar tidak dikembalikan.");
   }
 
   return data.imagePath;
