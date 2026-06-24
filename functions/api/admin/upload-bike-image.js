@@ -31,8 +31,9 @@ function createSafeFolderName(folder) {
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9/-]+/g, "-")
-    .replace(/\/+ /g, "/")
-    .replace(/^\/+|\/+$/g, "") || "bikes";
+    .replace(/\/+$/g, "")
+    .replace(/^\/+/, "")
+    .replace(/\/{2,}/g, "/") || "bikes";
 }
 
 function isAllowedImage(fileName, fileType) {
