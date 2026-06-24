@@ -1261,6 +1261,27 @@
 .printable-invoice-footer strong {
   color: #182322;
 }
+.admin-image-status {
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #b8c4c2;
+  background-color: rgba(15, 25, 25, 0.48);
+  border: 1px solid rgba(159, 184, 182, 0.18);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.admin-image-status.is-success {
+  color: #8fffc0;
+  border-color: rgba(37, 211, 102, 0.28);
+  background-color: rgba(37, 211, 102, 0.1);
+}
+
+.admin-image-status.is-warning {
+  color: #ffe4a3;
+  border-color: rgba(255, 196, 87, 0.32);
+  background-color: rgba(255, 196, 87, 0.1);
+}
 /* =========================
    PRINT MODE
 ========================= */

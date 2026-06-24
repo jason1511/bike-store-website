@@ -310,7 +310,14 @@ async function uploadImageToR2(file, folder = "bikes", fileBaseName = "") {
     throw new Error(data?.error || "Gagal upload gambar.");
   }
 
-  return data.imagePath;
+  const rawPath =
+    data?.imagePath ||
+    data?.path ||
+    data?.key ||
+    data?.url ||
+    "";
+
+  return normalizeBikeImagePath(rawPath, folder);
 }
 
 async function uploadPendingBikeImages() {
@@ -329,8 +336,13 @@ async function uploadPendingBikeImages() {
     );
 
     mainImageInput.value = mainImagePath;
+
+    if (mainImageFileInput) {
+      mainImageFileInput.value = "";
+    }
+
     updateMainImagePreview();
-    setUploadNote(mainImageNote, "Gambar utama berhasil diupload.", "is-success");
+    setUploadNote(mainImageNote, "Gambar utama berhasil diupload dan path dibuat otomatis.", "is-success");
   }
 
   const colorCards = document.querySelectorAll("[data-color-variant-card]");
@@ -355,27 +367,90 @@ async function uploadPendingBikeImages() {
     );
 
     imageInput.value = imagePath;
+
+    if (fileInput) {
+      fileInput.value = "";
+    }
+
     updateColorVariantPreview(card);
-    setUploadNote(note, "Gambar warna berhasil diupload.", "is-success");
+    setUploadNote(note, "Gambar warna berhasil diupload dan path dibuat otomatis.", "is-success");
   }
 }
 
 /* =========================
    IMAGE PREVIEW
 ========================= */
+function normalizeBikeImagePath(imagePath, fallbackFolder = "bikes") {
+  const value = String(imagePath || "").trim();
+
+  if (!value) {
+    return "";
+  }
+
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("/") ||
+    value.startsWith("images/")
+  ) {
+    return value;
+  }
+
+  if (value.startsWith("api/images/")) {
+    return `/${value}`;
+  }
+
+  if (value.startsWith("bikes/")) {
+    return `/api/images/${value}`;
+  }
+
+  return `/api/images/${fallbackFolder}/${value}`;
+}
+function getImageFileNameFromPath(imagePath) {
+  if (!imagePath) {
+    return "";
+  }
+
+  return String(imagePath).split("/").filter(Boolean).pop() || imagePath;
+}
+
+function updateImageStatus(statusElement, imagePath, hasPendingFile = false) {
+  if (!statusElement) {
+    return;
+  }
+
+  statusElement.classList.remove("is-success", "is-warning");
+
+  if (hasPendingFile) {
+    statusElement.textContent = "Gambar baru dipilih. Path akan dibuat otomatis saat Simpan.";
+    statusElement.classList.add("is-warning");
+    return;
+  }
+
+  if (imagePath) {
+    statusElement.textContent = `Gambar tersimpan: ${getImageFileNameFromPath(imagePath)}`;
+    statusElement.classList.add("is-success");
+    return;
+  }
+
+  statusElement.textContent = "Belum ada gambar.";
+}
+
 function renderImagePreview(previewElement, imagePath, fallbackText) {
   if (!previewElement) {
     return;
   }
 
-  if (!imagePath) {
+  const normalizedPath = normalizeBikeImagePath(imagePath);
+
+  if (!normalizedPath) {
     previewElement.innerHTML = `<span>${escapeHtml(fallbackText)}</span>`;
     return;
   }
 
   previewElement.innerHTML = `
     <img
-      src="${escapeHtml(imagePath)}"
+      src="${escapeHtml(normalizedPath)}"
       alt="Preview gambar"
       onerror="this.parentElement.innerHTML='<span>Gambar tidak bisa dimuat.</span>'"
     >
@@ -406,12 +481,27 @@ function renderLocalFilePreview(previewElement, file, fallbackText) {
 function updateMainImagePreview() {
   const imageInput = document.getElementById("bikeImageInput");
   const preview = document.getElementById("mainImagePreview");
+  const status = document.getElementById("mainImageStatus");
+  const uploadInput = document.getElementById("bikeMainImageUploadInput");
 
-  renderImagePreview(
-    preview,
-    imageInput?.value.trim() || "",
-    "Preview gambar utama akan muncul di sini."
-  );
+  const imagePath = imageInput?.value.trim() || "";
+  const hasPendingFile = Boolean(uploadInput?.files?.[0]);
+
+  if (hasPendingFile) {
+    renderLocalFilePreview(
+      preview,
+      uploadInput.files[0],
+      "Preview gambar utama akan muncul di sini."
+    );
+  } else {
+    renderImagePreview(
+      preview,
+      imagePath,
+      "Preview gambar utama akan muncul di sini."
+    );
+  }
+
+  updateImageStatus(status, imagePath, hasPendingFile);
 }
 
 function updateColorVariantPreview(card) {
@@ -420,41 +510,37 @@ function updateColorVariantPreview(card) {
   }
 
   const imageInput = card.querySelector("[data-color-image]");
+  const fileInput = card.querySelector("[data-color-image-file]");
   const preview = card.querySelector("[data-color-image-preview]");
+  const status = card.querySelector("[data-color-image-status]");
 
-  renderImagePreview(
-    preview,
-    imageInput?.value.trim() || "",
-    "Preview gambar warna akan muncul di sini."
-  );
+  const imagePath = imageInput?.value.trim() || "";
+  const hasPendingFile = Boolean(fileInput?.files?.[0]);
+
+  if (hasPendingFile) {
+    renderLocalFilePreview(
+      preview,
+      fileInput.files[0],
+      "Preview gambar warna akan muncul di sini."
+    );
+  } else {
+    renderImagePreview(
+      preview,
+      imagePath,
+      "Preview gambar warna akan muncul di sini."
+    );
+  }
+
+  updateImageStatus(status, imagePath, hasPendingFile);
 }
 
 function setupImagePreviewInputs() {
-  const mainImageInput = document.getElementById("bikeImageInput");
   const mainImageUploadInput = document.getElementById("bikeMainImageUploadInput");
-  const mainImagePreview = document.getElementById("mainImagePreview");
-
-  if (mainImageInput) {
-    mainImageInput.addEventListener("input", updateMainImagePreview);
-  }
 
   if (mainImageUploadInput) {
-    mainImageUploadInput.addEventListener("change", () => {
-      const file = mainImageUploadInput.files?.[0];
-
-      if (file) {
-        renderLocalFilePreview(
-          mainImagePreview,
-          file,
-          "Preview gambar utama akan muncul di sini."
-        );
-      } else {
-        updateMainImagePreview();
-      }
-    });
+    mainImageUploadInput.addEventListener("change", updateMainImagePreview);
   }
 }
-
 /* =========================
    COLOR VARIANT EDITOR
 ========================= */
@@ -497,22 +583,30 @@ function createColorVariantCard(color = {}, index = 0) {
           >
         </div>
 
-        <div class="admin-form-group admin-color-variant-image">
-          <label>Path Gambar Warna</label>
-          <input
-            type="text"
-            data-color-image
-            placeholder="Akan terisi otomatis setelah simpan jika upload file"
-            value="${escapeHtml(image)}"
-          >
-        </div>
+        <input
+          type="hidden"
+          data-color-image
+          value="${escapeHtml(image)}"
+        >
 
-        <div class="admin-image-preview admin-color-variant-preview" data-color-image-preview>
-          ${
-            image
-              ? `<img src="${escapeHtml(image)}" alt="Preview warna ${escapeHtml(name || index + 1)}">`
-              : "<span>Preview gambar warna akan muncul di sini.</span>"
-          }
+        <div class="admin-form-group admin-color-variant-image">
+          <label>Gambar Warna</label>
+
+          <div class="admin-image-status ${image ? "is-success" : ""}" data-color-image-status>
+            ${
+              image
+                ? `Gambar tersimpan: ${escapeHtml(getImageFileNameFromPath(image))}`
+                : "Belum ada gambar warna."
+            }
+          </div>
+
+          <div class="admin-image-preview admin-color-variant-preview" data-color-image-preview>
+            ${
+              image
+                ? `<img src="${escapeHtml(image)}" alt="Preview warna ${escapeHtml(name || index + 1)}">`
+                : "<span>Preview gambar warna akan muncul di sini.</span>"
+            }
+          </div>
         </div>
 
         <div class="admin-form-group admin-color-variant-image">
@@ -524,7 +618,7 @@ function createColorVariantCard(color = {}, index = 0) {
           >
 
           <p class="admin-form-note" data-color-upload-note>
-            Pilih gambar baru jika ingin mengganti gambar warna. File akan diupload saat Simpan ditekan.
+            Pilih gambar warna. Path akan dibuat otomatis saat Simpan.
           </p>
         </div>
       </div>
@@ -592,7 +686,10 @@ function getColorVariantsFromForm() {
     .map((card) => ({
       name: card.querySelector("[data-color-name]")?.value.trim() || "",
       hex: card.querySelector("[data-color-hex]")?.value.trim() || "#cccccc",
-      image: card.querySelector("[data-color-image]")?.value.trim() || ""
+      image: normalizeBikeImagePath(
+  card.querySelector("[data-color-image]")?.value.trim() || "",
+  "bikes/colors"
+)
     }))
     .filter((color) => color.name || color.image);
 }
@@ -628,17 +725,6 @@ function setupColorVariantEditor() {
     if (!list.querySelector("[data-color-variant-card]")) {
       renderColorVariants([]);
     }
-  });
-
-  list.addEventListener("input", (event) => {
-    const imageInput = event.target.closest("[data-color-image]");
-
-    if (!imageInput) {
-      return;
-    }
-
-    const card = imageInput.closest("[data-color-variant-card]");
-    updateColorVariantPreview(card);
   });
 
   list.addEventListener("change", (event) => {
@@ -688,7 +774,10 @@ function getBikeFormData() {
     range: document.getElementById("bikeRangeInput")?.value.trim() || "",
     maxWeight: document.getElementById("bikeMaxWeightInput")?.value.trim() || "",
     safety: document.getElementById("bikeSafetyInput")?.value.trim() || "",
-    image: document.getElementById("bikeImageInput")?.value.trim() || colors[0]?.image || "",
+    image: normalizeBikeImagePath(
+  document.getElementById("bikeImageInput")?.value.trim() || colors[0]?.image || "",
+  "bikes"
+),
     alt: `Sepeda listrik ${name} di showroom Lumajang`,
     comfort: document.getElementById("bikeComfortInput")?.value || "medium",
     price: Number(document.getElementById("bikePriceInput")?.value || 0),
@@ -703,22 +792,26 @@ function getBikeFormData() {
 
 function validateBikeFormData(bike) {
   const errors = [];
+  const mainImageFile = document.getElementById("bikeMainImageUploadInput")?.files?.[0];
 
   if (!bike.brand) errors.push("Brand wajib diisi.");
   if (!bike.name) errors.push("Nama model wajib diisi.");
   if (!bike.id) errors.push("ID sepeda gagal dibuat.");
-  if (!bike.image) errors.push("Gambar utama atau gambar warna pertama wajib diisi.");
   if (!bike.description) errors.push("Deskripsi wajib diisi.");
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
   if (bike.stockQty < 0) errors.push("Stok internal tidak boleh negatif.");
 
+  const hasMainImage = Boolean(bike.image);
+  const hasPendingMainImage = Boolean(mainImageFile);
+  const hasColorImage = bike.colors.some((color) => Boolean(color.image));
+
+  if (!hasMainImage && !hasPendingMainImage && !hasColorImage) {
+    errors.push("Upload gambar utama atau gambar warna minimal satu.");
+  }
+
   bike.colors.forEach((color, index) => {
     if (!color.name && color.image) {
-      errors.push(`Nama warna ke-${index + 1} wajib diisi jika gambar warna diisi.`);
-    }
-
-    if (color.name && !color.image) {
-      errors.push(`Gambar warna ke-${index + 1} wajib diisi jika nama warna diisi.`);
+      errors.push(`Nama warna ke-${index + 1} wajib diisi jika gambar warna ada.`);
     }
   });
 
@@ -787,7 +880,7 @@ function resetBikeEditorForm() {
 
   renderColorVariants([]);
   updateMainImagePreview();
-
+document.querySelectorAll("[data-color-variant-card]").forEach(updateColorVariantPreview);
   setAdminFormNote(
     isCurrentUserAdmin()
       ? "Admin bisa mengatur stok internal."
@@ -832,7 +925,7 @@ function fillBikeEditorForm(bike) {
 
   renderColorVariants(bike.colors);
   updateMainImagePreview();
-
+document.querySelectorAll("[data-color-variant-card]").forEach(updateColorVariantPreview);
   setAdminFormNote(
     isCurrentUserAdmin()
       ? "Admin bisa mengatur stok internal."
