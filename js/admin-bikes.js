@@ -289,6 +289,10 @@ function buildBikeImageBaseName(extra = "") {
 }
 
 async function uploadImageToR2(file, folder = "bikes", fileBaseName = "") {
+  if (!file || !(file instanceof File)) {
+    throw new Error("File gambar tidak ditemukan. Pilih gambar terlebih dahulu.");
+  }
+
   const token = getStoredAdminToken();
   const formData = new FormData();
 
@@ -310,14 +314,7 @@ async function uploadImageToR2(file, folder = "bikes", fileBaseName = "") {
     throw new Error(data?.error || "Gagal upload gambar.");
   }
 
-  const rawPath =
-    data?.imagePath ||
-    data?.path ||
-    data?.key ||
-    data?.url ||
-    "";
-
-  return normalizeBikeImagePath(rawPath, folder);
+  return data.imagePath;
 }
 
 async function uploadPendingBikeImages() {
@@ -467,15 +464,28 @@ function renderLocalFilePreview(previewElement, file, fallbackText) {
     return;
   }
 
-  const objectUrl = URL.createObjectURL(file);
+  const objectUrl = window.URL.createObjectURL(file);
+  const image = document.createElement("img");
 
-  previewElement.innerHTML = `
-    <img
-      src="${objectUrl}"
-      alt="Preview gambar upload"
-      onload="URL.revokeObjectURL(this.src)"
-    >
-  `;
+  image.src = objectUrl;
+  image.alt = "Preview gambar upload";
+
+  image.addEventListener("load", () => {
+    if (window.URL && typeof window.URL.revokeObjectURL === "function") {
+      window.URL.revokeObjectURL(objectUrl);
+    }
+  });
+
+  image.addEventListener("error", () => {
+    previewElement.innerHTML = "<span>Gambar tidak bisa dimuat.</span>";
+
+    if (window.URL && typeof window.URL.revokeObjectURL === "function") {
+      window.URL.revokeObjectURL(objectUrl);
+    }
+  });
+
+  previewElement.innerHTML = "";
+  previewElement.appendChild(image);
 }
 
 function updateMainImagePreview() {

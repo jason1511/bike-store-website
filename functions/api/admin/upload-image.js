@@ -54,11 +54,34 @@ export async function onRequestPost(context) {
       );
     }
 
-    const formData = await request.formData();
-    const file = formData.get("image");
+const formData = await request.formData();
+
+let file = formData.get("image");
+
+if (!file || typeof file === "string") {
+  file = formData.get("file");
+}
+
+if (!file || typeof file === "string") {
+  const entries = Array.from(formData.entries());
+  const fileEntry = entries.find(([, value]) => {
+    return value && typeof value !== "string" && typeof value.arrayBuffer === "function";
+  });
+
+  file = fileEntry?.[1] || null;
+}
     const folder = createSafeFolderName(formData.get("folder") || "bikes");
     const requestedBaseName = slugify(formData.get("fileBaseName") || "");
-
+console.log(
+  "Upload form entries:",
+  Array.from(formData.entries()).map(([key, value]) => ({
+    key,
+    type: typeof value,
+    name: value?.name,
+    size: value?.size,
+    contentType: value?.type
+  }))
+);
     if (!file || typeof file === "string") {
       return jsonResponse({ error: "Image file is required" }, 400);
     }
