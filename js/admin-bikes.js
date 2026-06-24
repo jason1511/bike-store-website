@@ -288,24 +288,37 @@ function buildBikeImageBaseName(extra = "") {
     .join("-");
 }
 
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Gagal membaca file gambar."));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadImageToR2(file, folder = "bikes", fileBaseName = "") {
   if (!file || !(file instanceof File)) {
     throw new Error("File gambar tidak ditemukan. Pilih gambar terlebih dahulu.");
   }
 
   const token = getStoredAdminToken();
-  const formData = new FormData();
-
-  formData.append("image", file);
-  formData.append("folder", folder);
-  formData.append("fileBaseName", fileBaseName);
+  const imageBase64 = await fileToBase64(file);
 
   const response = await fetch("/api/admin/upload-image", {
     method: "POST",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`
     },
-    body: formData
+    body: JSON.stringify({
+      imageBase64,
+      fileName: file.name,
+      fileType: file.type,
+      folder,
+      fileBaseName
+    })
   });
 
   const data = await response.json().catch(() => null);
