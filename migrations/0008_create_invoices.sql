@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS invoices (
   bike_id TEXT NOT NULL,
   bike_brand TEXT NOT NULL,
   bike_name TEXT NOT NULL,
+  bike_color_name TEXT DEFAULT '',
+  bike_color_hex TEXT DEFAULT '',
+  bike_color_image TEXT DEFAULT '',
 
   quantity INTEGER NOT NULL DEFAULT 1,
   unit_price INTEGER NOT NULL DEFAULT 0,
@@ -27,5 +30,6 @@ CREATE TABLE IF NOT EXISTS invoices (
 CREATE INDEX IF NOT EXISTS idx_invoices_invoice_number ON invoices (invoice_number);
 CREATE INDEX IF NOT EXISTS idx_invoices_customer_name ON invoices (customer_name);
 CREATE INDEX IF NOT EXISTS idx_invoices_bike_id ON invoices (bike_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_bike_color ON invoices (bike_color_name);
 CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices (created_at);
 CREATE INDEX IF NOT EXISTS idx_invoices_created_by ON invoices (created_by_username);

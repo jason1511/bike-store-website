@@ -4,7 +4,7 @@ function getAllBikes() {
 
 function getFeaturedBikes(limit = 3) {
   return bikes
-    .filter((bike) => bike.featured && bike.inStock && bike.stockQty > 0)
+    .filter((bike) => bike.featured && isBikeAvailable(bike))
     .slice(0, limit);
 }
 
@@ -12,7 +12,85 @@ function getNumberFromText(text) {
   const match = String(text || "").match(/\d+/);
   return match ? Number(match[0]) : 0;
 }
+function parseBikeColors(colors) {
+  if (Array.isArray(colors)) {
+    return colors;
+  }
 
+  if (typeof colors === "string") {
+    try {
+      const parsedColors = JSON.parse(colors);
+      return Array.isArray(parsedColors) ? parsedColors : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  return [];
+}
+
+function getBikeColors(bike) {
+  if (!bike) {
+    return [];
+  }
+
+  return parseBikeColors(bike.colors)
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
+    }))
+    .filter((color) => color.name || color.image || color.stockQty > 0);
+}
+
+function getBikeColorStockTotal(bike) {
+  return getBikeColors(bike).reduce((total, color) => {
+    return total + Math.max(0, Number(color.stockQty || 0));
+  }, 0);
+}
+
+function getBikeTotalStock(bike) {
+  const colorStockTotal = getBikeColorStockTotal(bike);
+
+  return colorStockTotal > 0
+    ? colorStockTotal
+    : Math.max(0, Number(bike?.stockQty || 0));
+}
+
+function isBikeAvailable(bike) {
+  return Boolean(bike?.inStock) && getBikeTotalStock(bike) > 0;
+}
+
+function getBikePrimaryColor(bike) {
+  const colors = getBikeColors(bike);
+
+  return colors.find((color) => color.stockQty > 0 && color.image)
+    || colors.find((color) => color.image)
+    || colors.find((color) => color.stockQty > 0)
+    || colors[0]
+    || null;
+}
+
+function getBikeDisplayImage(bike) {
+  const primaryColor = getBikePrimaryColor(bike);
+
+  return primaryColor?.image || bike?.image || "images/logo.jpeg";
+}
+
+function getBikeStockLabel(bike) {
+  if (!bike?.inStock) {
+    return "Tidak aktif";
+  }
+
+  const totalStock = getBikeTotalStock(bike);
+
+  if (totalStock <= 0) {
+    return "Stok habis";
+  }
+
+  return `Stok ${totalStock}`;
+}
 function getBatteryAh(bike) {
   const match = String(bike.battery || "").match(/(\d+)\s*ah/i);
   return match ? Number(match[1]) : 0;
@@ -95,7 +173,7 @@ function getBikeByIndex(index) {
 }
 
 function getAvailableBikes() {
-  return bikes.filter((bike) => bike.inStock && bike.stockQty > 0);
+  return bikes.filter(isBikeAvailable);
 }
 
 function getUniqueCategories() {
@@ -153,14 +231,19 @@ function getFilteredAndSortedBikes(options = {}) {
     const searchTerm = search.toLowerCase();
 
     result = result.filter((bike) => {
-      const searchableText = [
-        bike.brand,
-        bike.name,
-        bike.description,
-        bike.motor,
-        bike.battery,
-        bike.safety
-      ]
+      const colorNames = getBikeColors(bike)
+  .map((color) => color.name)
+  .join(" ");
+
+const searchableText = [
+  bike.brand,
+  bike.name,
+  bike.description,
+  bike.motor,
+  bike.battery,
+  bike.safety,
+  colorNames
+]
         .join(" ")
         .toLowerCase();
 

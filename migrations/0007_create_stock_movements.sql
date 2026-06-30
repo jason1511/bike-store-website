@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS stock_movements (
   bike_id TEXT NOT NULL,
   bike_brand TEXT NOT NULL,
   bike_name TEXT NOT NULL,
+  bike_color_name TEXT DEFAULT '',
 
   movement_type TEXT NOT NULL CHECK (
     movement_type IN ('stock_in', 'sale', 'adjustment')
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS stock_movements (
 );
 
 CREATE INDEX IF NOT EXISTS idx_stock_movements_bike_id ON stock_movements (bike_id);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_bike_color ON stock_movements (bike_color_name);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_type ON stock_movements (movement_type);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_created_at ON stock_movements (created_at);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_created_by ON stock_movements (created_by_username);

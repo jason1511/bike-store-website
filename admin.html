@@ -297,51 +297,31 @@
                   >
                 </div>
 
-                <div class="admin-form-group admin-form-wide">
-  <label>Gambar Utama</label>
+                <input type="hidden" id="bikeImageInput">
+<input type="file" id="bikeMainImageUploadInput" class="is-hidden" accept="image/jpeg,image/png,image/webp">
 
-  <input type="hidden" id="bikeImageInput">
-
-  <div class="admin-image-status" id="mainImageStatus">
-    Belum ada gambar utama.
+<div class="admin-form-group admin-form-wide">
+  <div class="admin-compat-note" id="mainImageStatus">
+    Gambar utama lama hanya dipakai sebagai fallback. Untuk data baru, upload gambar di setiap warna unit.
   </div>
 
-  <div class="admin-image-preview" id="mainImagePreview">
-    <span>Preview gambar utama akan muncul di sini.</span>
+  <p class="admin-form-note is-hidden" id="mainImageUploadNote"></p>
+
+  <div class="admin-image-preview is-hidden" id="mainImagePreview">
+    <span>Fallback gambar utama.</span>
   </div>
 </div>
 
-                <div class="admin-form-group admin-form-wide">
-                  <label for="bikeMainImageUploadInput">Upload Gambar Utama</label>
-                  <input
-                    type="file"
-                    id="bikeMainImageUploadInput"
-                    accept="image/jpeg,image/png,image/webp"
-                  >
-
-                  <p class="admin-form-note" id="mainImageUploadNote">
-                    Pilih gambar baru jika ingin mengganti gambar utama.
-                    File akan diupload saat tombol Simpan ditekan.
-                  </p>
-                </div>
-
-                <div class="admin-form-group admin-form-wide">
-                  <label for="bikeColorNameInput">Warna Default</label>
-                  <input
-                    type="text"
-                    id="bikeColorNameInput"
-                    placeholder="Contoh: Merah, Hijau, Hitam Doff"
-                  >
-                </div>
+                <input type="hidden" id="bikeColorNameInput">
 
                 <section class="admin-color-variants admin-form-wide">
                   <div class="admin-subsection-header">
                     <div>
-                      <h3>Pilihan Warna Unit</h3>
-                      <p>
-                        Tambahkan variasi warna yang bisa diklik di kartu katalog
-                        dan modal detail.
-                      </p>
+                      <h3>Stok per Warna Unit</h3>
+<p>
+  Tambahkan warna, gambar, dan jumlah stok untuk setiap warna.
+  Total stok sepeda akan dihitung otomatis dari semua warna.
+</p>
                     </div>
 
                     <button type="button" class="btn-secondary" id="addColorVariantBtn">
@@ -377,9 +357,13 @@
                   </label>
 
                   <div class="admin-form-group admin-stock-input">
-                    <label for="bikeStockQtyInput">Stok Internal</label>
-                    <input type="number" id="bikeStockQtyInput" min="0" value="1">
-                  </div>
+  <label for="bikeStockQtyInput">Total Stok</label>
+  <input type="number" id="bikeStockQtyInput" min="0" value="0" readonly>
+
+  <p class="admin-form-note">
+    Otomatis dari total stok warna.
+  </p>
+</div>
                 </div>
               </div>
 
@@ -389,7 +373,7 @@
                 </button>
 
                 <p class="admin-form-note" id="adminFormNote">
-                  Jika stok internal 0, sepeda tetap aktif di katalog tetapi ditandai tidak tersedia.
+                  Stok dihitung dari warna unit. Jika total stok 0, sepeda tetap aktif tetapi ditandai tidak tersedia.
                 </p>
               </div>
             </form>
@@ -426,6 +410,16 @@
                     <option value="">Pilih sepeda</option>
                   </select>
                 </div>
+                <div class="admin-form-group admin-form-wide">
+  <label for="invoiceBikeColorInput">Warna Unit</label>
+  <select id="invoiceBikeColorInput" required>
+    <option value="">Pilih warna</option>
+  </select>
+
+  <p class="admin-form-note" id="invoiceColorStockNote">
+    Pilih sepeda terlebih dahulu untuk melihat stok warna.
+  </p>
+</div>
 
                 <div class="admin-form-group">
                   <label for="invoiceQuantityInput">Jumlah</label>

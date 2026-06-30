@@ -19,8 +19,23 @@ function formatPrice(price) {
 
 const STORE_WHATSAPP_NUMBER = "6282122065168";
 
+function getBikeTotalStockForCard(bike) {
+  if (typeof getBikeTotalStock === "function") {
+    return getBikeTotalStock(bike);
+  }
+
+  const colors = getBikeColors(bike);
+  const colorStockTotal = colors.reduce((total, color) => {
+    return total + Math.max(0, Number(color.stockQty || 0));
+  }, 0);
+
+  return colorStockTotal > 0
+    ? colorStockTotal
+    : Math.max(0, Number(bike?.stockQty || 0));
+}
+
 function isBikeUnavailable(bike) {
-  return Boolean(bike?.inStock) && Number(bike?.stockQty || 0) <= 0;
+  return !bike?.inStock || getBikeTotalStockForCard(bike) <= 0;
 }
 
 function getBikeAvailabilityLabel(bike) {
@@ -28,11 +43,13 @@ function getBikeAvailabilityLabel(bike) {
     return "Tidak aktif";
   }
 
-  if (isBikeUnavailable(bike)) {
+  const totalStock = getBikeTotalStockForCard(bike);
+
+  if (totalStock <= 0) {
     return "Stok Habis";
   }
 
-  return "Tersedia";
+  return `Stok ${totalStock}`;
 }
 
 function getWhatsAppLink(bike) {
@@ -47,26 +64,57 @@ function getWhatsAppLink(bike) {
 }
 
 function getBikeColors(bike) {
-  if (Array.isArray(bike.colors)) {
-    return bike.colors;
+  if (!bike) {
+    return [];
   }
 
-  if (typeof bike.colors === "string") {
+  let colors = [];
+
+  if (Array.isArray(bike.colors)) {
+    colors = bike.colors;
+  } else if (typeof bike.colors === "string") {
     try {
       const parsedColors = JSON.parse(bike.colors);
-      return Array.isArray(parsedColors) ? parsedColors : [];
+      colors = Array.isArray(parsedColors) ? parsedColors : [];
     } catch (error) {
-      return [];
+      colors = [];
     }
   }
 
-  return [];
+  return colors
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
+    }))
+    .filter((color) => color.name || color.image || color.stockQty > 0);
+}
+
+function getBikePrimaryColorForCard(bike) {
+  const colors = getBikeColors(bike);
+
+  return colors.find((color) => color.stockQty > 0 && color.image)
+    || colors.find((color) => color.image)
+    || colors.find((color) => color.stockQty > 0)
+    || colors[0]
+    || null;
+}
+
+function getBikeDisplayImageForCard(bike) {
+  const primaryColor = getBikePrimaryColorForCard(bike);
+
+  return primaryColor?.image || bike?.image || "images/logo.jpeg";
 }
 
 /* =========================
    BIKE CARD COLOR SWITCHER
 ========================= */
 function switchBikeCardColor(button) {
+  if (button.disabled) {
+    return;
+  }
+
   const card = button.closest(".bike-card");
 
   if (!card) {
@@ -75,8 +123,10 @@ function switchBikeCardColor(button) {
 
   const bikeImage = card.querySelector(".bike-card-image");
   const colorLabel = card.querySelector(".bike-color-label");
+  const stockLabel = card.querySelector(".bike-card-selected-stock");
   const newImage = button.dataset.bikeColorImage;
   const newColorName = button.dataset.bikeColorName;
+  const newStockQty = Number(button.dataset.bikeColorStock || 0);
 
   if (bikeImage && newImage) {
     bikeImage.src = newImage;
@@ -84,6 +134,11 @@ function switchBikeCardColor(button) {
 
   if (colorLabel && newColorName) {
     colorLabel.textContent = `Warna: ${newColorName}`;
+  }
+
+  if (stockLabel && newColorName) {
+    stockLabel.textContent = `Stok ${newColorName}: ${newStockQty}`;
+    stockLabel.classList.toggle("is-empty", newStockQty <= 0);
   }
 
   card.querySelectorAll(".bike-color-dot").forEach((dot) => {
@@ -100,10 +155,13 @@ function createBikeCard(bike) {
   const brandTheme = getBrandTheme(bike.brand);
   const badges = getHighlights(bike).slice(0, 2);
   const colorVariants = getBikeColors(bike);
-  const defaultColor = colorVariants[0] || null;
+  const defaultColor = getBikePrimaryColorForCard(bike);
 
-  const imageSrc = defaultColor?.image || bike.image || "images/logo.jpeg";
+  const imageSrc = getBikeDisplayImageForCard(bike);
   const colorName = defaultColor?.name || bike.colorName || "";
+  const selectedColorStock = defaultColor
+    ? Number(defaultColor.stockQty || 0)
+    : getBikeTotalStockForCard(bike);
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
 
   const isUnavailable = isBikeUnavailable(bike);
@@ -149,20 +207,36 @@ function createBikeCard(bike) {
             ? `
               <div class="bike-color-options" aria-label="Pilihan warna ${escapeHtml(bike.name)}">
                 ${colorVariants
-                  .map((color, index) => `
-                    <button
-                      type="button"
-                      class="bike-color-dot ${index === 0 ? "is-active" : ""}"
-                      style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")};"
-                      data-bike-color-image="${escapeHtml(color.image || bike.image || "")}"
-                      data-bike-color-name="${escapeHtml(color.name || "")}"
-                      onclick="event.stopPropagation(); switchBikeCardColor(this);"
-                      aria-label="Warna ${escapeHtml(color.name || "unit")}"
-                      title="${escapeHtml(color.name || "Warna")}"
-                    ></button>
-                  `)
+                  .map((color) => {
+                    const stockQty = Number(color.stockQty || 0);
+                    const isColorAvailable = stockQty > 0;
+                    const isActive = defaultColor && color.name === defaultColor.name;
+
+                    return `
+                      <button
+                        type="button"
+                        class="bike-color-dot ${isActive ? "is-active" : ""} ${isColorAvailable ? "is-available" : "is-empty"}"
+                        style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")};"
+                        data-bike-color-image="${escapeHtml(color.image || bike.image || imageSrc)}"
+                        data-bike-color-name="${escapeHtml(color.name || "")}"
+                        data-bike-color-stock="${stockQty}"
+                        onclick="event.stopPropagation(); switchBikeCardColor(this);"
+                        aria-label="Warna ${escapeHtml(color.name || "unit")} - ${stockQty} unit"
+                        title="${escapeHtml(color.name || "Warna")} - stok ${stockQty}"
+                        ${isColorAvailable ? "" : "disabled"}
+                      ></button>
+                    `;
+                  })
                   .join("")}
               </div>
+
+              <p class="bike-card-selected-stock ${selectedColorStock > 0 ? "is-available" : "is-empty"}">
+                ${
+                  colorName
+                    ? `Stok ${escapeHtml(colorName)}: ${selectedColorStock}`
+                    : `Stok tersedia: ${selectedColorStock}`
+                }
+              </p>
             `
             : ""
         }
@@ -217,7 +291,6 @@ function createBikeCard(bike) {
     </div>
   `;
 }
-
 /* =========================
    THEME TOGGLE
 ========================= */

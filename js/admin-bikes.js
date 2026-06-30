@@ -568,6 +568,38 @@ function setupImagePreviewInputs() {
     mainImageUploadInput.addEventListener("change", updateMainImagePreview);
   }
 }
+function getColorStockTotal() {
+  const cards = document.querySelectorAll("[data-color-variant-card]");
+
+  return Array.from(cards).reduce((total, card) => {
+    const stockInput = card.querySelector("[data-color-stock]");
+    const stockQty = Number(stockInput?.value || 0);
+
+    return total + Math.max(0, stockQty);
+  }, 0);
+}
+
+function updateTotalStockFromColors() {
+  const stockInput = document.getElementById("bikeStockQtyInput");
+
+  if (!stockInput) {
+    return;
+  }
+
+  stockInput.value = String(getColorStockTotal());
+}
+function getPrimaryColorNameFromColors(colors) {
+  return colors[0]?.name || "";
+}
+
+function syncDefaultColorNameFromColors() {
+  const colors = getColorVariantsFromForm();
+
+  setBikeFormValue(
+    "bikeColorNameInput",
+    getPrimaryColorNameFromColors(colors)
+  );
+}
 /* =========================
    COLOR VARIANT EDITOR
 ========================= */
@@ -575,6 +607,7 @@ function createColorVariantCard(color = {}, index = 0) {
   const name = color.name || "";
   const hex = color.hex || "#cccccc";
   const image = color.image || "";
+  const stockQty = Number(color.stockQty || 0);
 
   return `
     <article class="admin-color-variant-card" data-color-variant-card>
@@ -610,6 +643,17 @@ function createColorVariantCard(color = {}, index = 0) {
           >
         </div>
 
+        <div class="admin-form-group">
+          <label>Stok Warna</label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            data-color-stock
+            value="${escapeHtml(stockQty)}"
+          >
+        </div>
+
         <input
           type="hidden"
           data-color-image
@@ -630,7 +674,7 @@ function createColorVariantCard(color = {}, index = 0) {
           <div class="admin-image-preview admin-color-variant-preview" data-color-image-preview>
             ${
               image
-                ? `<img src="${escapeHtml(image)}" alt="Preview warna ${escapeHtml(name || index + 1)}">`
+                ? `<img src="${escapeHtml(normalizeBikeImagePath(image, "bikes/colors"))}" alt="Preview warna ${escapeHtml(name || index + 1)}">`
                 : "<span>Preview gambar warna akan muncul di sini.</span>"
             }
           </div>
@@ -679,12 +723,18 @@ function renderColorVariants(colors = []) {
         Belum ada pilihan warna. Klik Tambah Warna untuk mulai.
       </div>
     `;
+
+    updateTotalStockFromColors();
+    syncDefaultColorNameFromColors();
     return;
   }
 
   list.innerHTML = parsedColors
     .map((color, index) => createColorVariantCard(color, index))
     .join("");
+
+  updateTotalStockFromColors();
+  syncDefaultColorNameFromColors();
 }
 
 function addColorVariant(color = {}) {
@@ -702,8 +752,14 @@ function addColorVariant(color = {}) {
 
   const currentCount = list.querySelectorAll("[data-color-variant-card]").length;
 
-  list.insertAdjacentHTML("beforeend", createColorVariantCard(color, currentCount));
+  list.insertAdjacentHTML(
+    "beforeend",
+    createColorVariantCard(color, currentCount)
+  );
+
   refreshColorVariantTitles();
+  updateTotalStockFromColors();
+  syncDefaultColorNameFromColors();
 }
 
 function getColorVariantsFromForm() {
@@ -713,12 +769,13 @@ function getColorVariantsFromForm() {
     .map((card) => ({
       name: card.querySelector("[data-color-name]")?.value.trim() || "",
       hex: card.querySelector("[data-color-hex]")?.value.trim() || "#cccccc",
+      stockQty: Math.max(0, Number(card.querySelector("[data-color-stock]")?.value || 0)),
       image: normalizeBikeImagePath(
-  card.querySelector("[data-color-image]")?.value.trim() || "",
-  "bikes/colors"
-)
+        card.querySelector("[data-color-image]")?.value.trim() || "",
+        "bikes/colors"
+      )
     }))
-    .filter((color) => color.name || color.image);
+    .filter((color) => color.name || color.image || color.stockQty > 0);
 }
 
 function setupColorVariantEditor() {
@@ -746,12 +803,16 @@ function setupColorVariantEditor() {
 
     if (card) {
       card.remove();
-      refreshColorVariantTitles();
     }
 
     if (!list.querySelector("[data-color-variant-card]")) {
       renderColorVariants([]);
+      return;
     }
+
+    refreshColorVariantTitles();
+    updateTotalStockFromColors();
+    syncDefaultColorNameFromColors();
   });
 
   list.addEventListener("change", (event) => {
@@ -771,9 +832,22 @@ function setupColorVariantEditor() {
         file,
         "Preview gambar warna akan muncul di sini."
       );
-    } else {
-      updateColorVariantPreview(card);
+      return;
     }
+
+    updateColorVariantPreview(card);
+  });
+
+  list.addEventListener("input", (event) => {
+    const colorNameInput = event.target.closest("[data-color-name]");
+    const stockInput = event.target.closest("[data-color-stock]");
+
+    if (!colorNameInput && !stockInput) {
+      return;
+    }
+
+    updateTotalStockFromColors();
+    syncDefaultColorNameFromColors();
   });
 }
 /* =========================
@@ -785,11 +859,8 @@ function getBikeFormData() {
   const name = document.getElementById("bikeNameInput")?.value.trim();
   const generatedId = `${createSlugFromName(brand)}-${createSlugFromName(name)}`;
   const colors = getColorVariantsFromForm();
-
-  const defaultColorName =
-    document.getElementById("bikeColorNameInput")?.value.trim() ||
-    colors[0]?.name ||
-    "";
+  const primaryColorName = getPrimaryColorNameFromColors(colors);
+  const primaryColorImage = colors[0]?.image || "";
 
   return {
     id: existingId || generatedId,
@@ -802,43 +873,56 @@ function getBikeFormData() {
     maxWeight: document.getElementById("bikeMaxWeightInput")?.value.trim() || "",
     safety: document.getElementById("bikeSafetyInput")?.value.trim() || "",
     image: normalizeBikeImagePath(
-  document.getElementById("bikeImageInput")?.value.trim() || colors[0]?.image || "",
-  "bikes"
-),
+      document.getElementById("bikeImageInput")?.value.trim() || primaryColorImage,
+      "bikes"
+    ),
     alt: `Sepeda listrik ${name} di showroom Lumajang`,
     comfort: document.getElementById("bikeComfortInput")?.value || "medium",
     price: Number(document.getElementById("bikePriceInput")?.value || 0),
-    colorName: defaultColorName,
+    colorName: primaryColorName,
     colors,
     description: document.getElementById("bikeDescriptionInput")?.value.trim() || "",
     featured: Boolean(document.getElementById("bikeFeaturedInput")?.checked),
     inStock: Boolean(document.getElementById("bikeInStockInput")?.checked),
-    stockQty: Number(document.getElementById("bikeStockQtyInput")?.value || 0)
+    stockQty: colors.reduce((total, color) => {
+      return total + Math.max(0, Number(color.stockQty || 0));
+    }, 0)
   };
 }
 
 function validateBikeFormData(bike) {
   const errors = [];
   const mainImageFile = document.getElementById("bikeMainImageUploadInput")?.files?.[0];
+  const hasPendingMainImage = Boolean(mainImageFile);
+  const hasFallbackImage = Boolean(bike.image || hasPendingMainImage);
+  const hasColorImage = bike.colors.some((color) => Boolean(color.image));
 
   if (!bike.brand) errors.push("Brand wajib diisi.");
   if (!bike.name) errors.push("Nama model wajib diisi.");
   if (!bike.id) errors.push("ID sepeda gagal dibuat.");
   if (!bike.description) errors.push("Deskripsi wajib diisi.");
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
-  if (bike.stockQty < 0) errors.push("Stok internal tidak boleh negatif.");
+  if (bike.stockQty < 0) errors.push("Total stok tidak boleh negatif.");
 
-  const hasMainImage = Boolean(bike.image);
-  const hasPendingMainImage = Boolean(mainImageFile);
-  const hasColorImage = bike.colors.some((color) => Boolean(color.image));
+  if (!bike.colors.length) {
+    errors.push("Tambahkan minimal satu warna unit.");
+  }
 
-  if (!hasMainImage && !hasPendingMainImage && !hasColorImage) {
-    errors.push("Upload gambar utama atau gambar warna minimal satu.");
+  if (!hasColorImage && !hasFallbackImage) {
+    errors.push("Upload minimal satu gambar warna.");
   }
 
   bike.colors.forEach((color, index) => {
     if (!color.name && color.image) {
       errors.push(`Nama warna ke-${index + 1} wajib diisi jika gambar warna ada.`);
+    }
+
+    if (color.stockQty < 0) {
+      errors.push(`Stok warna ke-${index + 1} tidak boleh negatif.`);
+    }
+
+    if (color.stockQty > 0 && !color.name) {
+      errors.push(`Nama warna ke-${index + 1} wajib diisi jika stok warna lebih dari 0.`);
     }
   });
 
@@ -903,7 +987,7 @@ function resetBikeEditorForm() {
   setBikeFormValue("bikeColorNameInput", "");
   setBikeFormChecked("bikeFeaturedInput", false);
   setBikeFormChecked("bikeInStockInput", true);
-  setBikeFormValue("bikeStockQtyInput", isCurrentUserAdmin() ? "1" : "0");
+  setBikeFormValue("bikeStockQtyInput", "0");
 
   renderColorVariants([]);
   updateMainImagePreview();
@@ -944,13 +1028,17 @@ function fillBikeEditorForm(bike) {
   setBikeFormValue("bikePriceInput", bike.price ?? 0);
   setBikeFormValue("bikeSafetyInput", bike.safety);
   setBikeFormValue("bikeImageInput", bike.image);
-  setBikeFormValue("bikeColorNameInput", bike.colorName);
+  setBikeFormValue(
+  "bikeColorNameInput",
+  getPrimaryColorNameFromColors(bike.colors || []) || bike.colorName || ""
+);
   setBikeFormValue("bikeDescriptionInput", bike.description);
   setBikeFormChecked("bikeFeaturedInput", bike.featured);
   setBikeFormChecked("bikeInStockInput", bike.inStock);
   setBikeFormValue("bikeStockQtyInput", bike.stockQty ?? 0);
 
   renderColorVariants(bike.colors);
+  syncDefaultColorNameFromColors();
   updateMainImagePreview();
 document.querySelectorAll("[data-color-variant-card]").forEach(updateColorVariantPreview);
   setAdminFormNote(

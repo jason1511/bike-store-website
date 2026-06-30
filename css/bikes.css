@@ -1699,7 +1699,183 @@ body.dark-theme .bike-modal-content:has(.bike-brand-theme) .btn-secondary {
 body.dark-theme .bike-modal-content:has(.bike-brand-theme) .btn-secondary:hover {
   background-color: rgba(255, 255, 255, 0.12);
 }
+/* =========================
+   PER-COLOR STOCK UI
+========================= */
+.bike-availability-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-primary);
+  box-shadow: 0 8px 20px rgba(32, 51, 51, 0.14);
+}
 
+.bike-availability-badge.is-available {
+  color: #0f6b3c;
+}
+
+.bike-availability-badge.is-unavailable {
+  color: #8a2f2f;
+}
+
+.bike-color-label {
+  margin: 8px 0 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.bike-color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 12px 0 8px;
+}
+
+.bike-color-dot {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(32, 51, 51, 0.22);
+  border-radius: 999px;
+  background: var(--bike-color-dot, #cccccc);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(32, 51, 51, 0.12);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    opacity 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.bike-color-dot:hover:not(:disabled),
+.bike-color-dot.is-active {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: 0 8px 18px rgba(32, 51, 51, 0.18);
+}
+
+.bike-color-dot.is-empty,
+.bike-color-dot:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.bike-color-dot.is-empty::after,
+.bike-color-dot:disabled::after {
+  content: "";
+  position: absolute;
+  inset: 12px 3px;
+  background: rgba(120, 40, 40, 0.9);
+  transform: rotate(-35deg);
+  border-radius: 999px;
+}
+
+.bike-card-selected-stock,
+.bike-modal-selected-stock {
+  display: inline-flex;
+  width: fit-content;
+  margin: 2px 0 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(37, 211, 102, 0.12);
+  color: #0f6b3c;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.bike-card-selected-stock.is-empty,
+.bike-modal-selected-stock.is-empty {
+  background: rgba(180, 60, 60, 0.12);
+  color: #8a2f2f;
+}
+
+.bike-card.is-unavailable {
+  opacity: 0.86;
+}
+
+.bike-unavailable-note {
+  margin: 10px 0 0;
+  color: #8a2f2f;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.bike-whatsapp-btn.is-unavailable {
+  background: #6f7f7d;
+}
+
+.bike-modal-stock {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(37, 211, 102, 0.12);
+  color: #0f6b3c;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.bike-modal-stock.is-empty {
+  background: rgba(180, 60, 60, 0.12);
+  color: #8a2f2f;
+}
+
+.bike-modal-color {
+  margin: 0 0 8px;
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.bike-modal-color-options {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+body.dark-theme .bike-availability-badge {
+  background: rgba(15, 25, 25, 0.88);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-theme .bike-availability-badge.is-available,
+body.dark-theme .bike-card-selected-stock,
+body.dark-theme .bike-modal-selected-stock,
+body.dark-theme .bike-modal-stock {
+  background: rgba(37, 211, 102, 0.14);
+  color: #8ff0b9;
+}
+
+body.dark-theme .bike-availability-badge.is-unavailable,
+body.dark-theme .bike-card-selected-stock.is-empty,
+body.dark-theme .bike-modal-selected-stock.is-empty,
+body.dark-theme .bike-modal-stock.is-empty,
+body.dark-theme .bike-unavailable-note {
+  background: rgba(255, 120, 120, 0.12);
+  color: #ffb3b3;
+}
+
+body.dark-theme .bike-color-label,
+body.dark-theme .bike-modal-color {
+  color: #cbd8d6;
+}
+
+body.dark-theme .bike-color-dot {
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-theme .bike-color-dot:hover:not(:disabled),
+body.dark-theme .bike-color-dot.is-active {
+  border-color: #9fb8b6;
+}
 /* =========================
    RESPONSIVE
 ========================= */
@@ -1920,5 +2096,28 @@ body.dark-theme .bike-modal-content:has(.bike-brand-theme) .btn-secondary:hover 
   .filter-btn:hover,
   .bike-card:hover {
     transform: none;
+  }
+}
+@media (max-width: 640px) {
+  .bike-availability-badge {
+    top: 10px;
+    left: 10px;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+
+  .bike-color-options {
+    gap: 8px;
+  }
+
+  .bike-color-dot {
+    width: 26px;
+    height: 26px;
+  }
+
+  .bike-card-selected-stock,
+  .bike-modal-selected-stock,
+  .bike-modal-stock {
+    font-size: 0.78rem;
   }
 }

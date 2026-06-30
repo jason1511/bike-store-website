@@ -1,4 +1,71 @@
+function getModalBikeColors(bike) {
+  if (typeof getBikeColors === "function") {
+    return getBikeColors(bike);
+  }
+
+  const colors = Array.isArray(bike.colors) ? bike.colors : [];
+
+  return colors
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
+    }))
+    .filter((color) => color.name || color.image || color.stockQty > 0);
+}
+
+function getModalBikePrimaryColor(bike) {
+  const colors = getModalBikeColors(bike);
+
+  return colors.find((color) => color.stockQty > 0 && color.image)
+    || colors.find((color) => color.image)
+    || colors.find((color) => color.stockQty > 0)
+    || colors[0]
+    || null;
+}
+
+function getModalBikeTotalStock(bike) {
+  if (typeof getBikeTotalStock === "function") {
+    return getBikeTotalStock(bike);
+  }
+
+  const colorStockTotal = getModalBikeColors(bike).reduce((total, color) => {
+    return total + Math.max(0, Number(color.stockQty || 0));
+  }, 0);
+
+  return colorStockTotal > 0
+    ? colorStockTotal
+    : Math.max(0, Number(bike.stockQty || 0));
+}
+
+function getModalBikeDisplayImage(bike) {
+  const primaryColor = getModalBikePrimaryColor(bike);
+
+  return primaryColor?.image || bike.image || "images/logo.jpeg";
+}
+
+function updateModalStockLabel(modalLayout, colorName, stockQty) {
+  const stockLabel = modalLayout.querySelector(".bike-modal-selected-stock");
+
+  if (!stockLabel) {
+    return;
+  }
+
+  const safeStockQty = Math.max(0, Number(stockQty || 0));
+
+  stockLabel.textContent = colorName
+    ? `Stok warna ${colorName}: ${safeStockQty} unit`
+    : `Stok tersedia: ${safeStockQty} unit`;
+
+  stockLabel.classList.toggle("is-empty", safeStockQty <= 0);
+}
+
 function switchBikeModalColor(button) {
+  if (button.disabled) {
+    return;
+  }
+
   const modalLayout = button.closest(".bike-modal-layout");
 
   if (!modalLayout) {
@@ -9,6 +76,7 @@ function switchBikeModalColor(button) {
   const colorLabel = modalLayout.querySelector(".bike-modal-color");
   const newImage = button.dataset.bikeColorImage;
   const newColorName = button.dataset.bikeColorName;
+  const newStockQty = Number(button.dataset.bikeColorStock || 0);
 
   if (modalImage && newImage) {
     modalImage.src = newImage;
@@ -17,6 +85,8 @@ function switchBikeModalColor(button) {
   if (colorLabel && newColorName) {
     colorLabel.textContent = `Warna: ${newColorName}`;
   }
+
+  updateModalStockLabel(modalLayout, newColorName, newStockQty);
 
   modalLayout.querySelectorAll(".bike-color-dot").forEach((dot) => {
     dot.classList.remove("is-active");
@@ -37,12 +107,17 @@ function openBikeModal(bikeId) {
   const brandTheme = getBrandTheme(bike.brand);
   const highlights = getHighlights(bike);
   const recommendedUses = getRecommendedUses(bike);
-  const colorVariants = getBikeColors(bike);
+  const colorVariants = getModalBikeColors(bike);
+  const defaultColor = getModalBikePrimaryColor(bike);
+  const totalStock = getModalBikeTotalStock(bike);
 
-  const defaultColor = colorVariants[0] || null;
-  const imageSrc = defaultColor?.image || bike.image || "images/logo.jpeg";
+  const imageSrc = getModalBikeDisplayImage(bike);
   const colorName = defaultColor?.name || bike.colorName || "";
+  const selectedColorStock = defaultColor
+    ? Number(defaultColor.stockQty || 0)
+    : totalStock;
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
+  const isAvailable = Boolean(bike.inStock) && totalStock > 0;
 
   bikeModalBody.innerHTML = `
     <div class="bike-modal-layout bike-brand-theme ${brandTheme.className}">
@@ -73,6 +148,10 @@ function openBikeModal(bikeId) {
 
         <h2 id="bikeModalTitle">${escapeHtml(bike.name)}</h2>
 
+        <p class="bike-modal-stock ${isAvailable ? "is-available" : "is-empty"}">
+          ${isAvailable ? `Total stok: ${totalStock} unit` : "Stok habis"}
+        </p>
+
         ${
           colorName
             ? `
@@ -88,20 +167,36 @@ function openBikeModal(bikeId) {
             ? `
               <div class="bike-color-options bike-modal-color-options" aria-label="Pilihan warna ${escapeHtml(bike.name)}">
                 ${colorVariants
-                  .map((color, index) => `
-                    <button
-                      type="button"
-                      class="bike-color-dot ${index === 0 ? "is-active" : ""}"
-                      style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")};"
-                      data-bike-color-image="${escapeHtml(color.image || bike.image || "")}"
-                      data-bike-color-name="${escapeHtml(color.name || "")}"
-                      onclick="event.stopPropagation(); switchBikeModalColor(this);"
-                      aria-label="Warna ${escapeHtml(color.name || "unit")}"
-                      title="${escapeHtml(color.name || "Warna")}"
-                    ></button>
-                  `)
+                  .map((color) => {
+                    const stockQty = Number(color.stockQty || 0);
+                    const isColorAvailable = stockQty > 0;
+                    const isActive = defaultColor && color.name === defaultColor.name;
+
+                    return `
+                      <button
+                        type="button"
+                        class="bike-color-dot ${isActive ? "is-active" : ""} ${isColorAvailable ? "is-available" : "is-empty"}"
+                        style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")};"
+                        data-bike-color-image="${escapeHtml(color.image || bike.image || imageSrc)}"
+                        data-bike-color-name="${escapeHtml(color.name || "")}"
+                        data-bike-color-stock="${stockQty}"
+                        onclick="event.stopPropagation(); switchBikeModalColor(this);"
+                        aria-label="Warna ${escapeHtml(color.name || "unit")} - ${stockQty} unit"
+                        title="${escapeHtml(color.name || "Warna")} - stok ${stockQty}"
+                        ${isColorAvailable ? "" : "disabled"}
+                      ></button>
+                    `;
+                  })
                   .join("")}
               </div>
+
+              <p class="bike-modal-selected-stock ${selectedColorStock > 0 ? "is-available" : "is-empty"}">
+                ${
+                  colorName
+                    ? `Stok warna ${escapeHtml(colorName)}: ${selectedColorStock} unit`
+                    : `Stok tersedia: ${selectedColorStock} unit`
+                }
+              </p>
             `
             : ""
         }
@@ -175,7 +270,7 @@ function openBikeModal(bikeId) {
                 alt="WhatsApp"
                 class="wa-icon"
               >
-              <span>Tanya WhatsApp</span>
+              <span>${isAvailable ? "Tanya WhatsApp" : "Tanya Ketersediaan"}</span>
             </span>
           </a>
 

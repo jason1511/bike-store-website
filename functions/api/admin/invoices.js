@@ -22,6 +22,74 @@ function createInvoiceNumber() {
   return `INV-${year}${month}${day}-${shortId}`;
 }
 
+function parseBikeColors(colors) {
+  if (Array.isArray(colors)) {
+    return colors;
+  }
+
+  if (typeof colors === "string") {
+    try {
+      const parsedColors = JSON.parse(colors);
+      return Array.isArray(parsedColors) ? parsedColors : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  return [];
+}
+
+function normalizeBikeColors(colors) {
+  return parseBikeColors(colors)
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
+    }))
+    .filter((color) => color.name || color.image || color.stockQty > 0);
+}
+
+function getColorStockTotal(colors) {
+  return normalizeBikeColors(colors).reduce((total, color) => {
+    return total + Math.max(0, Number(color.stockQty || 0));
+  }, 0);
+}
+
+function findBikeColor(colors, colorName) {
+  const targetName = String(colorName || "").trim().toLowerCase();
+
+  return normalizeBikeColors(colors).find((color) => {
+    return color.name.toLowerCase() === targetName;
+  }) || null;
+}
+
+function deductColorStock(colors, colorName, quantity) {
+  const normalizedColors = normalizeBikeColors(colors);
+  const targetName = String(colorName || "").trim().toLowerCase();
+
+  let foundColor = null;
+
+  const nextColors = normalizedColors.map((color) => {
+    if (color.name.toLowerCase() !== targetName) {
+      return color;
+    }
+
+    foundColor = color;
+
+    return {
+      ...color,
+      stockQty: Math.max(0, Number(color.stockQty || 0) - quantity)
+    };
+  });
+
+  return {
+    foundColor,
+    nextColors,
+    nextStockQty: getColorStockTotal(nextColors)
+  };
+}
+
 function rowToInvoice(row) {
   return {
     id: row.id,
@@ -34,6 +102,9 @@ function rowToInvoice(row) {
     bikeId: row.bike_id,
     bikeBrand: row.bike_brand,
     bikeName: row.bike_name,
+    bikeColorName: row.bike_color_name || "",
+    bikeColorHex: row.bike_color_hex || "",
+    bikeColorImage: row.bike_color_image || "",
 
     quantity: Number(row.quantity || 1),
     unitPrice: Number(row.unit_price || 0),
@@ -60,6 +131,7 @@ function normalizeInvoicePayload(payload) {
     customerAddress: String(payload.customerAddress || "").trim(),
 
     bikeId: String(payload.bikeId || "").trim(),
+    bikeColorName: String(payload.bikeColorName || "").trim(),
 
     quantity: quantity > 0 ? quantity : 1,
     unitPrice: unitPrice >= 0 ? unitPrice : 0,
@@ -78,6 +150,10 @@ function validateInvoice(invoice) {
 
   if (!invoice.bikeId) {
     errors.push("Sepeda wajib dipilih.");
+  }
+
+  if (!invoice.bikeColorName) {
+    errors.push("Warna sepeda wajib dipilih.");
   }
 
   if (invoice.quantity < 1) {
@@ -100,7 +176,8 @@ async function getBikeById(db, id) {
         name,
         price,
         inStock,
-        stockQty
+        stockQty,
+        colors
       FROM bikes
       WHERE id = ?
       LIMIT 1
@@ -126,6 +203,7 @@ async function writeStockMovement(env, user, data) {
         bike_id,
         bike_brand,
         bike_name,
+        bike_color_name,
         movement_type,
         quantity_change,
         quantity_before,
@@ -135,13 +213,14 @@ async function writeStockMovement(env, user, data) {
         created_by_username,
         created_by_role
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     .bind(
       createStockMovementId(),
       data.bikeId,
       data.bikeBrand,
       data.bikeName,
+      data.bikeColorName || "",
       data.movementType,
       data.quantityChange,
       data.quantityBefore,
@@ -231,19 +310,42 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: "Sepeda tidak ditemukan." }, 404);
     }
 
-    const currentStock = Number(bike.stockQty || 0);
+    const colors = normalizeBikeColors(bike.colors);
+    const selectedColor = findBikeColor(colors, invoice.bikeColorName);
 
-    if (currentStock < invoice.quantity) {
+    if (!selectedColor) {
       return jsonResponse(
         {
-          error: "Stok tidak cukup.",
-          availableStock: currentStock
+          error: "Warna sepeda tidak ditemukan.",
+          selectedColor: invoice.bikeColorName
         },
         400
       );
     }
 
-    const nextStock = currentStock - invoice.quantity;
+    const currentColorStock = Number(selectedColor.stockQty || 0);
+    const currentStock = getColorStockTotal(colors);
+
+    if (currentColorStock < invoice.quantity) {
+      return jsonResponse(
+        {
+          error: "Stok warna tidak cukup.",
+          selectedColor: selectedColor.name,
+          availableStock: currentColorStock
+        },
+        400
+      );
+    }
+
+    const stockResult = deductColorStock(
+      colors,
+      invoice.bikeColorName,
+      invoice.quantity
+    );
+
+    const nextColors = stockResult.nextColors;
+    const nextStock = stockResult.nextStockQty;
+
     const invoiceId = createInvoiceId();
     const invoiceNumber = createInvoiceNumber();
     const totalPrice = invoice.quantity * invoice.unitPrice;
@@ -261,6 +363,9 @@ export async function onRequestPost(context) {
           bike_id,
           bike_brand,
           bike_name,
+          bike_color_name,
+          bike_color_hex,
+          bike_color_image,
 
           quantity,
           unit_price,
@@ -273,7 +378,7 @@ export async function onRequestPost(context) {
           created_by_username,
           created_by_role
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
         invoiceId,
@@ -286,6 +391,9 @@ export async function onRequestPost(context) {
         bike.id,
         bike.brand,
         bike.name,
+        selectedColor.name,
+        selectedColor.hex || "",
+        selectedColor.image || "",
 
         invoice.quantity,
         invoice.unitPrice,
@@ -304,22 +412,24 @@ export async function onRequestPost(context) {
       .prepare(`
         UPDATE bikes
         SET
+          colors = ?,
           stockQty = ?,
           updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?
       `)
-      .bind(nextStock, bike.id)
+      .bind(JSON.stringify(nextColors), nextStock, bike.id)
       .run();
 
     await writeStockMovement(env, auth.user, {
       bikeId: bike.id,
       bikeBrand: bike.brand,
       bikeName: bike.name,
+      bikeColorName: selectedColor.name,
       movementType: "sale",
       quantityChange: -invoice.quantity,
       quantityBefore: currentStock,
       quantityAfter: nextStock,
-      note: `Invoice ${invoiceNumber}`
+      note: `Invoice ${invoiceNumber} - Warna ${selectedColor.name}`
     });
 
     const createdInvoice = await getInvoiceById(env.BIKE_DB, invoiceId);
@@ -332,6 +442,7 @@ export async function onRequestPost(context) {
       details: {
         customerName: createdInvoice.customerName,
         bikeName: `${createdInvoice.bikeBrand} ${createdInvoice.bikeName}`,
+        bikeColorName: selectedColor.name,
         quantity: createdInvoice.quantity,
         totalPrice: createdInvoice.totalPrice,
         stockBefore: currentStock,
@@ -344,6 +455,7 @@ export async function onRequestPost(context) {
       invoice: createdInvoice,
       stock: {
         bikeId: bike.id,
+        colorName: selectedColor.name,
         before: currentStock,
         after: nextStock
       }

@@ -28,14 +28,26 @@ function normalizeBikeColors(colors) {
     .map((color) => ({
       name: String(color.name || "").trim(),
       hex: String(color.hex || "#cccccc").trim(),
-      image: String(color.image || "").trim()
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
     }))
-    .filter((color) => color.name || color.image);
+    .filter((color) => color.name || color.image || color.stockQty > 0);
 
   return JSON.stringify(cleanedColors);
 }
 
+function getColorStockTotal(colors) {
+  return parseBikeColors(colors).reduce((total, color) => {
+    return total + Math.max(0, Number(color.stockQty || 0));
+  }, 0);
+}
+
 function normalizeBikePayload(payload) {
+  const normalizedColors = normalizeBikeColors(payload.colors);
+  const colorStockTotal = getColorStockTotal(normalizedColors);
+  const fallbackStockQty = Math.max(0, Number(payload.stockQty || 0));
+  const stockQty = colorStockTotal > 0 ? colorStockTotal : fallbackStockQty;
+
   return {
     id: String(payload.id || "").trim(),
     brand: String(payload.brand || "").trim(),
@@ -50,17 +62,20 @@ function normalizeBikePayload(payload) {
     alt: String(payload.alt || "").trim(),
     comfort: String(payload.comfort || "medium").trim(),
     colorName: String(payload.colorName || "").trim(),
-    colors: normalizeBikeColors(payload.colors),
+    colors: normalizedColors,
     description: String(payload.description || "").trim(),
     price: Number(payload.price || 0),
     featured: payload.featured ? 1 : 0,
     inStock: payload.inStock ? 1 : 0,
-    stockQty: Number(payload.stockQty || 0)
+    stockQty
   };
 }
 
 function validateBike(bike) {
   const errors = [];
+  const colors = parseBikeColors(bike.colors);
+  const hasColorImage = colors.some((color) => Boolean(color.image));
+  const hasFallbackImage = Boolean(bike.image);
 
   if (!bike.id) errors.push("ID sepeda wajib diisi.");
   if (!bike.brand) errors.push("Brand wajib diisi.");
@@ -68,17 +83,45 @@ function validateBike(bike) {
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
   if (bike.stockQty < 0) errors.push("Jumlah stok tidak boleh negatif.");
 
+  if (!colors.length && !hasFallbackImage) {
+    errors.push("Minimal satu warna unit wajib diisi.");
+  }
+
+  if (colors.length && !hasColorImage && !hasFallbackImage) {
+    errors.push("Minimal satu gambar warna wajib diisi.");
+  }
+
+  colors.forEach((color, index) => {
+    if (color.stockQty < 0) {
+      errors.push(`Stok warna ke-${index + 1} tidak boleh negatif.`);
+    }
+
+    if (color.stockQty > 0 && !color.name) {
+      errors.push(`Nama warna ke-${index + 1} wajib diisi jika stok warna lebih dari 0.`);
+    }
+
+    if (color.image && !color.name) {
+      errors.push(`Nama warna ke-${index + 1} wajib diisi jika gambar warna ada.`);
+    }
+  });
+
   return errors;
 }
 
 function rowToBike(row) {
+  const colors = parseBikeColors(row.colors);
+  const colorStockTotal = getColorStockTotal(colors);
+  const stockQty = colorStockTotal > 0
+    ? colorStockTotal
+    : Number(row.stockQty || 0);
+
   return {
     ...row,
-    colors: parseBikeColors(row.colors),
+    colors,
     price: Number(row.price || 0),
     featured: Boolean(row.featured),
     inStock: Boolean(row.inStock),
-    stockQty: Number(row.stockQty || 0)
+    stockQty
   };
 }
 
@@ -104,6 +147,7 @@ function getChangedBikeFields(beforeBike, afterBike) {
     "alt",
     "comfort",
     "colorName",
+    "colors",
     "description",
     "price",
     "featured",

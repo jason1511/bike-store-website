@@ -3,7 +3,152 @@
 ========================= */
 
 let adminInvoicesCache = [];
+function getBikeColorsForInvoice(bike) {
+  if (!bike) {
+    return [];
+  }
 
+  const colors = Array.isArray(bike.colors)
+    ? bike.colors
+    : parseBikeColors(bike.colors);
+
+  return colors
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
+    }))
+    .filter((color) => color.name || color.image || color.stockQty > 0);
+}
+
+function getSelectedInvoiceColor() {
+  const colorInput = document.getElementById("invoiceBikeColorInput");
+  const selectedBike = getSelectedInvoiceBike();
+  const selectedColorName = colorInput?.value || "";
+
+  if (!selectedBike || !selectedColorName) {
+    return null;
+  }
+
+  return getBikeColorsForInvoice(selectedBike).find((color) => {
+    return color.name === selectedColorName;
+  }) || null;
+}
+
+function updateInvoiceColorStockNote() {
+  const note = document.getElementById("invoiceColorStockNote");
+  const selectedBike = getSelectedInvoiceBike();
+  const selectedColor = getSelectedInvoiceColor();
+
+  if (!note) {
+    return;
+  }
+
+  note.classList.remove("is-error", "is-success");
+
+  if (!selectedBike) {
+    note.textContent = "Pilih sepeda terlebih dahulu untuk melihat stok warna.";
+    return;
+  }
+
+  if (!selectedColor) {
+    note.textContent = "Pilih warna unit untuk melihat stok warna.";
+    return;
+  }
+
+  const stockQty = Number(selectedColor.stockQty || 0);
+
+  note.textContent = `Stok warna ${selectedColor.name}: ${stockQty} unit.`;
+  note.classList.add(stockQty > 0 ? "is-success" : "is-error");
+}
+
+function updateInvoiceQuantityLimit() {
+  const quantityInput = document.getElementById("invoiceQuantityInput");
+  const selectedColor = getSelectedInvoiceColor();
+
+  if (!quantityInput) {
+    return;
+  }
+
+  const stockQty = Number(selectedColor?.stockQty || 0);
+
+  if (stockQty > 0) {
+    quantityInput.max = String(stockQty);
+
+    if (Number(quantityInput.value || 1) > stockQty) {
+      quantityInput.value = String(stockQty);
+    }
+
+    if (Number(quantityInput.value || 0) < 1) {
+      quantityInput.value = "1";
+    }
+
+    return;
+  }
+
+  quantityInput.max = "1";
+  quantityInput.value = "1";
+}
+
+function populateInvoiceColorOptions() {
+  const colorInput = document.getElementById("invoiceBikeColorInput");
+  const selectedBike = getSelectedInvoiceBike();
+
+  if (!colorInput) {
+    return;
+  }
+
+  const currentValue = colorInput.value;
+  const colors = getBikeColorsForInvoice(selectedBike);
+
+  if (!selectedBike) {
+    colorInput.innerHTML = `<option value="">Pilih sepeda terlebih dahulu</option>`;
+    colorInput.value = "";
+    updateInvoiceColorStockNote();
+    updateInvoiceQuantityLimit();
+    return;
+  }
+
+  if (!colors.length) {
+    colorInput.innerHTML = `<option value="">Tidak ada warna tersedia</option>`;
+    colorInput.value = "";
+    updateInvoiceColorStockNote();
+    updateInvoiceQuantityLimit();
+    return;
+  }
+
+  colorInput.innerHTML = `
+    <option value="">Pilih warna</option>
+    ${colors
+      .map((color) => {
+        const stockQty = Number(color.stockQty || 0);
+        const stockText = stockQty > 0 ? `Stok ${stockQty}` : "Stok habis";
+
+        return `
+          <option
+            value="${escapeHtml(color.name)}"
+            data-stock="${stockQty}"
+            ${stockQty <= 0 ? "disabled" : ""}
+          >
+            ${escapeHtml(color.name)} — ${stockText}
+          </option>
+        `;
+      })
+      .join("")}
+  `;
+
+  const selectedStillAvailable = colors.some((color) => {
+    return color.name === currentValue && Number(color.stockQty || 0) > 0;
+  });
+
+  if (selectedStillAvailable) {
+    colorInput.value = currentValue;
+  }
+
+  updateInvoiceColorStockNote();
+  updateInvoiceQuantityLimit();
+}
 function getSelectedInvoiceBike() {
   const select = document.getElementById("invoiceBikeInput");
   const bikeId = select?.value || "";
@@ -55,6 +200,7 @@ function populateInvoiceBikeOptions() {
   if (selectedStillAvailable) {
     select.value = currentValue;
   }
+  populateInvoiceColorOptions();
 }
 
 function updateInvoicePreview() {
@@ -62,11 +208,13 @@ function updateInvoicePreview() {
   const unitPriceInput = document.getElementById("invoiceUnitPriceInput");
   const preview = document.getElementById("adminInvoicePreview");
   const selectedBike = getSelectedInvoiceBike();
+  const selectedColor = getSelectedInvoiceColor();
 
   if (selectedBike && unitPriceInput && !unitPriceInput.value) {
     unitPriceInput.value = Number(selectedBike.price || 0);
   }
-
+updateInvoiceQuantityLimit();
+updateInvoiceColorStockNote();
   const quantity = Math.max(Number(quantityInput?.value || 1), 1);
   const unitPrice = Number(unitPriceInput?.value || 0);
   const total = quantity * unitPrice;
@@ -77,6 +225,7 @@ function updateInvoicePreview() {
       <span>${formatRupiah(total)}</span>
     `;
   }
+  
 }
 
 function resetInvoiceForm() {
@@ -90,6 +239,7 @@ function resetInvoiceForm() {
   if (quantityInput) {
     quantityInput.value = "1";
   }
+  populateInvoiceColorOptions();
 
   updateInvoicePreview();
 }
@@ -97,6 +247,7 @@ function resetInvoiceForm() {
 function getInvoiceFormData() {
   return {
     bikeId: document.getElementById("invoiceBikeInput")?.value || "",
+bikeColorName: document.getElementById("invoiceBikeColorInput")?.value || "",
     quantity: Number(document.getElementById("invoiceQuantityInput")?.value || 1),
     unitPrice: Number(document.getElementById("invoiceUnitPriceInput")?.value || 0),
 
@@ -112,12 +263,15 @@ function getInvoiceFormData() {
 function validateInvoiceFormData(invoice) {
   const errors = [];
   const selectedBike = getSelectedInvoiceBike();
-  const stockQty = Number(selectedBike?.stockQty || 0);
+  const selectedColor = getSelectedInvoiceColor();
+const stockQty = Number(selectedColor?.stockQty || 0);
 
   if (!invoice.bikeId) {
     errors.push("Sepeda wajib dipilih.");
   }
-
+  if (!invoice.bikeColorName) {
+  errors.push("Warna unit wajib dipilih.");
+}
   if (!invoice.customerName) {
     errors.push("Nama customer wajib diisi.");
   }
@@ -130,9 +284,9 @@ function validateInvoiceFormData(invoice) {
     errors.push("Harga jual tidak boleh negatif.");
   }
 
-  if (selectedBike && stockQty < invoice.quantity) {
-    errors.push(`Stok tidak cukup. Stok tersedia: ${stockQty}.`);
-  }
+ if (selectedBike && selectedColor && stockQty < invoice.quantity) {
+  errors.push(`Stok warna tidak cukup. Stok tersedia: ${stockQty}.`);
+}
 
   return errors;
 }
@@ -222,6 +376,7 @@ function getFilteredInvoices() {
       invoice.customerAddress,
       invoice.bikeBrand,
       invoice.bikeName,
+      invoice.bikeColorName,
       invoice.paymentMethod,
       invoice.createdByUsername,
       invoice.createdByRole,
@@ -296,10 +451,9 @@ function renderInvoices(invoices) {
         </div>
 
         <div class="admin-invoice-meta">
-          <span>
-            <strong>Sepeda:</strong>
-            ${escapeHtml(invoice.bikeBrand)} ${escapeHtml(invoice.bikeName)}
-          </span>
+          <strong>Sepeda:</strong>
+${escapeHtml(invoice.bikeBrand)} ${escapeHtml(invoice.bikeName)}
+${invoice.bikeColorName ? ` (${escapeHtml(invoice.bikeColorName)})` : ""}
 
           <span>
             <strong>Jumlah:</strong>
@@ -389,6 +543,7 @@ function setupInvoiceForm() {
   const createButton = document.getElementById("createInvoiceBtn");
 const searchInput = document.getElementById("invoiceSearchInput");
 const paymentFilter = document.getElementById("invoicePaymentFilter");
+const colorInput = document.getElementById("invoiceBikeColorInput");
   if (bikeInput) {
     bikeInput.addEventListener("change", () => {
       const selectedBike = getSelectedInvoiceBike();
@@ -396,7 +551,7 @@ const paymentFilter = document.getElementById("invoicePaymentFilter");
       if (selectedBike && unitPriceInput) {
         unitPriceInput.value = Number(selectedBike.price || 0);
       }
-
+populateInvoiceColorOptions();
       updateInvoicePreview();
     });
   }
@@ -415,7 +570,9 @@ const paymentFilter = document.getElementById("invoicePaymentFilter");
 if (searchInput) {
   searchInput.addEventListener("input", applyInvoiceFilters);
 }
-
+if (colorInput) {
+  colorInput.addEventListener("change", updateInvoicePreview);
+}
 if (paymentFilter) {
   paymentFilter.addEventListener("change", applyInvoiceFilters);
 }
@@ -490,7 +647,10 @@ function openInvoiceModal(invoice) {
     return;
   }
 
-  const itemName = `${invoice.bikeBrand || ""} ${invoice.bikeName || ""}`.trim();
+  const itemName = [
+  `${invoice.bikeBrand || ""} ${invoice.bikeName || ""}`.trim(),
+  invoice.bikeColorName ? `Warna ${invoice.bikeColorName}` : ""
+].filter(Boolean).join(" - ");
   const quantity = Number(invoice.quantity || 1);
   const unitPrice = Number(invoice.unitPrice || 0);
   const totalPrice = Number(invoice.totalPrice || 0);

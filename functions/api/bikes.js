@@ -24,14 +24,48 @@ function parseBikeColors(colors) {
   return [];
 }
 
+function normalizeBikeColors(colors) {
+  return parseBikeColors(colors)
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
+    }))
+    .filter((color) => color.name || color.image || color.stockQty > 0);
+}
+
+function getColorStockTotal(colors) {
+  return normalizeBikeColors(colors).reduce((total, color) => {
+    return total + Math.max(0, Number(color.stockQty || 0));
+  }, 0);
+}
+
+function getPrimaryColor(colors) {
+  return colors.find((color) => color.stockQty > 0 && color.image)
+    || colors.find((color) => color.image)
+    || colors.find((color) => color.stockQty > 0)
+    || colors[0]
+    || null;
+}
+
 function rowToBike(row) {
+  const colors = normalizeBikeColors(row.colors);
+  const colorStockTotal = getColorStockTotal(colors);
+  const stockQty = colorStockTotal > 0
+    ? colorStockTotal
+    : Math.max(0, Number(row.stockQty || 0));
+
+  const primaryColor = getPrimaryColor(colors);
+
   return {
     ...row,
-    colors: parseBikeColors(row.colors),
+    colors,
+    image: primaryColor?.image || row.image || "",
     price: Number(row.price || 0),
     featured: Boolean(row.featured),
-    inStock: Boolean(row.inStock),
-    stockQty: Number(row.stockQty || 0)
+    inStock: Boolean(row.inStock) && stockQty > 0,
+    stockQty
   };
 }
 

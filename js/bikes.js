@@ -1,7 +1,78 @@
 let currentBrand = "all";
 let currentSort = "default";
 let currentSearch = "";
+function parseBikeColorsForPage(colors) {
+  if (Array.isArray(colors)) {
+    return colors;
+  }
 
+  if (typeof colors === "string") {
+    try {
+      const parsedColors = JSON.parse(colors);
+      return Array.isArray(parsedColors) ? parsedColors : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  return [];
+}
+
+function getBikeColorsForPage(bike) {
+  if (!bike) {
+    return [];
+  }
+
+  return parseBikeColorsForPage(bike.colors)
+    .map((color) => ({
+      name: String(color.name || "").trim(),
+      hex: String(color.hex || "#cccccc").trim(),
+      image: String(color.image || "").trim(),
+      stockQty: Math.max(0, Number(color.stockQty || 0))
+    }))
+    .filter((color) => color.name || color.image || color.stockQty > 0);
+}
+
+function getBikeTotalStockForPage(bike) {
+  const colors = getBikeColorsForPage(bike);
+  const colorStockTotal = colors.reduce((total, color) => {
+    return total + Math.max(0, Number(color.stockQty || 0));
+  }, 0);
+
+  return colorStockTotal > 0
+    ? colorStockTotal
+    : Math.max(0, Number(bike?.stockQty || 0));
+}
+
+function getBikePrimaryColorForPage(bike) {
+  const colors = getBikeColorsForPage(bike);
+
+  return colors.find((color) => color.stockQty > 0 && color.image)
+    || colors.find((color) => color.image)
+    || colors.find((color) => color.stockQty > 0)
+    || colors[0]
+    || null;
+}
+
+function getBikeDisplayImageForPage(bike) {
+  const primaryColor = getBikePrimaryColorForPage(bike);
+
+  return primaryColor?.image || bike?.image || "images/logo.jpeg";
+}
+
+function getBikeStockLabelForPage(bike) {
+  const totalStock = getBikeTotalStockForPage(bike);
+
+  if (!bike?.inStock) {
+    return "Tidak aktif";
+  }
+
+  if (totalStock <= 0) {
+    return "Stok habis";
+  }
+
+  return `Stok ${totalStock}`;
+}
 /* =========================
    FILTER + SORT
 ========================= */
@@ -258,10 +329,10 @@ function setupCompareBikeDropdowns() {
 
 function createCompareBikePreview(bike, label) {
   const brandTheme = getBrandTheme(bike.brand);
-  const colors = getBikeColors(bike);
-  const defaultColor = colors[0] || null;
-  const imageSrc = defaultColor?.image || bike.image || "images/logo.jpeg";
+  const imageSrc = getBikeDisplayImageForPage(bike);
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
+  const stockLabel = getBikeStockLabelForPage(bike);
+  const primaryColor = getBikePrimaryColorForPage(bike);
 
   return `
     <button
@@ -278,6 +349,10 @@ function createCompareBikePreview(bike, label) {
         <span>${escapeHtml(label)}</span>
         <strong>${escapeHtml(bike.brand)} ${escapeHtml(bike.name)}</strong>
         <small>${escapeHtml(bike.range || "-")} • ${escapeHtml(bike.motor || "-")}</small>
+        <small>
+          ${escapeHtml(stockLabel)}
+          ${primaryColor?.name ? ` • Warna utama: ${escapeHtml(primaryColor.name)}` : ""}
+        </small>
       </div>
     </button>
   `;
