@@ -53,14 +53,15 @@ function updateModalStockLabel(modalLayout, colorName, stockQty) {
   }
 
   const safeStockQty = Math.max(0, Number(stockQty || 0));
+  const isAvailable = safeStockQty > 0;
 
-  stockLabel.textContent = colorName
-    ? `Stok warna ${colorName}: ${safeStockQty} unit`
-    : `Stok tersedia: ${safeStockQty} unit`;
+  stockLabel.textContent = isAvailable
+    ? "Tersedia"
+    : "Tidak tersedia";
 
-  stockLabel.classList.toggle("is-empty", safeStockQty <= 0);
+  stockLabel.classList.toggle("is-empty", !isAvailable);
+  stockLabel.classList.toggle("is-available", isAvailable);
 }
-
 function switchBikeModalColor(button) {
   if (button.disabled) {
     return;
@@ -149,8 +150,8 @@ function openBikeModal(bikeId) {
         <h2 id="bikeModalTitle">${escapeHtml(bike.name)}</h2>
 
         <p class="bike-modal-stock ${isAvailable ? "is-available" : "is-empty"}">
-          ${isAvailable ? `Total stok: ${totalStock} unit` : "Stok habis"}
-        </p>
+  ${isAvailable ? "Tersedia" : "Tidak tersedia"}
+</p>
 
         ${
           colorName
@@ -190,13 +191,9 @@ function openBikeModal(bikeId) {
                   .join("")}
               </div>
 
-              <p class="bike-modal-selected-stock ${selectedColorStock > 0 ? "is-available" : "is-empty"}">
-                ${
-                  colorName
-                    ? `Stok warna ${escapeHtml(colorName)}: ${selectedColorStock} unit`
-                    : `Stok tersedia: ${selectedColorStock} unit`
-                }
-              </p>
+              <<p class="bike-modal-selected-stock ${selectedColorStock > 0 ? "is-available" : "is-empty"}">
+  ${selectedColorStock > 0 ? "Tersedia" : "Tidak tersedia"}
+</p>
             `
             : ""
         }
