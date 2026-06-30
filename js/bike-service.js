@@ -215,11 +215,9 @@ function getRecommendedUses(bike) {
 }
 
 function getFilteredAndSortedBikes(options = {}) {
-  const {
-    brand = "all",
-    search = "",
-    sort = "default"
-  } = options;
+  const brand = String(options.brand || "all");
+  const search = String(options.search || "");
+  const sort = String(options.sort || "default");
 
   let result = [...bikes];
 
@@ -227,23 +225,23 @@ function getFilteredAndSortedBikes(options = {}) {
     result = result.filter((bike) => bike.brand === brand);
   }
 
-  if (search.trim()) {
-    const searchTerm = search.toLowerCase();
+  const searchTerm = search.trim().toLowerCase();
 
+  if (searchTerm) {
     result = result.filter((bike) => {
       const colorNames = getBikeColors(bike)
-  .map((color) => color.name)
-  .join(" ");
+        .map((color) => color.name)
+        .join(" ");
 
-const searchableText = [
-  bike.brand,
-  bike.name,
-  bike.description,
-  bike.motor,
-  bike.battery,
-  bike.safety,
-  colorNames
-]
+      const searchableText = [
+        bike.brand,
+        bike.name,
+        bike.description,
+        bike.motor,
+        bike.battery,
+        bike.safety,
+        colorNames
+      ]
         .join(" ")
         .toLowerCase();
 
@@ -269,6 +267,10 @@ const searchableText = [
       break;
 
     default:
+      result.sort((a, b) => {
+        const brandCompare = String(a.brand || "").localeCompare(String(b.brand || ""));
+        return brandCompare || String(a.name || "").localeCompare(String(b.name || ""));
+      });
       break;
   }
 

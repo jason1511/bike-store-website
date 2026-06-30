@@ -90,7 +90,6 @@ function getInitialBrandFromUrl() {
 
   return matchedBike ? matchedBike.brand : "all";
 }
-
 function renderBikes() {
   const bikeGrid = document.getElementById("bikeGrid");
 
@@ -99,9 +98,9 @@ function renderBikes() {
   }
 
   const visibleBikes = getFilteredAndSortedBikes({
-    brand: currentBrand,
-    search: currentSearch,
-    sort: currentSort
+    brand: currentBrand || "all",
+    search: String(currentSearch || ""),
+    sort: currentSort || "default"
   });
 
   if (!visibleBikes.length) {
@@ -131,17 +130,18 @@ function updateBikeStatus() {
   }
 
   const visibleCount = getFilteredAndSortedBikes({
-    brand: currentBrand,
-    search: currentSearch,
-    sort: currentSort
+    brand: currentBrand || "all",
+    search: String(currentSearch || ""),
+    sort: currentSort || "default"
   }).length;
 
   const brandLabel = currentBrand === "all" ? "semua brand" : currentBrand;
+  const safeSearch = String(currentSearch || "").trim();
 
-  if (currentSearch.trim()) {
+  if (safeSearch) {
     bikeStatus.innerHTML = `
       Menampilkan <strong>${escapeHtml(brandLabel)}</strong> untuk
-      <strong>“${escapeHtml(currentSearch.trim())}”</strong> (${visibleCount})
+      <strong>“${escapeHtml(safeSearch)}”</strong> (${visibleCount})
     `;
     return;
   }
