@@ -1,3 +1,5 @@
+let adminBrandOptions = [];
+
 /* =========================
    ADMIN BIKE LIST
 ========================= */
@@ -19,7 +21,69 @@ async function fetchAdminBikes() {
 
   return data.bikes || [];
 }
+async function fetchAdminBrands() {
+  const token = getStoredAdminToken();
 
+  const response = await fetch("/api/admin/brands", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Gagal memuat data brand.");
+  }
+
+  return data.brands || [];
+}
+
+function getAdminBrandById(brandId) {
+  return adminBrandOptions.find((brand) => brand.id === brandId) || null;
+}
+
+function getAdminBrandByName(brandName) {
+  const normalizedName = String(brandName || "").trim().toLowerCase();
+
+  return adminBrandOptions.find((brand) => {
+    return String(brand.name || "").trim().toLowerCase() === normalizedName;
+  }) || null;
+}
+
+function populateBikeBrandSelect(selectedBrandId = "") {
+  const brandInput = document.getElementById("bikeBrandInput");
+
+  if (!brandInput) {
+    return;
+  }
+
+  if (!adminBrandOptions.length) {
+    brandInput.innerHTML = `<option value="">Brand belum tersedia</option>`;
+    return;
+  }
+
+  brandInput.innerHTML = `
+    <option value="">Pilih brand</option>
+    ${adminBrandOptions
+      .map((brand) => `
+        <option value="${escapeHtml(brand.id)}">
+          ${escapeHtml(brand.name)}
+        </option>
+      `)
+      .join("")}
+  `;
+
+  if (selectedBrandId) {
+    brandInput.value = selectedBrandId;
+  }
+}
+
+async function loadAdminBrands() {
+  adminBrandOptions = await fetchAdminBrands();
+  populateBikeBrandSelect();
+}
 function renderAdminBikes(bikes) {
   const bikeList = document.getElementById("adminBikeList");
 
@@ -278,7 +342,8 @@ function setupAdminBikeFilters() {
    R2 IMAGE UPLOAD
 ========================= */
 function buildBikeImageBaseName(extra = "") {
-  const brand = document.getElementById("bikeBrandInput")?.value.trim() || "";
+  const brandId = document.getElementById("bikeBrandInput")?.value.trim() || "";
+const brand = getAdminBrandById(brandId)?.name || "";
   const name = document.getElementById("bikeNameInput")?.value.trim() || "";
 
   return [brand, name, extra]
@@ -855,7 +920,9 @@ function setupColorVariantEditor() {
 ========================= */
 function getBikeFormData() {
   const existingId = document.getElementById("bikeIdInput")?.value.trim();
-  const brand = document.getElementById("bikeBrandInput")?.value.trim();
+  const brandId = document.getElementById("bikeBrandInput")?.value.trim() || "";
+  const selectedBrand = getAdminBrandById(brandId);
+  const brand = selectedBrand?.name || "";
   const name = document.getElementById("bikeNameInput")?.value.trim();
   const generatedId = `${createSlugFromName(brand)}-${createSlugFromName(name)}`;
   const colors = getColorVariantsFromForm();
@@ -864,6 +931,7 @@ function getBikeFormData() {
 
   return {
     id: existingId || generatedId,
+    brandId,
     brand,
     name,
     battery: document.getElementById("bikeBatteryInput")?.value.trim() || "",
@@ -897,7 +965,9 @@ function validateBikeFormData(bike) {
   const hasFallbackImage = Boolean(bike.image || hasPendingMainImage);
   const hasColorImage = bike.colors.some((color) => Boolean(color.image));
 
-  if (!bike.brand) errors.push("Brand wajib diisi.");
+ if (!bike.brandId || !bike.brand) {
+  errors.push("Brand wajib dipilih.");
+}
   if (!bike.name) errors.push("Nama model wajib diisi.");
   if (!bike.id) errors.push("ID sepeda gagal dibuat.");
   if (!bike.description) errors.push("Deskripsi wajib diisi.");
@@ -982,6 +1052,8 @@ function resetBikeEditorForm() {
   }
 
   setBikeFormValue("bikeIdInput", "");
+  populateBikeBrandSelect();
+setBikeFormValue("bikeBrandInput", "");
   setBikeFormValue("bikeComfortInput", "medium");
   setBikeFormValue("bikePriceInput", "0");
   setBikeFormValue("bikeColorNameInput", "");
@@ -1017,7 +1089,10 @@ function fillBikeEditorForm(bike) {
   }
 
   setBikeFormValue("bikeIdInput", bike.id);
-  setBikeFormValue("bikeBrandInput", bike.brand);
+  const selectedBrandId = bike.brandId || bike.brand_id || getAdminBrandByName(bike.brand)?.id || "";
+
+populateBikeBrandSelect(selectedBrandId);
+setBikeFormValue("bikeBrandInput", selectedBrandId);
   setBikeFormValue("bikeNameInput", bike.name);
   setBikeFormValue("bikeBatteryInput", bike.battery);
   setBikeFormValue("bikeMotorInput", bike.motor);

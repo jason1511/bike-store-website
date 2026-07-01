@@ -1,6 +1,8 @@
 let currentBrand = "all";
 let currentSort = "default";
 let currentSearch = "";
+let publicBrandOptions = [];
+
 function parseBikeColorsForPage(colors) {
   if (Array.isArray(colors)) {
     return colors;
@@ -73,20 +75,103 @@ function getBikeStockLabelForPage(bike) {
 
   return `Stok ${totalStock}`;
 }
+
+async function fetchPublicBrands() {
+  const response = await fetch("/api/brands");
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Gagal memuat data brand.");
+  }
+
+  return data.brands || [];
+}
+
+async function loadPublicBrands() {
+  publicBrandOptions = await fetchPublicBrands();
+  renderPublicBrandFilters();
+}
+
+function getPublicBrandBySlug(slug) {
+  return publicBrandOptions.find((brand) => brand.slug === slug) || null;
+}
+
+function getPublicBrandByName(name) {
+  const normalizedName = String(name || "").trim().toLowerCase();
+
+  return publicBrandOptions.find((brand) => {
+    return String(brand.name || "").trim().toLowerCase() === normalizedName;
+  }) || null;
+}
+
+function renderPublicBrandFilters() {
+  const filterContainer = document.querySelector(".bike-filters");
+
+  if (!filterContainer) {
+    return;
+  }
+
+  filterContainer.innerHTML = `
+    <button
+      type="button"
+      class="filter-btn active"
+      data-brand="all"
+    >
+      Semua
+    </button>
+
+    ${publicBrandOptions
+      .map((brand) => `
+        <button
+          type="button"
+          class="filter-btn"
+          data-brand="${escapeHtml(brand.name)}"
+          data-brand-id="${escapeHtml(brand.id)}"
+          data-brand-slug="${escapeHtml(brand.slug)}"
+        >
+          ${
+            brand.logoPath
+              ? `
+                <img
+                  src="${escapeHtml(brand.logoPath)}"
+                  alt="${escapeHtml(brand.name)} logo"
+                >
+              `
+              : ""
+          }
+          ${escapeHtml(brand.name)}
+        </button>
+      `)
+      .join("")}
+  `;
+}
 /* =========================
    FILTER + SORT
 ========================= */
 function getInitialBrandFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const brand = params.get("brand");
+  const brandParam = params.get("brand");
 
-  if (!brand) {
+  if (!brandParam) {
     return "all";
   }
 
-  const matchedBike = bikes.find(
-    (bike) => bike.brand.toLowerCase() === brand.toLowerCase()
-  );
+  const normalizedParam = brandParam.trim().toLowerCase();
+
+  const matchedBrand = publicBrandOptions.find((brand) => {
+    return (
+      brand.slug.toLowerCase() === normalizedParam ||
+      brand.name.toLowerCase() === normalizedParam
+    );
+  });
+
+  if (matchedBrand) {
+    return matchedBrand.name;
+  }
+
+  const matchedBike = bikes.find((bike) => {
+    return String(bike.brand || "").toLowerCase() === normalizedParam;
+  });
 
   return matchedBike ? matchedBike.brand : "all";
 }
@@ -164,16 +249,6 @@ function setupBikeFilters() {
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
       currentBrand = button.dataset.brand || "all";
-
-      const url = new URL(window.location);
-
-      if (currentBrand === "all") {
-        url.searchParams.delete("brand");
-      } else {
-        url.searchParams.set("brand", currentBrand);
-      }
-
-      window.history.replaceState({}, "", url);
 
       updateActiveFilterButton();
       renderBikes();
@@ -328,7 +403,7 @@ function setupCompareBikeDropdowns() {
 }
 
 function createCompareBikePreview(bike, label) {
-  const brandTheme = getBrandTheme(bike.brand);
+  const brandTheme = getBrandTheme(bike);
   const imageSrc = getBikeDisplayImageForPage(bike);
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
   const stockLabel = getBikeStockLabelForPage(bike);
@@ -338,6 +413,7 @@ function createCompareBikePreview(bike, label) {
     <button
       type="button"
       class="compare-bike-preview ${brandTheme.className}"
+      style="${getBikeThemeStyle(bike)}"
       data-bike-id="${escapeHtml(bike.id)}"
       aria-label="Lihat detail ${escapeHtml(bike.name)}"
     >
@@ -688,6 +764,10 @@ async function initializeBikesPage() {
     } else if (typeof initializeBikeData === "function") {
       await initializeBikeData();
     }
+
+    if (typeof loadPublicBrands === "function") {
+  await loadPublicBrands();
+}
 
     currentBrand = getInitialBrandFromUrl();
 

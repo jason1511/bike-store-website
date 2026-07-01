@@ -41,7 +41,31 @@ function getColorStockTotal(colors) {
     return total + Math.max(0, Number(color.stockQty || 0));
   }, 0);
 }
+function createFallbackBrandSlug(brand) {
+  return String(brand || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
 
+function createBrandTheme(row) {
+  const slug = row.brand_slug || createFallbackBrandSlug(row.brand);
+  const main = row.brand_theme_main || "#203333";
+  const second = row.brand_theme_second || "#2f4f4f";
+
+  return {
+    id: row.brand_id || "",
+    name: row.brand_name || row.brand || "",
+    slug,
+    logo: row.brand_logo_path || "",
+    className: slug ? `brand-${slug}` : "brand-default",
+    main,
+    second,
+    soft: row.brand_theme_soft || `${main}24`,
+    glow: row.brand_theme_glow || `${main}33`
+  };
+}
 function normalizeBikePayload(payload) {
   const normalizedColors = normalizeBikeColors(payload.colors);
   const colorStockTotal = getColorStockTotal(normalizedColors);
@@ -50,7 +74,8 @@ function normalizeBikePayload(payload) {
 
   return {
     id: String(payload.id || "").trim(),
-    brand: String(payload.brand || "").trim(),
+    brandId: String(payload.brandId || payload.brand_id || "").trim(),
+brand: String(payload.brand || "").trim(),
     name: String(payload.name || "").trim(),
     battery: String(payload.battery || "").trim(),
     motor: String(payload.motor || "").trim(),
@@ -78,7 +103,7 @@ function validateBike(bike) {
   const hasFallbackImage = Boolean(bike.image);
 
   if (!bike.id) errors.push("ID sepeda wajib diisi.");
-  if (!bike.brand) errors.push("Brand wajib diisi.");
+  if (!bike.brandId) errors.push("ID brand wajib diisi.");
   if (!bike.name) errors.push("Nama model wajib diisi.");
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
   if (bike.stockQty < 0) errors.push("Jumlah stok tidak boleh negatif.");
@@ -115,8 +140,14 @@ function rowToBike(row) {
     ? colorStockTotal
     : Number(row.stockQty || 0);
 
+  const brandTheme = createBrandTheme(row);
+
   return {
     ...row,
+    brandId: row.brand_id || "",
+    brand: brandTheme.name || row.brand,
+    brandSlug: brandTheme.slug,
+    brandTheme,
     colors,
     price: Number(row.price || 0),
     featured: Boolean(row.featured),
@@ -135,6 +166,7 @@ function getChangedBikeFields(beforeBike, afterBike) {
   }
 
   const fields = [
+    "brandId",
     "brand",
     "name",
     "battery",
@@ -165,13 +197,65 @@ function getChangedBikeFields(beforeBike, afterBike) {
 
 async function getBikeById(db, id) {
   const row = await db
-    .prepare("SELECT * FROM bikes WHERE id = ?")
+    .prepare(`
+      SELECT
+        bikes.*,
+
+        brands.name AS brand_name,
+        brands.slug AS brand_slug,
+        brands.logo_path AS brand_logo_path,
+        brands.theme_main AS brand_theme_main,
+        brands.theme_second AS brand_theme_second,
+        brands.theme_soft AS brand_theme_soft,
+        brands.theme_glow AS brand_theme_glow
+      FROM bikes
+      LEFT JOIN brands
+        ON brands.id = bikes.brand_id
+      WHERE bikes.id = ?
+      LIMIT 1
+    `)
     .bind(id)
     .first();
 
   return row ? rowToBike(row) : null;
 }
+async function getBrandById(db, brandId) {
+  if (!brandId) {
+    return null;
+  }
 
+  return db
+    .prepare(`
+      SELECT
+        id,
+        name,
+        slug
+      FROM brands
+      WHERE id = ?
+        AND is_active = 1
+      LIMIT 1
+    `)
+    .bind(brandId)
+    .first();
+}
+
+async function applyBrandFromDatabase(db, bike) {
+  if (!bike.brandId) {
+    return bike;
+  }
+
+  const brand = await getBrandById(db, bike.brandId);
+
+  if (!brand) {
+    throw new Error("Brand tidak ditemukan atau tidak aktif.");
+  }
+
+  return {
+    ...bike,
+    brandId: brand.id,
+    brand: brand.name
+  };
+}
 async function deactivateBikeById(db, id) {
   await db
     .prepare(`
@@ -233,9 +317,23 @@ export async function onRequestGet(context) {
 
     const result = await env.BIKE_DB
       .prepare(`
-        SELECT *
-        FROM bikes
-        ORDER BY brand ASC, name ASC
+        SELECT
+  bikes.*,
+
+  brands.name AS brand_name,
+  brands.slug AS brand_slug,
+  brands.logo_path AS brand_logo_path,
+  brands.theme_main AS brand_theme_main,
+  brands.theme_second AS brand_theme_second,
+  brands.theme_soft AS brand_theme_soft,
+  brands.theme_glow AS brand_theme_glow
+FROM bikes
+LEFT JOIN brands
+  ON brands.id = bikes.brand_id
+ORDER BY
+  COALESCE(brands.sort_order, 999) ASC,
+  bikes.brand ASC,
+  bikes.name ASC
       `)
       .all();
 
@@ -265,8 +363,19 @@ export async function onRequestPost(context) {
     }
 
     const payload = await request.json();
-    const bike = normalizeBikePayload(payload);
-    const errors = validateBike(bike);
+    const normalizedBike = normalizeBikePayload(payload);
+let bike;
+
+try {
+  bike = await applyBrandFromDatabase(env.BIKE_DB, normalizedBike);
+} catch (error) {
+  return jsonResponse(
+    { error: error.message || "Brand tidak valid." },
+    400
+  );
+}
+
+const errors = validateBike(bike);
 
     if (errors.length) {
       return jsonResponse({ error: "Invalid bike data", errors }, 400);
@@ -289,6 +398,7 @@ export async function onRequestPost(context) {
       .prepare(`
         INSERT INTO bikes (
           id,
+          brand_id,
           brand,
           name,
           battery,
@@ -308,10 +418,11 @@ export async function onRequestPost(context) {
           inStock,
           stockQty
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
         bike.id,
+        bike.brandId,
         bike.brand,
         bike.name,
         bike.battery,
@@ -375,8 +486,19 @@ export async function onRequestPut(context) {
     }
 
     const payload = await request.json();
-    const bike = normalizeBikePayload(payload);
-    const errors = validateBike(bike);
+const normalizedBike = normalizeBikePayload(payload);
+let bike;
+
+try {
+  bike = await applyBrandFromDatabase(env.BIKE_DB, normalizedBike);
+} catch (error) {
+  return jsonResponse(
+    { error: error.message || "Brand tidak valid." },
+    400
+  );
+}
+
+const errors = validateBike(bike);
 
     if (errors.length) {
       return jsonResponse({ error: "Invalid bike data", errors }, 400);
@@ -398,6 +520,7 @@ export async function onRequestPut(context) {
       .prepare(`
         UPDATE bikes
         SET
+          brand_id = ?,
           brand = ?,
           name = ?,
           battery = ?,
@@ -420,26 +543,27 @@ export async function onRequestPut(context) {
         WHERE id = ?
       `)
       .bind(
-        bike.brand,
-        bike.name,
-        bike.battery,
-        bike.motor,
-        bike.topSpeed,
-        bike.range,
-        bike.maxWeight,
-        bike.safety,
-        bike.image,
-        bike.alt,
-        bike.comfort,
-        bike.colorName,
-        bike.colors,
-        bike.description,
-        bike.price,
-        bike.featured,
-        bike.inStock,
-        bike.stockQty,
-        bike.id
-      )
+  bike.brandId,
+  bike.brand,
+  bike.name,
+  bike.battery,
+  bike.motor,
+  bike.topSpeed,
+  bike.range,
+  bike.maxWeight,
+  bike.safety,
+  bike.image,
+  bike.alt,
+  bike.comfort,
+  bike.colorName,
+  bike.colors,
+  bike.description,
+  bike.price,
+  bike.featured,
+  bike.inStock,
+  bike.stockQty,
+  bike.id
+)
       .run();
 
     const updatedBike = await getBikeById(env.BIKE_DB, bike.id);

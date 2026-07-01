@@ -277,60 +277,119 @@ function getFilteredAndSortedBikes(options = {}) {
   return result;
 }
 function getBikeThemeStyle(bike) {
-  const brandThemeColors = {
-    Exotic: ["#d71920", "#111111"],
-    Pacific: ["#ed1c24", "#111111"],
-    Larizz: ["#27245f", "#e31b23"],
-    Saige: ["#66bd45", "#2f6f2e"],
-    Uwinfly: ["#ed1c24", "#b91319"],
-    Nuv: ["#27bfc3", "#0f777b"]
-  };
-
-  const fallbackColors = brandThemeColors[bike.brand] || ["#203333", "#2f4f4f"];
-
-  const mainColor = bike.themeColor || fallbackColors[0];
-  const secondColor = bike.themeColorSecond || fallbackColors[1];
+  const brandTheme = getBrandTheme(bike);
 
   return `
-    --card-brand-main: ${mainColor};
-    --card-brand-second: ${secondColor};
-    --bike-theme-main: ${mainColor};
-    --bike-theme-second: ${secondColor};
-    --bike-theme-soft: ${mainColor}24;
-    --bike-theme-glow: ${mainColor}33;
+    --card-brand-main: ${brandTheme.main};
+    --card-brand-second: ${brandTheme.second};
+    --card-brand-soft: ${brandTheme.soft};
+    --card-brand-glow: ${brandTheme.glow};
+    --bike-theme-main: ${brandTheme.main};
+    --bike-theme-second: ${brandTheme.second};
+    --bike-theme-soft: ${brandTheme.soft};
+    --bike-theme-glow: ${brandTheme.glow};
   `;
 }
-function getBrandTheme(brand) {
-  const themes = {
-    Exotic: {
+function normalizeBrandSlug(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+function getBrandTheme(bikeOrBrand) {
+  if (bikeOrBrand && typeof bikeOrBrand === "object") {
+    const bike = bikeOrBrand;
+    const theme = bike.brandTheme || {};
+    const slug = theme.slug || normalizeBrandSlug(bike.brand);
+
+    return {
+      className: theme.className || (slug ? `brand-${slug}` : "brand-default"),
+      logo: theme.logo || "",
+      main: theme.main || "#203333",
+      second: theme.second || "#2f4f4f",
+      soft: theme.soft || "rgba(159, 184, 182, 0.18)",
+      glow: theme.glow || "rgba(0, 0, 0, 0.12)"
+    };
+  }
+
+  const slug = normalizeBrandSlug(bikeOrBrand);
+
+  const fallbackThemes = {
+    exotic: {
       className: "brand-exotic",
-      logo: "images/brands/exotic.jpeg"
+      logo: "images/brands/exotic.jpeg",
+      main: "#ed1c24",
+      second: "#111111",
+      soft: "rgba(237, 28, 36, 0.18)",
+      glow: "rgba(237, 28, 36, 0.18)"
     },
-    Pacific: {
+    pacific: {
       className: "brand-pacific",
-      logo: "images/brands/pacific.jpeg"
+      logo: "images/brands/pacific.jpeg",
+      main: "#ed1c24",
+      second: "#111111",
+      soft: "rgba(237, 28, 36, 0.18)",
+      glow: "rgba(237, 28, 36, 0.18)"
     },
-    Nuv: {
-      className: "brand-nuv",
-      logo: "images/brands/nuv.jpeg"
+    pasifik: {
+      className: "brand-pacific",
+      logo: "images/brands/pacific.jpeg",
+      main: "#ed1c24",
+      second: "#111111",
+      soft: "rgba(237, 28, 36, 0.18)",
+      glow: "rgba(237, 28, 36, 0.18)"
     },
-    Saige: {
-      className: "brand-saige",
-      logo: "images/brands/saige.jpeg"
+    pasific: {
+      className: "brand-pacific",
+      logo: "images/brands/pacific.jpeg",
+      main: "#ed1c24",
+      second: "#111111",
+      soft: "rgba(237, 28, 36, 0.18)",
+      glow: "rgba(237, 28, 36, 0.18)"
     },
-    Uwinfly: {
-      className: "brand-uwinfly",
-      logo: "images/brands/uwinfly.jpeg"
-    },
-    Larizz: {
+    larizz: {
       className: "brand-larizz",
-      logo: "images/brands/laris.jpeg"
+      logo: "images/brands/laris.jpeg",
+      main: "#27245f",
+      second: "#e31b23",
+      soft: "rgba(39, 36, 95, 0.18)",
+      glow: "rgba(39, 36, 95, 0.18)"
+    },
+    saige: {
+      className: "brand-saige",
+      logo: "images/brands/saige.jpeg",
+      main: "#66bd45",
+      second: "#2f6f2e",
+      soft: "rgba(102, 189, 69, 0.18)",
+      glow: "rgba(102, 189, 69, 0.18)"
+    },
+    uwinfly: {
+      className: "brand-uwinfly",
+      logo: "images/brands/uwinfly.jpeg",
+      main: "#ed1c24",
+      second: "#b91319",
+      soft: "rgba(237, 28, 36, 0.18)",
+      glow: "rgba(237, 28, 36, 0.18)"
+    },
+    nuv: {
+      className: "brand-nuv",
+      logo: "images/brands/nuv.jpeg",
+      main: "#27bfc3",
+      second: "#0f777b",
+      soft: "rgba(39, 191, 195, 0.2)",
+      glow: "rgba(39, 191, 195, 0.18)"
     }
   };
 
-  return themes[brand] || {
+  return fallbackThemes[slug] || {
     className: "brand-default",
-    logo: ""
+    logo: "",
+    main: "#203333",
+    second: "#2f4f4f",
+    soft: "rgba(159, 184, 182, 0.18)",
+    glow: "rgba(0, 0, 0, 0.12)"
   };
 }
 

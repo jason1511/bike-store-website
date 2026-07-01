@@ -1,24 +1,36 @@
 /* =========================
    ADMIN INIT
 ========================= */
-setupAdminLogin();
-setupAdminLogout();
-setupAdminViewNavigation();
+async function initializeAdmin() {
+  setupAdminLogin();
+  setupAdminLogout();
+  setupAdminViewNavigation();
 
-setupBikeRefresh();
-setupImagePreviewInputs();
-setupColorVariantEditor();
-setupBikeEditor();
-setupBikeFormSave();
-setupAdminBikeFilters();
+  await restoreAdminSession();
 
-setupInvoiceForm();
-setupInvoiceModal();
+  try {
+    if (typeof loadAdminBrands === "function") {
+      await loadAdminBrands();
+    }
+  } catch (error) {
+    console.error("Failed to load admin brands:", error);
+  }
 
-setupServiceForm();
-setupServiceModal();
+  setupBikeRefresh();
+  setupImagePreviewInputs();
+  setupColorVariantEditor();
+  setupBikeEditor();
+  setupBikeFormSave();
+  setupAdminBikeFilters();
 
-setupAdminUserManagement();
-setupAuditLogs();
+  setupInvoiceForm();
+  setupInvoiceModal();
 
-restoreAdminSession();
+  setupServiceForm();
+  setupServiceModal();
+
+  setupAdminUserManagement();
+  setupAuditLogs();
+}
+
+initializeAdmin();

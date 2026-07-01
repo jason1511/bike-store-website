@@ -203,16 +203,16 @@
             <form class="admin-bike-form" id="adminBikeForm">
               <input type="hidden" id="bikeIdInput">
 
-              <div class="admin-form-grid">
-                <div class="admin-form-group">
-                  <label for="bikeBrandInput">Brand</label>
-                  <input
-                    type="text"
-                    id="bikeBrandInput"
-                    placeholder="Contoh: Saige"
-                    required
-                  >
-                </div>
+              <div class="admin-form-group">
+  <label for="bikeBrandInput">Brand</label>
+  <select id="bikeBrandInput" required>
+    <option value="">Memuat brand...</option>
+  </select>
+
+  <p class="admin-form-note">
+    Brand diambil dari database supaya tema dan logo katalog tetap konsisten.
+  </p>
+</div>
 
                 <div class="admin-form-group">
                   <label for="bikeNameInput">Nama Model</label>

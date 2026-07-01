@@ -54,6 +54,11 @@ function normalizeLoadedBike(bike) {
 
   return {
     ...bike,
+
+    brandId: bike.brandId || bike.brand_id || "",
+    brandSlug: bike.brandSlug || bike.brand_slug || "",
+    brandTheme: bike.brandTheme || null,
+
     colors,
     stockQty,
     image: primaryColor?.image || bike.image || "",
