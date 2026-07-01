@@ -202,16 +202,16 @@ function createBikeCard(bike) {
 
             return `
               <button
-                type="button"
-                class="bike-color-dot ${isActive ? "is-active" : ""} ${isColorAvailable ? "is-available" : "is-empty"}"
-                style="${getBikeThemeStyle(bike)}"
-                data-bike-color-image="${escapeHtml(color.image || bike.image || imageSrc)}"
-                data-bike-color-name="${escapeHtml(color.name || "")}"
-                onclick="event.stopPropagation(); switchBikeCardColor(this);"
-                aria-label="Warna ${escapeHtml(color.name || "unit")}"
-                title="${escapeHtml(color.name || "Warna")}"
-                ${isColorAvailable ? "" : "disabled"}
-              ></button>
+  type="button"
+  class="bike-color-dot ${isActive ? "is-active" : ""} ${isColorAvailable ? "is-available" : "is-empty"}"
+  style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")}; background-color: ${escapeHtml(color.hex || "#cccccc")};"
+  data-bike-color-image="${escapeHtml(color.image || bike.image || imageSrc)}"
+  data-bike-color-name="${escapeHtml(color.name || "")}"
+  onclick="event.stopPropagation(); switchBikeCardColor(this);"
+  aria-label="Warna ${escapeHtml(color.name || "unit")}"
+  title="${escapeHtml(color.name || "Warna")}"
+  ${isColorAvailable ? "" : "disabled"}
+></button>
             `;
           })
           .join("")}
