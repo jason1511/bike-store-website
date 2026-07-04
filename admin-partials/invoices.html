@@ -1,0 +1,322 @@
+<section class="admin-view" id="adminSalesView">
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-eyebrow">Penjualan</p>
+      <h1>Invoice Penjualan</h1>
+      <p>
+        Buat invoice penjualan sepeda, pilih warna unit, dan kurangi stok warna
+        secara otomatis.
+      </p>
+    </div>
+  </div>
+
+  <div class="admin-workspace">
+    <article class="admin-panel admin-editor-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Buat Invoice</h2>
+          <p>Data invoice akan tersimpan ke database dan bisa dicetak.</p>
+        </div>
+      </div>
+
+      <form class="admin-bike-form" id="adminInvoiceForm">
+        <div class="admin-form-group">
+          <label for="invoiceBikeInput">Sepeda</label>
+          <select id="invoiceBikeInput" required>
+            <option value="">Pilih sepeda</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceBikeColorInput">Warna Unit</label>
+          <select id="invoiceBikeColorInput" required>
+            <option value="">Pilih sepeda terlebih dahulu</option>
+          </select>
+
+          <p class="admin-form-note" id="invoiceColorStockNote">
+            Pilih sepeda terlebih dahulu untuk melihat stok warna.
+          </p>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceQuantityInput">Jumlah</label>
+          <input
+            type="number"
+            id="invoiceQuantityInput"
+            value="1"
+            min="1"
+            step="1"
+            required
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceUnitPriceInput">Harga Satuan</label>
+          <input
+            type="number"
+            id="invoiceUnitPriceInput"
+            min="0"
+            step="1000"
+            placeholder="Harga jual"
+            required
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceCustomerNameInput">Nama Customer</label>
+          <input
+            type="text"
+            id="invoiceCustomerNameInput"
+            placeholder="Nama pembeli"
+            required
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceCustomerPhoneInput">Nomor WhatsApp</label>
+          <input
+            type="text"
+            id="invoiceCustomerPhoneInput"
+            placeholder="Contoh: 08123456789"
+          >
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
+          <label for="invoiceCustomerAddressInput">Alamat</label>
+          <textarea
+            id="invoiceCustomerAddressInput"
+            rows="3"
+            placeholder="Alamat customer"
+          ></textarea>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoicePaymentMethodInput">Metode Pembayaran</label>
+          <select id="invoicePaymentMethodInput">
+            <option value="Cash">Cash</option>
+            <option value="Transfer">Transfer</option>
+            <option value="QRIS">QRIS</option>
+            <option value="Kredit">Kredit</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
+          <label for="invoiceNotesInput">Catatan</label>
+          <textarea
+            id="invoiceNotesInput"
+            rows="3"
+            placeholder="Catatan invoice"
+          ></textarea>
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
+          <div class="admin-invoice-preview" id="adminInvoicePreview">
+            <strong>Total Invoice</strong>
+            <span>Rp 0</span>
+          </div>
+        </div>
+
+        <div class="admin-form-actions">
+          <button type="submit" class="btn-primary" id="createInvoiceBtn">
+            Buat Invoice
+          </button>
+
+          <p class="admin-form-note" id="adminInvoiceFormNote">
+            Stok warna akan berkurang setelah invoice dibuat.
+          </p>
+        </div>
+      </form>
+    </article>
+
+    <article class="admin-panel admin-list-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Riwayat Invoice</h2>
+          <p>Daftar invoice penjualan yang tersimpan.</p>
+        </div>
+
+        <div class="admin-panel-actions">
+          <button type="button" class="btn-secondary" id="refreshInvoicesBtn">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-filter-bar">
+        <div class="admin-form-group">
+          <label for="invoiceSearchInput">Cari Invoice</label>
+          <input
+            type="search"
+            id="invoiceSearchInput"
+            placeholder="Cari invoice, customer, sepeda..."
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoicePaymentFilter">Pembayaran</label>
+          <select id="invoicePaymentFilter">
+            <option value="all">Semua</option>
+            <option value="Cash">Cash</option>
+            <option value="Transfer">Transfer</option>
+            <option value="QRIS">QRIS</option>
+            <option value="Kredit">Kredit</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="admin-result-count" id="adminInvoiceResultCount">
+        Belum ada invoice.
+      </p>
+
+      <div class="admin-invoice-list" id="adminInvoiceList">
+        <div class="admin-empty-state">
+          Invoice belum dimuat.
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div
+    class="admin-invoice-modal is-hidden"
+    id="adminInvoiceModal"
+    aria-hidden="true"
+  >
+    <div
+      class="admin-invoice-modal-overlay"
+      id="adminInvoiceModalOverlay"
+    ></div>
+
+    <div class="admin-invoice-modal-content">
+      <div class="admin-invoice-modal-actions no-print">
+        <button
+          type="button"
+          class="btn-secondary"
+          id="closeInvoiceModalBtn"
+        >
+          Tutup
+        </button>
+
+        <button
+          type="button"
+          class="btn-primary"
+          id="printInvoiceBtn"
+        >
+          Cetak Invoice
+        </button>
+      </div>
+
+      <article class="printable-invoice">
+        <header class="printable-invoice-header">
+          <div class="printable-invoice-brand">
+            <img
+              src="images/logo.jpeg"
+              alt="CV Niaga Bersama Abadi"
+            >
+
+            <div>
+              <h1>CV Niaga Bersama Abadi</h1>
+              <p>Showroom Sepeda Listrik</p>
+              <p>Lumajang, Jawa Timur</p>
+            </div>
+          </div>
+
+          <div class="printable-invoice-title">
+            <p>Invoice Penjualan</p>
+            <h2 id="printInvoiceNumber">INV-0000</h2>
+          </div>
+        </header>
+
+        <section class="printable-invoice-meta">
+          <div>
+            <span>Tanggal</span>
+            <strong id="printInvoiceDate">-</strong>
+          </div>
+
+          <div>
+            <span>Admin</span>
+            <strong id="printInvoiceCreatedBy">-</strong>
+          </div>
+
+          <div>
+            <span>Pembayaran</span>
+            <strong id="printInvoicePayment">-</strong>
+          </div>
+        </section>
+
+        <section class="printable-invoice-section">
+          <h3>Customer</h3>
+
+          <div class="printable-invoice-customer">
+            <div>
+              <span>Nama</span>
+              <strong id="printCustomerName">-</strong>
+            </div>
+
+            <div>
+              <span>WhatsApp</span>
+              <strong id="printCustomerPhone">-</strong>
+            </div>
+
+            <div class="printable-invoice-wide">
+              <span>Alamat</span>
+              <strong id="printCustomerAddress">-</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="printable-invoice-section">
+          <h3>Detail Produk</h3>
+
+          <div class="printable-invoice-table-wrap">
+            <table class="printable-invoice-table">
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th>Jumlah</th>
+                  <th>Harga Satuan</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td id="printInvoiceItem">-</td>
+                  <td id="printInvoiceQuantity">-</td>
+                  <td id="printInvoiceUnitPrice">-</td>
+                  <td id="printInvoiceLineTotal">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="printable-invoice-total-box">
+            <span>Total</span>
+            <strong id="printInvoiceTotal">Rp 0</strong>
+          </div>
+        </section>
+
+        <section
+          class="printable-invoice-section"
+          id="printInvoiceNotesSection"
+        >
+          <h3>Catatan</h3>
+          <p id="printInvoiceNotes">-</p>
+        </section>
+
+        <footer class="printable-invoice-footer">
+          <div>
+            <p>Customer</p>
+            <span></span>
+            <strong id="printInvoiceCustomerSignature">-</strong>
+          </div>
+
+          <div>
+            <p>Admin</p>
+            <span></span>
+            <strong id="printInvoiceStaffSignature">-</strong>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </div>
+</section>

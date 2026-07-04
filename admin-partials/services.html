@@ -1,0 +1,309 @@
+<section class="admin-view" id="adminServiceView">
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-eyebrow">Service</p>
+      <h1>Invoice Service</h1>
+      <p>
+        Buat invoice service, simpan riwayat servis, dan cetak bukti service.
+      </p>
+    </div>
+  </div>
+
+  <div class="admin-workspace">
+    <article class="admin-panel admin-editor-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Buat Invoice Service</h2>
+          <p>Isi data customer, unit, pekerjaan service, dan biaya.</p>
+        </div>
+      </div>
+
+      <form class="admin-bike-form" id="adminServiceForm">
+        <input type="hidden" id="serviceIdInput">
+
+        <div class="admin-form-group">
+          <label for="serviceCustomerNameInput">Nama Customer</label>
+          <input
+            type="text"
+            id="serviceCustomerNameInput"
+            placeholder="Nama customer"
+            required
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="serviceCustomerPhoneInput">Nomor WhatsApp</label>
+          <input
+            type="text"
+            id="serviceCustomerPhoneInput"
+            placeholder="Contoh: 08123456789"
+          >
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
+          <label for="serviceCustomerAddressInput">Alamat</label>
+          <textarea
+            id="serviceCustomerAddressInput"
+            rows="3"
+            placeholder="Alamat customer"
+          ></textarea>
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
+          <label for="serviceBikeLabelInput">Unit Sepeda</label>
+          <input
+            type="text"
+            id="serviceBikeLabelInput"
+            placeholder="Contoh: Pacific TMAX Merah"
+            required
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="serviceTypeInput">Jenis Service</label>
+          <select id="serviceTypeInput" required>
+            <option value="Service Ringan">Service Ringan</option>
+            <option value="Service Berat">Service Berat</option>
+            <option value="Ganti Sparepart">Ganti Sparepart</option>
+            <option value="Cek Kelistrikan">Cek Kelistrikan</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="serviceStatusInput">Status Service</label>
+          <select id="serviceStatusInput">
+            <option value="pending">Pending</option>
+            <option value="in_progress">Sedang Dikerjakan</option>
+            <option value="done">Selesai</option>
+            <option value="cancelled">Dibatalkan</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="serviceCostInput">Biaya Service</label>
+          <input
+            type="number"
+            id="serviceCostInput"
+            min="0"
+            step="1000"
+            placeholder="Contoh: 150000"
+            required
+          >
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
+          <label for="serviceNotesInput">Catatan / Pekerjaan</label>
+          <textarea
+            id="serviceNotesInput"
+            rows="4"
+            placeholder="Keluhan customer, pekerjaan service, sparepart, atau catatan tambahan"
+          ></textarea>
+        </div>
+
+        <div class="admin-form-actions">
+          <button type="submit" class="btn-primary" id="saveServiceBtn">
+            Simpan Service
+          </button>
+
+          <button type="button" class="btn-secondary" id="resetServiceFormBtn">
+            Reset
+          </button>
+
+          <p class="admin-form-note" id="adminServiceFormNote">
+            Data service akan tersimpan ke database.
+          </p>
+        </div>
+      </form>
+    </article>
+
+    <article class="admin-panel admin-list-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Riwayat Service</h2>
+          <p>Daftar invoice service yang tersimpan.</p>
+        </div>
+
+        <div class="admin-panel-actions">
+          <button type="button" class="btn-secondary" id="refreshServicesBtn">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-filter-bar">
+        <div class="admin-form-group">
+          <label for="serviceSearchInput">Cari Service</label>
+          <input
+            type="search"
+            id="serviceSearchInput"
+            placeholder="Cari customer, unit, catatan..."
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="serviceStatusFilter">Status</label>
+          <select id="serviceStatusFilter">
+            <option value="all">Semua</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">Sedang Dikerjakan</option>
+            <option value="done">Selesai</option>
+            <option value="cancelled">Dibatalkan</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="admin-result-count" id="adminServiceResultCount">
+        Belum ada data service.
+      </p>
+
+      <div class="admin-service-list" id="adminServiceList">
+        <div class="admin-empty-state">
+          Data service belum dimuat.
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div
+    class="admin-service-modal is-hidden"
+    id="adminServiceModal"
+    aria-hidden="true"
+  >
+    <div
+      class="admin-service-modal-overlay"
+      id="adminServiceModalOverlay"
+    ></div>
+
+    <div class="admin-service-modal-content">
+      <div class="admin-service-modal-actions no-print">
+        <button
+          type="button"
+          class="btn-secondary"
+          id="closeServiceModalBtn"
+        >
+          Tutup
+        </button>
+
+        <button
+          type="button"
+          class="btn-primary"
+          id="printServiceBtn"
+        >
+          Cetak Service
+        </button>
+      </div>
+
+      <article class="printable-service">
+        <header class="printable-service-header">
+          <div class="printable-service-brand">
+            <img
+              src="images/logo.jpeg"
+              alt="CV Niaga Bersama Abadi"
+            >
+
+            <div>
+              <h1>CV Niaga Bersama Abadi</h1>
+              <p>Showroom Sepeda Listrik</p>
+              <p>Lumajang, Jawa Timur</p>
+            </div>
+          </div>
+
+          <div class="printable-service-title">
+            <p>Invoice Service</p>
+            <h2 id="printServiceNumber">SRV-0000</h2>
+          </div>
+        </header>
+
+        <section class="printable-service-meta">
+          <div>
+            <span>Tanggal</span>
+            <strong id="printServiceDate">-</strong>
+          </div>
+
+          <div>
+            <span>Admin</span>
+            <strong id="printServiceCreatedBy">-</strong>
+          </div>
+
+          <div>
+            <span>Status</span>
+            <strong id="printServiceStatus">-</strong>
+          </div>
+        </section>
+
+        <section class="printable-service-section">
+          <h3>Customer</h3>
+
+          <div class="printable-service-customer">
+            <div>
+              <span>Nama</span>
+              <strong id="printServiceCustomerName">-</strong>
+            </div>
+
+            <div>
+              <span>WhatsApp</span>
+              <strong id="printServiceCustomerPhone">-</strong>
+            </div>
+
+            <div class="printable-service-wide">
+              <span>Alamat</span>
+              <strong id="printServiceCustomerAddress">-</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="printable-service-section">
+          <h3>Detail Service</h3>
+
+          <div class="printable-service-table-wrap">
+            <table class="printable-service-table">
+              <thead>
+                <tr>
+                  <th>Unit</th>
+                  <th>Jenis Service</th>
+                  <th>Biaya</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td id="printServiceBikeLabel">-</td>
+                  <td id="printServiceType">-</td>
+                  <td id="printServiceCost">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="printable-service-total-box">
+            <span>Total Service</span>
+            <strong id="printServiceTotal">Rp 0</strong>
+          </div>
+        </section>
+
+        <section
+          class="printable-service-section"
+          id="printServiceNotesSection"
+        >
+          <h3>Catatan</h3>
+          <p id="printServiceNotes">-</p>
+        </section>
+
+        <footer class="printable-service-footer">
+          <div>
+            <p>Customer</p>
+            <span></span>
+            <strong id="printServiceCustomerSignature">-</strong>
+          </div>
+
+          <div>
+            <p>Admin / Teknisi</p>
+            <span></span>
+            <strong id="printServiceStaffSignature">-</strong>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </div>
+</section>

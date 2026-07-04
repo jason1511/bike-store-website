@@ -1,0 +1,112 @@
+/* =========================
+   AUDIT LOGS
+========================= */
+.admin-audit-list {
+  display: grid;
+  gap: 12px;
+  max-height: 760px;
+  overflow: auto;
+  padding-right: 4px;
+}
+.admin-audit-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(15, 25, 25, 0.58);
+}
+
+.admin-audit-card-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.admin-audit-action {
+  margin: 0 0 4px;
+  color: #8fffc0;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-audit-card h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.admin-audit-time {
+  color: #9fb8b6;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-audit-meta {
+  color: #dce5e3;
+  font-size: 0.86rem;
+}
+
+.admin-audit-user {
+  color: #8fffc0;
+  font-weight: 950;
+}
+.admin-audit-details {
+  margin: 0;
+  padding: 12px;
+  border-radius: 14px;
+  color: #cdd8d6;
+  background-color: rgba(15, 25, 25, 0.72);
+  border: 1px solid rgba(159, 184, 182, 0.14);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Compatibility for older/simple generated audit markup */
+.admin-audit-item,
+.admin-audit-row {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(15, 25, 25, 0.58);
+}
+
+.admin-audit-item h3,
+.admin-audit-row h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.admin-audit-item p,
+.admin-audit-row p {
+  margin: 0;
+  color: #dce5e3;
+  line-height: 1.5;
+}
+
+/* =========================
+   RESPONSIVE AUDIT LOGS
+========================= */
+@media (max-width: 720px) {
+  .admin-audit-card-main {
+    flex-direction: column;
+  }
+
+  .admin-audit-time {
+    white-space: normal;
+  }
+}

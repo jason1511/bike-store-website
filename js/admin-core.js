@@ -229,6 +229,10 @@ function setupAdminLogin() {
       passwordInput.value = "";
       setAdminMessage("Login berhasil.", "is-success");
       showAdminDashboard();
+
+      if (typeof initializeAdminProtectedModules === "function") {
+        await initializeAdminProtectedModules();
+      }
     } catch (error) {
       clearStoredAdminSession();
       setAdminMessage(error.message, "is-error");
@@ -269,14 +273,19 @@ async function restoreAdminSession() {
   try {
     const data = await verifyAdminSession(token);
 
-    setStoredAdminSession(token, {
+    setStoredAdminSession(data.token || token, {
       username: data.username,
       role: data.role,
       permissions: data.permissions
     });
 
     showAdminDashboard();
+
+    if (typeof initializeAdminProtectedModules === "function") {
+      await initializeAdminProtectedModules();
+    }
   } catch (error) {
+    console.error("Session restore failed:", error);
     clearStoredAdminSession();
     showAdminLogin();
   }
@@ -285,36 +294,6 @@ async function restoreAdminSession() {
 /* =========================
    DASHBOARD VIEW STATE
 ========================= */
-function showAdminDashboard() {
-  const loginPanel = document.getElementById("adminLoginPanel");
-  const dashboard = document.getElementById("adminDashboard");
-
-  if (loginPanel) {
-    loginPanel.classList.add("is-hidden");
-  }
-
-  if (dashboard) {
-    dashboard.classList.remove("is-hidden");
-  }
-
-  configureAdminNavigationForRole();
-  renderAdminCurrentUserLabel();
-  showAdminView("adminCatalogueView");
-}
-
-function showAdminLogin() {
-  const loginPanel = document.getElementById("adminLoginPanel");
-  const dashboard = document.getElementById("adminDashboard");
-
-  if (dashboard) {
-    dashboard.classList.add("is-hidden");
-  }
-
-  if (loginPanel) {
-    loginPanel.classList.remove("is-hidden");
-  }
-}
-
 function renderAdminCurrentUserLabel() {
   const label = document.getElementById("adminCurrentUserLabel");
   const user = getStoredAdminUser();
@@ -323,10 +302,39 @@ function renderAdminCurrentUserLabel() {
     return;
   }
 
+  const username = user.username || "User";
+  const role = String(user.role || "").toUpperCase();
+
   label.innerHTML = `
-    <span>${escapeHtml(user.username || "user")}</span>
-    <strong>${escapeHtml(user.role || "")}</strong>
+    <span>${escapeHtml(username)}</span>
+    <strong>${escapeHtml(role)}</strong>
   `;
+}
+function showAdminLogin() {
+  const loginSection = document.getElementById("adminLoginSection");
+  const dashboard = document.getElementById("adminDashboard");
+
+  if (loginSection) {
+    loginSection.classList.remove("is-hidden");
+  }
+
+  if (dashboard) {
+    dashboard.classList.add("is-hidden");
+  }
+}
+function showAdminDashboard() {
+  const loginSection = document.getElementById("adminLoginSection");
+  const dashboard = document.getElementById("adminDashboard");
+
+  if (loginSection) {
+    loginSection.classList.add("is-hidden");
+  }
+
+  if (dashboard) {
+    dashboard.classList.remove("is-hidden");
+  }
+
+  renderAdminCurrentUserLabel();
 }
 
 /* =========================

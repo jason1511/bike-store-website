@@ -1,0 +1,88 @@
+<section class="admin-view" id="adminUsersView">
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-eyebrow">Admin</p>
+      <h1>Manajemen User</h1>
+      <p>
+        Kelola akun admin dan staff yang bisa mengakses dashboard.
+      </p>
+    </div>
+  </div>
+
+  <div class="admin-workspace">
+    <article class="admin-panel admin-editor-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Tambah User</h2>
+          <p>Buat akun baru untuk admin atau staff.</p>
+        </div>
+      </div>
+
+      <form class="admin-bike-form" id="adminUserForm">
+  <div class="admin-form-group">
+    <label for="newUserUsernameInput">Username</label>
+    <input
+      type="text"
+      id="newUserUsernameInput"
+      placeholder="Username"
+      required
+    >
+  </div>
+
+  <div class="admin-form-group">
+    <label for="newUserPasswordInput">Password</label>
+    <input
+      type="password"
+      id="newUserPasswordInput"
+      placeholder="Password"
+      required
+    >
+  </div>
+
+  <div class="admin-form-group">
+    <label for="newUserRoleInput">Role</label>
+    <select id="newUserRoleInput">
+      <option value="staff">Staff</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+
+  <div class="admin-form-actions">
+    <button type="submit" class="btn-primary" id="createUserBtn">
+      Tambah User
+    </button>
+
+    <p class="admin-form-note" id="adminUserFormNote">
+      Admin bisa mengelola user, brand, katalog, invoice, dan service.
+      Staff hanya untuk operasional.
+    </p>
+  </div>
+</form>
+    </article>
+
+    <article class="admin-panel admin-list-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Daftar User</h2>
+          <p>User aktif dan nonaktif yang tersimpan.</p>
+        </div>
+
+        <div class="admin-panel-actions">
+          <button type="button" class="btn-secondary" id="refreshUsersBtn">
+  Refresh
+</button>
+        </div>
+      </div>
+
+      <p class="admin-result-count" id="adminUserResultCount">
+        User belum dimuat.
+      </p>
+
+      <div class="admin-user-list" id="adminUserList">
+        <div class="admin-empty-state">
+          Data user belum dimuat.
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

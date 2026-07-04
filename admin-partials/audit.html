@@ -1,0 +1,70 @@
+<section class="admin-view" id="adminAuditView">
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-eyebrow">Aktivitas</p>
+      <h1>Log Aktivitas</h1>
+      <p>
+        Lihat riwayat perubahan penting di dashboard admin.
+      </p>
+    </div>
+  </div>
+
+  <div class="admin-workspace">
+    <article class="admin-panel admin-list-panel admin-form-wide">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Riwayat Aktivitas</h2>
+          <p>
+            Log perubahan katalog, brand, invoice, service, dan user.
+          </p>
+        </div>
+
+        <div class="admin-panel-actions">
+          <button type="button" class="btn-secondary" id="refreshAuditLogsBtn">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-filter-bar">
+        <div class="admin-form-group">
+          <label for="auditSearchInput">Cari Aktivitas</label>
+          <input
+            type="search"
+            id="auditSearchInput"
+            placeholder="Cari user, aksi, target..."
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="auditActionFilter">Aksi</label>
+          <select id="auditActionFilter">
+            <option value="all">Semua Aksi</option>
+            <option value="bike_create">Tambah Sepeda</option>
+            <option value="bike_update">Edit Sepeda</option>
+            <option value="bike_toggle">Aktif / Nonaktif Sepeda</option>
+            <option value="brand_create">Tambah Brand</option>
+            <option value="brand_update">Edit Brand</option>
+            <option value="brand_activate">Aktifkan Brand</option>
+            <option value="brand_deactivate">Nonaktifkan Brand</option>
+            <option value="invoice_create">Buat Invoice</option>
+            <option value="service_create">Buat Service</option>
+            <option value="service_update">Update Service</option>
+            <option value="user_create">Tambah User</option>
+            <option value="user_toggle">Aktif / Nonaktif User</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="admin-result-count" id="adminAuditResultCount">
+        Log aktivitas belum dimuat.
+      </p>
+
+      <div class="admin-audit-list" id="adminAuditList">
+        <div class="admin-empty-state">
+          Log aktivitas belum dimuat.
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

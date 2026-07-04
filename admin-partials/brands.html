@@ -1,0 +1,155 @@
+<section
+  id="brandsAdminView"
+  class="admin-view"
+>
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-eyebrow">Brand Manager</p>
+      <h1>Brand Sepeda</h1>
+      <p>
+        Kelola brand, logo, warna tema, dan status aktif untuk katalog.
+      </p>
+    </div>
+  </div>
+
+  <div class="admin-brand-layout">
+    <article class="admin-panel admin-brand-editor-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2 id="brandFormTitle">Tambah Brand</h2>
+          <p>
+            Brand aktif akan muncul di dropdown sepeda dan filter katalog.
+          </p>
+        </div>
+      </div>
+
+      <form id="brandForm" class="admin-brand-form">
+        <div class="admin-brand-form-grid">
+          <div class="admin-form-group">
+            <label for="brandNameInput">Nama Brand</label>
+            <input
+              type="text"
+              id="brandNameInput"
+              placeholder="Contoh: Viar"
+              required
+            >
+          </div>
+
+          <div class="admin-form-group">
+            <label for="brandActiveInput">Status</label>
+            <select id="brandActiveInput">
+              <option value="1">Aktif</option>
+              <option value="0">Nonaktif</option>
+            </select>
+          </div>
+
+          <div class="admin-form-group admin-form-wide">
+            <label for="brandLogoUploadInput">Logo Brand</label>
+
+            <label class="admin-brand-upload-box" for="brandLogoUploadInput">
+              <span class="admin-brand-upload-icon">＋</span>
+              <span>
+                <strong>Pilih logo brand</strong>
+                <small>JPEG, PNG, atau WEBP. Upload ke R2 saat disimpan.</small>
+              </span>
+            </label>
+
+            <input
+              type="file"
+              id="brandLogoUploadInput"
+              accept="image/jpeg,image/png,image/webp"
+              class="is-hidden"
+            >
+
+            <input
+              type="hidden"
+              id="brandLogoPathInput"
+            >
+
+            <p class="admin-form-note" id="brandLogoUploadNote">
+              Logo akan diupload ke R2 saat tombol Simpan Brand ditekan.
+            </p>
+          </div>
+
+          <div class="admin-form-group">
+            <label for="brandThemeMainInput">Warna Utama</label>
+
+            <div class="admin-brand-color-input">
+              <input
+                type="color"
+                id="brandThemeMainInput"
+                value="#203333"
+              >
+              <span>Warna utama kartu</span>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label for="brandThemeSecondInput">Warna Kedua</label>
+
+            <div class="admin-brand-color-input">
+              <input
+                type="color"
+                id="brandThemeSecondInput"
+                value="#2f4f4f"
+              >
+              <span>Warna aksen kartu</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-brand-preview" id="brandPreviewCard">
+          <div class="admin-brand-preview-logo" id="brandPreviewLogo">
+            Logo
+          </div>
+
+          <div>
+            <p id="brandPreviewName">Preview Brand</p>
+            <small>Preview tema brand di katalog.</small>
+          </div>
+        </div>
+
+        <p id="brandFormNote" class="admin-form-note"></p>
+
+        <div class="admin-form-actions">
+          <button type="submit" class="btn-primary">
+            Simpan Brand
+          </button>
+
+          <button
+            type="button"
+            id="resetBrandFormBtn"
+            class="btn-secondary"
+          >
+            Reset
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="admin-panel admin-brand-list-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Daftar Brand</h2>
+          <p>Aktifkan, nonaktifkan, atau edit data brand.</p>
+        </div>
+
+        <div class="admin-panel-actions">
+          <button
+            type="button"
+            id="refreshBrandListBtn"
+            class="btn-secondary"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div id="brandList" class="admin-brand-list">
+        <div class="admin-empty-state">
+          Brand belum dimuat.
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

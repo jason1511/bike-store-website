@@ -91,18 +91,46 @@ async function fetchAuditLogs() {
 
   return data.logs || [];
 }
+function formatAuditActionLabel(action) {
+  const labels = {
+    bike_create: "Tambah Sepeda",
+    bike_update: "Edit Sepeda",
+    bike_toggle: "Aktif / Nonaktif Sepeda",
 
+    brand_create: "Tambah Brand",
+    brand_update: "Edit Brand",
+    brand_activate: "Aktifkan Brand",
+    brand_deactivate: "Nonaktifkan Brand",
+
+    invoice_create: "Buat Invoice",
+
+    service_create: "Buat Service",
+    service_update: "Update Service",
+
+    user_create: "Tambah User",
+    user_toggle: "Aktif / Nonaktif User"
+  };
+
+  return labels[action] || String(action || "-").replaceAll("_", " ");
+}
 function renderAuditLogs(logs) {
   const auditList = document.getElementById("adminAuditList");
+  const resultCount = document.getElementById("adminAuditResultCount");
 
   if (!auditList) {
     return;
   }
 
+  if (resultCount) {
+    resultCount.textContent = logs.length
+      ? `Menampilkan ${logs.length} aktivitas.`
+      : "Belum ada log aktivitas.";
+  }
+
   if (!logs.length) {
     auditList.innerHTML = `
       <div class="admin-empty-state">
-        Belum ada aktivitas.
+        Belum ada log aktivitas.
       </div>
     `;
     return;
@@ -110,40 +138,37 @@ function renderAuditLogs(logs) {
 
   auditList.innerHTML = logs
     .map((log) => {
-      const actionClass = getAuditActionClass(log.action);
-      const detailsText = createAuditDetailsText(log);
+      const action = log.action || "-";
+      const targetLabel = log.targetLabel || log.target_label || "-";
+      const username = log.username || log.createdByUsername || log.created_by_username || "admin";
+      const role = log.role || log.createdByRole || log.created_by_role || "admin";
+      const createdAt = log.createdAt || log.created_at || "-";
 
       return `
         <article class="admin-audit-card">
-          <div class="admin-audit-main">
+          <div class="admin-audit-card-main">
             <div>
-              <h3>${escapeHtml(log.targetLabel || log.targetId || "Target tidak diketahui")}</h3>
+              <p class="admin-audit-action">
+                ${escapeHtml(formatAuditActionLabel(action))}
+              </p>
 
-              <div class="admin-audit-meta">
-                <span class="admin-audit-action ${actionClass}">
-                  ${escapeHtml(getAuditActionLabel(log.action))}
-                </span>
-
-                <span>
-                  Oleh ${escapeHtml(log.actorUsername || "-")} (${escapeHtml(log.actorRole || "-")})
-                </span>
-
-                <span>
-                  ${escapeHtml(formatAuditDate(log.createdAt))}
-                </span>
-              </div>
+              <h3>${escapeHtml(targetLabel)}</h3>
             </div>
+
+            <span class="admin-audit-time">
+              ${escapeHtml(formatAuditDate(createdAt))}
+            </span>
           </div>
 
-          ${
-            detailsText
-              ? `
-                <p class="admin-audit-details">
-                  ${escapeHtml(detailsText)}
-                </p>
-              `
-              : ""
-          }
+          <div class="admin-audit-meta">
+            <span>
+              Oleh
+              <strong class="admin-audit-user">
+                ${escapeHtml(username)}
+              </strong>
+              (${escapeHtml(role)})
+            </span>
+          </div>
         </article>
       `;
     })

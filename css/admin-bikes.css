@@ -1,0 +1,267 @@
+/* =========================
+   BIKE FILTERS
+========================= */
+.admin-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) minmax(140px, 0.7fr) minmax(140px, 0.7fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-result-count {
+  color: #b8c4c2;
+  font-size: 0.92rem;
+  margin-bottom: 14px;
+}
+
+/* =========================
+   BIKE LIST
+========================= */
+.admin-bike-list {
+  display: grid;
+  gap: 14px;
+  max-height: 760px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.admin-bike-list-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(15, 25, 25, 0.58);
+}
+
+.admin-bike-list-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.admin-bike-brand {
+  color: #9fb8b6;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.admin-bike-list-card h3 {
+  font-size: 1rem;
+}
+
+.admin-bike-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-bike-meta span {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: rgba(15, 25, 25, 0.8);
+  color: #dce5e3;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.admin-bike-meta strong {
+  color: #9fb8b6;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* =========================
+   STATUS PILLS
+========================= */
+.admin-stock-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.admin-stock-pill.is-in {
+  background-color: rgba(37, 211, 102, 0.14);
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.28);
+}
+
+.admin-stock-pill.is-out {
+  background-color: rgba(255, 143, 143, 0.14);
+  color: #ff8f8f;
+  border: 1px solid rgba(255, 143, 143, 0.28);
+}
+
+/* =========================
+   IMAGE PREVIEW
+========================= */
+.admin-image-preview {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(159, 184, 182, 0.28);
+  background-color: rgba(15, 25, 25, 0.55);
+  overflow: hidden;
+}
+
+.admin-image-preview img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+}
+
+.admin-image-preview span {
+  color: #b8c4c2;
+  text-align: center;
+}
+
+/* =========================
+   COLOR VARIANTS
+========================= */
+.admin-color-variants {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(159, 184, 182, 0.16);
+  background-color: rgba(15, 25, 25, 0.35);
+}
+
+.admin-subsection-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.admin-color-variant-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-color-variant-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  background-color: rgba(15, 25, 25, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-color-variant-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.admin-color-variant-title {
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.admin-color-variant-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px 130px;
+  gap: 14px;
+  align-items: start;
+}
+
+.admin-color-variant-image,
+.admin-color-variant-preview {
+  grid-column: 1 / -1;
+}
+
+.admin-color-variant-preview {
+  min-height: 140px;
+}
+
+.admin-color-variant-card input[type="number"][data-color-stock] {
+  font-weight: 900;
+  text-align: center;
+}
+
+.admin-color-variant-card input[type="color"] {
+  min-height: 46px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.admin-color-variant-image {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-color-variant-preview img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.admin-color-variant-card .admin-form-note {
+  margin-top: 6px;
+}
+
+/* =========================
+   IMAGE / STOCK COMPAT UI
+========================= */
+.admin-compat-note {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(159, 184, 182, 0.2);
+  background: rgba(37, 211, 102, 0.08);
+  color: #cfe3df;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.admin-image-status {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(159, 184, 182, 0.18);
+  background: rgba(15, 25, 25, 0.55);
+  color: #b8c4c2;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.admin-image-status.is-success {
+  border-color: rgba(37, 211, 102, 0.35);
+  background: rgba(37, 211, 102, 0.1);
+  color: #8ff0b9;
+}
+
+.admin-form-group input[readonly] {
+  opacity: 0.82;
+  cursor: not-allowed;
+  background: rgba(15, 25, 25, 0.7);
+}
+
+.admin-stock-input .admin-form-note {
+  margin-top: 6px;
+  font-size: 0.78rem;
+}

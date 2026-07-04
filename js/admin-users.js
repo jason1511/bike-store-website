@@ -37,9 +37,16 @@ async function fetchAdminUsers() {
 
 function renderAdminUsers(users) {
   const userList = document.getElementById("adminUserList");
+  const resultCount = document.getElementById("adminUserResultCount");
 
   if (!userList) {
     return;
+  }
+
+  if (resultCount) {
+    resultCount.textContent = users.length
+      ? `Menampilkan ${users.length} user.`
+      : "Belum ada user.";
   }
 
   if (!users.length) {
@@ -54,7 +61,7 @@ function renderAdminUsers(users) {
   userList.innerHTML = users
     .map((user) => `
       <article class="admin-user-card">
-        <div>
+        <div class="admin-user-card-main">
           <h3>${escapeHtml(user.username)}</h3>
 
           <div class="admin-user-meta">

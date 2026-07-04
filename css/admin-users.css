@@ -1,0 +1,164 @@
+/* =========================
+   USER MANAGEMENT
+========================= */
+.admin-user-list {
+  display: grid;
+  gap: 12px;
+  max-height: 760px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.admin-user-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(15, 25, 25, 0.58);
+}
+
+.admin-user-card-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-user-card h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.admin-user-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  color: #dce5e3;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.admin-user-meta strong {
+  color: #9fb8b6;
+}
+
+.admin-user-role,
+.admin-user-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.admin-user-role,
+.admin-user-role.is-admin {
+  color: #8fffc0;
+  background-color: rgba(37, 211, 102, 0.14);
+  border: 1px solid rgba(37, 211, 102, 0.28);
+}
+
+.admin-user-role.is-staff {
+  color: #dce5e3;
+  background-color: rgba(159, 184, 182, 0.14);
+  border-color: rgba(159, 184, 182, 0.28);
+}
+
+.admin-user-status.is-active {
+  color: #8fffc0;
+  background-color: rgba(37, 211, 102, 0.14);
+  border: 1px solid rgba(37, 211, 102, 0.28);
+}
+
+.admin-user-status.is-inactive {
+  color: #ffc9c9;
+  background-color: rgba(255, 143, 143, 0.14);
+  border: 1px solid rgba(255, 143, 143, 0.28);
+}
+
+.admin-user-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-user-actions button {
+  min-height: 36px;
+}
+
+/* Compatibility for older/simple generated user markup */
+.admin-user-item,
+.admin-user-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(15, 25, 25, 0.58);
+}
+
+.admin-user-item h3,
+.admin-user-row h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.admin-user-item p,
+.admin-user-row p {
+  margin: 0;
+  color: #dce5e3;
+  line-height: 1.5;
+}
+
+.admin-user-item button,
+.admin-user-row button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 143, 143, 0.36);
+  background-color: rgba(255, 143, 143, 0.1);
+  color: #ffc9c9;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* =========================
+   RESPONSIVE USER MANAGEMENT
+========================= */
+@media (max-width: 720px) {
+  .admin-user-card,
+  .admin-user-item,
+  .admin-user-row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .admin-user-actions {
+    justify-content: flex-start;
+  }
+}

@@ -1,26 +1,44 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-  <title>Admin Showroom | CV Niaga Bersama Abadi</title>
+  <title>Admin Dashboard | CV Niaga Bersama Abadi</title>
   <meta name="robots" content="noindex, nofollow">
 
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="css/admin-bikes.css">
+<link rel="stylesheet" href="css/admin-brands.css">
+<link rel="stylesheet" href="css/admin-invoices.css">
+<link rel="stylesheet" href="css/admin-services.css">
+<link rel="stylesheet" href="css/admin-users.css">
+<link rel="stylesheet" href="css/admin-audit.css">
 </head>
 
 <body class="admin-body">
-  <main class="admin-page">
-    <section class="admin-login" id="adminLoginPanel">
+  <main class="admin-page" id="adminApp">
+    <section class="admin-login-section" id="adminLoginSection">
       <div class="admin-login-card">
-        <p class="admin-eyebrow">Admin Showroom</p>
-        <h1>Masuk Admin</h1>
-        <p>
-          Halaman ini digunakan untuk mengelola katalog sepeda listrik,
-          penjualan, user admin, dan aktivitas showroom.
-        </p>
+        <div class="admin-login-brand">
+          <img
+            src="images/logo.jpeg"
+            alt="CV Niaga Bersama Abadi"
+          >
+
+          <div>
+            <p class="admin-eyebrow">Admin Dashboard</p>
+            <h1>CV Niaga Bersama Abadi</h1>
+            <p>
+              Login untuk mengelola katalog sepeda, brand, invoice, service,
+              user, dan aktivitas.
+            </p>
+          </div>
+        </div>
 
         <form class="admin-login-form" id="adminLoginForm">
           <div class="admin-form-group">
@@ -28,8 +46,8 @@
             <input
               type="text"
               id="adminUsernameInput"
-              placeholder="Masukkan username admin"
               autocomplete="username"
+              placeholder="Username admin"
               required
             >
           </div>
@@ -39,28 +57,34 @@
             <input
               type="password"
               id="adminPasswordInput"
-              placeholder="Masukkan password admin"
               autocomplete="current-password"
+              placeholder="Password"
               required
             >
           </div>
 
           <button type="submit" class="btn-primary">
-            Masuk
+            Login
           </button>
-        </form>
 
-        <p class="admin-message" id="adminLoginMessage"></p>
+          <p class="admin-form-note" id="adminLoginMessage"></p>
+        </form>
       </div>
     </section>
 
     <section class="admin-dashboard is-hidden" id="adminDashboard">
       <nav class="admin-navbar">
-        <a href="index.html" class="admin-navbar-brand">
-          <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
-          <span>CV Niaga Bersama Abadi</span>
-          <strong>Admin</strong>
-        </a>
+        <div class="admin-navbar-brand">
+          <img
+            src="images/logo.jpeg"
+            alt="CV Niaga Bersama Abadi"
+          >
+
+          <div>
+            <strong>Admin NBA</strong>
+            <small>Dashboard</small>
+          </div>
+        </div>
 
         <div class="admin-navbar-links">
           <a href="index.html" class="admin-nav-link admin-site-link">
@@ -78,17 +102,28 @@
           <button
             type="button"
             class="admin-nav-link"
+            data-admin-view-target="brandsAdminView"
+            data-admin-only
+          >
+            Brand
+          </button>
+
+          <button
+            type="button"
+            class="admin-nav-link"
             data-admin-view-target="adminSalesView"
           >
             Penjualan
           </button>
+
           <button
-  type="button"
-  class="admin-nav-link"
-  data-admin-view-target="adminServiceView"
->
-  Service
-</button>
+            type="button"
+            class="admin-nav-link"
+            data-admin-view-target="adminServiceView"
+          >
+            Service
+          </button>
+
           <button
             type="button"
             class="admin-nav-link"
@@ -111,984 +146,32 @@
             User
           </span>
 
-          <button type="button" class="admin-nav-link admin-logout-link" id="adminLogoutBtn">
-            Keluar
+          <button
+            type="button"
+            class="admin-nav-link admin-logout-link"
+            id="adminLogoutBtn"
+          >
+            Logout
           </button>
         </div>
       </nav>
 
-      <section class="admin-view is-active" id="adminCatalogueView">
-        <div class="admin-dashboard-header">
-          <div>
-            <p class="admin-eyebrow">Dashboard</p>
-            <h1>Admin Katalog Sepeda</h1>
-            <p>
-              Kelola data sepeda, gambar, warna, harga, status katalog, dan stok internal.
-            </p>
-          </div>
-        </div>
-
-        <div class="admin-workspace">
-          <article class="admin-panel admin-list-panel">
-            <div class="admin-panel-header">
-              <div>
-                <h2>Data Sepeda</h2>
-                <p>Daftar sepeda dari katalog saat ini.</p>
-              </div>
-
-              <div class="admin-panel-actions">
-                <button type="button" class="btn-secondary" id="addBikeBtn">
-                  Tambah Sepeda
-                </button>
-
-                <button type="button" class="btn-secondary" id="refreshBikesBtn">
-                  Refresh
-                </button>
-              </div>
-            </div>
-
-            <div class="admin-filter-bar">
-              <div class="admin-form-group">
-                <label for="adminBikeSearchInput">Cari Sepeda</label>
-                <input
-                  type="search"
-                  id="adminBikeSearchInput"
-                  placeholder="Cari brand, model, baterai, motor..."
-                >
-              </div>
-
-              <div class="admin-form-group">
-                <label for="adminBikeStatusFilter">Status</label>
-                <select id="adminBikeStatusFilter">
-                  <option value="all">Semua</option>
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Nonaktif</option>
-                </select>
-              </div>
-
-              <div class="admin-form-group">
-                <label for="adminBikeBrandFilter">Brand</label>
-                <select id="adminBikeBrandFilter">
-                  <option value="all">Semua Brand</option>
-                </select>
-              </div>
-            </div>
-
-            <p class="admin-result-count" id="adminBikeResultCount">
-              Menampilkan semua sepeda.
-            </p>
-
-            <div class="admin-bike-list" id="adminBikeList">
-              <div class="admin-empty-state">
-                Data sepeda belum dimuat.
-              </div>
-            </div>
-          </article>
-
-          <article class="admin-panel admin-editor-panel is-hidden" id="adminBikeEditorPanel">
-            <div class="admin-panel-header">
-              <div>
-                <h2 id="adminBikeEditorTitle">Tambah Sepeda</h2>
-                <p>
-                  Edit data sepeda, harga, gambar utama, pilihan warna, status katalog,
-                  dan stok internal.
-                </p>
-              </div>
-
-              <button type="button" class="btn-secondary" id="closeBikeEditorBtn">
-                Tutup
-              </button>
-            </div>
-
-            <form class="admin-bike-form" id="adminBikeForm">
-              <input type="hidden" id="bikeIdInput">
-
-              <div class="admin-form-group">
-  <label for="bikeBrandInput">Brand</label>
-  <select id="bikeBrandInput" required>
-    <option value="">Memuat brand...</option>
-  </select>
-
-  <p class="admin-form-note">
-    Brand diambil dari database supaya tema dan logo katalog tetap konsisten.
-  </p>
-</div>
-
-                <div class="admin-form-group">
-                  <label for="bikeNameInput">Nama Model</label>
-                  <input
-                    type="text"
-                    id="bikeNameInput"
-                    placeholder="Contoh: SAIGE ROMA"
-                    required
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="bikeBatteryInput">Baterai</label>
-                  <input
-                    type="text"
-                    id="bikeBatteryInput"
-                    placeholder="Contoh: 48V / 20Ah"
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="bikeMotorInput">Motor</label>
-                  <input
-                    type="text"
-                    id="bikeMotorInput"
-                    placeholder="Contoh: 800 WATT MOTOR"
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="bikeTopSpeedInput">Kecepatan Maks</label>
-                  <input
-                    type="text"
-                    id="bikeTopSpeedInput"
-                    placeholder="Contoh: 40-45 KM/H"
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="bikeRangeInput">Jarak Tempuh</label>
-                  <input
-                    type="text"
-                    id="bikeRangeInput"
-                    placeholder="Contoh: 50-60 KM"
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="bikeMaxWeightInput">Beban Maks</label>
-                  <input
-                    type="text"
-                    id="bikeMaxWeightInput"
-                    placeholder="Contoh: 150 KG"
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="bikeComfortInput">Comfort</label>
-                  <select id="bikeComfortInput">
-                    <option value="medium">medium</option>
-                    <option value="high">high</option>
-                  </select>
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="bikePriceInput">Harga</label>
-                  <input
-                    type="number"
-                    id="bikePriceInput"
-                    min="0"
-                    step="1000"
-                    placeholder="Contoh: 8500000"
-                  >
-                </div>
-
-                <div class="admin-form-group admin-form-wide">
-                  <label for="bikeSafetyInput">Fitur Keamanan</label>
-                  <input
-                    type="text"
-                    id="bikeSafetyInput"
-                    placeholder="Contoh: NFC Card, Remote Alarm, Kunci Roda"
-                  >
-                </div>
-
-                <input type="hidden" id="bikeImageInput">
-<input type="file" id="bikeMainImageUploadInput" class="is-hidden" accept="image/jpeg,image/png,image/webp">
-
-<div class="admin-form-group admin-form-wide">
-  <div class="admin-compat-note" id="mainImageStatus">
-    Gambar utama lama hanya dipakai sebagai fallback. Untuk data baru, upload gambar di setiap warna unit.
-  </div>
-
-  <p class="admin-form-note is-hidden" id="mainImageUploadNote"></p>
-
-  <div class="admin-image-preview is-hidden" id="mainImagePreview">
-    <span>Fallback gambar utama.</span>
-  </div>
-</div>
-
-                <input type="hidden" id="bikeColorNameInput">
-
-                <section class="admin-color-variants admin-form-wide">
-                  <div class="admin-subsection-header">
-                    <div>
-                      <h3>Stok per Warna Unit</h3>
-<p>
-  Tambahkan warna, gambar, dan jumlah stok untuk setiap warna.
-  Total stok sepeda akan dihitung otomatis dari semua warna.
-</p>
-                    </div>
-
-                    <button type="button" class="btn-secondary" id="addColorVariantBtn">
-                      Tambah Warna
-                    </button>
-                  </div>
-
-                  <div class="admin-color-variant-list" id="colorVariantList">
-                    <div class="admin-empty-state">
-                      Belum ada pilihan warna. Klik Tambah Warna untuk mulai.
-                    </div>
-                  </div>
-                </section>
-
-                <div class="admin-form-group admin-form-wide">
-                  <label for="bikeDescriptionInput">Deskripsi</label>
-                  <textarea
-                    id="bikeDescriptionInput"
-                    rows="4"
-                    placeholder="Deskripsi singkat untuk kartu dan modal produk"
-                  ></textarea>
-                </div>
-
-                <div class="admin-checkbox-row">
-                  <label>
-                    <input type="checkbox" id="bikeFeaturedInput">
-                    Featured
-                  </label>
-
-                  <label>
-                    <input type="checkbox" id="bikeInStockInput" checked>
-                    Aktif di katalog
-                  </label>
-
-                  <div class="admin-form-group admin-stock-input">
-  <label for="bikeStockQtyInput">Total Stok</label>
-  <input type="number" id="bikeStockQtyInput" min="0" value="0" readonly>
-
-  <p class="admin-form-note">
-    Otomatis dari total stok warna.
-  </p>
-</div>
-                </div>
-              </div>
-
-              <div class="admin-form-actions">
-                <button type="submit" class="btn-primary" id="saveBikeBtn">
-                  Simpan ke Database
-                </button>
-
-                <p class="admin-form-note" id="adminFormNote">
-                  Stok dihitung dari warna unit. Jika total stok 0, sepeda tetap aktif tetapi ditandai tidak tersedia.
-                </p>
-              </div>
-            </form>
-          </article>
-        </div>
-      </section>
-
-      <section class="admin-view" id="adminSalesView">
-        <div class="admin-dashboard-header">
-          <div>
-            <p class="admin-eyebrow">Penjualan</p>
-            <h1>Penjualan / Invoice</h1>
-            <p>
-              Buat invoice sederhana untuk penjualan sepeda. Stok internal akan
-              otomatis berkurang setelah invoice dibuat.
-            </p>
-          </div>
-        </div>
-
-        <div class="admin-sales-layout">
-          <article class="admin-panel admin-invoice-panel">
-            <div class="admin-panel-header">
-              <div>
-                <h2>Buat Invoice</h2>
-                <p>Pilih sepeda, isi data customer, lalu simpan invoice.</p>
-              </div>
-            </div>
-
-            <form class="admin-invoice-form" id="adminInvoiceForm">
-              <div class="admin-form-grid">
-                <div class="admin-form-group admin-form-wide">
-                  <label for="invoiceBikeInput">Sepeda</label>
-                  <select id="invoiceBikeInput" required>
-                    <option value="">Pilih sepeda</option>
-                  </select>
-                </div>
-                <div class="admin-form-group admin-form-wide">
-  <label for="invoiceBikeColorInput">Warna Unit</label>
-  <select id="invoiceBikeColorInput" required>
-    <option value="">Pilih warna</option>
-  </select>
-
-  <p class="admin-form-note" id="invoiceColorStockNote">
-    Pilih sepeda terlebih dahulu untuk melihat stok warna.
-  </p>
-</div>
-
-                <div class="admin-form-group">
-                  <label for="invoiceQuantityInput">Jumlah</label>
-                  <input
-                    type="number"
-                    id="invoiceQuantityInput"
-                    min="1"
-                    value="1"
-                    required
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="invoiceUnitPriceInput">Harga Jual / Unit</label>
-                  <input
-                    type="number"
-                    id="invoiceUnitPriceInput"
-                    min="0"
-                    step="1000"
-                    placeholder="Contoh: 8500000"
-                    required
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="invoiceCustomerNameInput">Nama Customer</label>
-                  <input
-                    type="text"
-                    id="invoiceCustomerNameInput"
-                    placeholder="Contoh: Budi Santoso"
-                    required
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="invoiceCustomerPhoneInput">Nomor HP</label>
-                  <input
-                    type="text"
-                    id="invoiceCustomerPhoneInput"
-                    placeholder="Contoh: 08123456789"
-                  >
-                </div>
-
-                <div class="admin-form-group admin-form-wide">
-                  <label for="invoiceCustomerAddressInput">Alamat</label>
-                  <input
-                    type="text"
-                    id="invoiceCustomerAddressInput"
-                    placeholder="Alamat customer, opsional"
-                  >
-                </div>
-
-                <div class="admin-form-group">
-                  <label for="invoicePaymentMethodInput">Metode Pembayaran</label>
-                  <select id="invoicePaymentMethodInput">
-                    <option value="">Pilih metode</option>
-                    <option value="Tunai">Tunai</option>
-                    <option value="Transfer">Transfer</option>
-                    <option value="QRIS">QRIS</option>
-                    <option value="Cicilan">Cicilan</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
-                </div>
-
-                <div class="admin-form-group admin-form-wide">
-                  <label for="invoiceNotesInput">Catatan</label>
-                  <textarea
-                    id="invoiceNotesInput"
-                    rows="3"
-                    placeholder="Catatan tambahan, opsional"
-                  ></textarea>
-                </div>
-              </div>
-
-              <div class="admin-invoice-preview" id="adminInvoicePreview">
-                <strong>Total Invoice</strong>
-                <span>Rp 0</span>
-              </div>
-
-              <div class="admin-form-actions">
-                <button type="submit" class="btn-primary" id="createInvoiceBtn">
-                  Buat Invoice
-                </button>
-
-                <p class="admin-form-note" id="adminInvoiceFormNote">
-                  Invoice akan mengurangi stok internal sepeda yang dipilih.
-                </p>
-              </div>
-            </form>
-          </article>
-
-          <article class="admin-panel admin-invoice-history-panel">
-            <div class="admin-panel-header">
-  <div>
-    <h2>Invoice Terakhir</h2>
-    <p>Riwayat invoice terbaru dari admin dan staff.</p>
-  </div>
-
-  <button type="button" class="btn-secondary" id="refreshInvoicesBtn">
-    Refresh
-  </button>
-</div>
-
-<div class="admin-invoice-tools">
-  <div class="admin-form-group">
-    <label for="invoiceSearchInput">Cari Invoice</label>
-    <input
-      type="search"
-      id="invoiceSearchInput"
-      placeholder="Cari nomor invoice, customer, sepeda, petugas..."
-    >
-  </div>
-
-  <div class="admin-form-group">
-    <label for="invoicePaymentFilter">Pembayaran</label>
-    <select id="invoicePaymentFilter">
-      <option value="all">Semua Metode</option>
-      <option value="Tunai">Tunai</option>
-      <option value="Transfer">Transfer</option>
-      <option value="QRIS">QRIS</option>
-      <option value="Cicilan">Cicilan</option>
-      <option value="Lainnya">Lainnya</option>
-      <option value="">Belum diisi</option>
-    </select>
-  </div>
-</div>
-
-<p class="admin-result-count" id="adminInvoiceResultCount">
-  Invoice belum dimuat.
-</p>
-
-<div class="admin-invoice-list" id="adminInvoiceList">
-            </div>
-          </article>
-        </div>
-      </section>
-      <section class="admin-view" id="adminServiceView">
-  <div class="admin-dashboard-header">
-    <div>
-      <p class="admin-eyebrow">Service</p>
-      <h1>Service Sepeda</h1>
-      <p>
-        Catat service pelanggan, status pengerjaan, biaya service, dan riwayat
-        service showroom.
-      </p>
-    </div>
-  </div>
-
-  <div class="admin-service-layout">
-    <article class="admin-panel admin-service-panel">
-      <div class="admin-panel-header">
-        <div>
-          <h2>Tambah Service</h2>
-          <p>Isi data pelanggan, unit sepeda, jenis service, dan biaya.</p>
+      <div id="adminPartialMount">
+        <div class="admin-empty-state">
+          Memuat admin panel...
         </div>
       </div>
-
-      <form class="admin-service-form" id="adminServiceForm">
-        <input type="hidden" id="serviceIdInput">
-
-        <div class="admin-form-grid">
-          <div class="admin-form-group">
-            <label for="serviceCustomerNameInput">Nama Customer</label>
-            <input
-              type="text"
-              id="serviceCustomerNameInput"
-              placeholder="Contoh: Budi Santoso"
-              required
-            >
-          </div>
-
-          <div class="admin-form-group">
-            <label for="serviceCustomerPhoneInput">Nomor HP</label>
-            <input
-              type="text"
-              id="serviceCustomerPhoneInput"
-              placeholder="Contoh: 08123456789"
-            >
-          </div>
-
-          <div class="admin-form-group admin-form-wide">
-            <label for="serviceCustomerAddressInput">Alamat</label>
-            <input
-              type="text"
-              id="serviceCustomerAddressInput"
-              placeholder="Alamat customer, opsional"
-            >
-          </div>
-
-          <div class="admin-form-group admin-form-wide">
-            <label for="serviceBikeLabelInput">Data Sepeda / Unit</label>
-            <input
-              type="text"
-              id="serviceBikeLabelInput"
-              placeholder="Contoh: Exotic Vito merah / nomor rangka / keterangan unit"
-              required
-            >
-          </div>
-
-          <div class="admin-form-group">
-            <label for="serviceTypeInput">Jenis Service</label>
-            <select id="serviceTypeInput" required>
-              <option value="">Pilih jenis service</option>
-              <option value="Service ringan">Service ringan</option>
-              <option value="Service berat">Service berat</option>
-              <option value="Perbaikan rem">Perbaikan rem</option>
-              <option value="Perbaikan ban">Perbaikan ban</option>
-              <option value="Perbaikan kelistrikan">Perbaikan kelistrikan</option>
-              <option value="Ganti sparepart">Ganti sparepart</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
-          </div>
-
-          <div class="admin-form-group">
-            <label for="serviceStatusInput">Status</label>
-            <select id="serviceStatusInput">
-              <option value="received">Diterima</option>
-              <option value="in_progress">Dikerjakan</option>
-              <option value="completed">Selesai</option>
-              <option value="cancelled">Dibatalkan</option>
-            </select>
-          </div>
-
-          <div class="admin-form-group">
-            <label for="serviceCostInput">Biaya Service</label>
-            <input
-              type="number"
-              id="serviceCostInput"
-              min="0"
-              step="1000"
-              placeholder="Contoh: 150000"
-            >
-          </div>
-
-          <div class="admin-form-group admin-form-wide">
-            <label for="serviceNotesInput">Catatan</label>
-            <textarea
-              id="serviceNotesInput"
-              rows="4"
-              placeholder="Keluhan customer, tindakan service, sparepart yang diganti, atau catatan tambahan"
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="admin-form-actions">
-          <button type="submit" class="btn-primary" id="saveServiceBtn">
-            Simpan Service
-          </button>
-
-          <button type="button" class="btn-secondary" id="resetServiceFormBtn">
-            Reset
-          </button>
-
-          <p class="admin-form-note" id="adminServiceFormNote">
-            Service tidak mengurangi stok. Stok sparepart bisa ditambahkan nanti.
-          </p>
-        </div>
-      </form>
-    </article>
-
-    <article class="admin-panel admin-service-history-panel">
-      <div class="admin-panel-header">
-  <div>
-    <h2>Riwayat Service</h2>
-    <p>Daftar service terbaru dari admin dan staff.</p>
-  </div>
-
-  <button type="button" class="btn-secondary" id="refreshServicesBtn">
-    Refresh
-  </button>
-</div>
-
-<div class="admin-service-tools">
-  <div class="admin-form-group">
-    <label for="serviceSearchInput">Cari Service</label>
-    <input
-      type="search"
-      id="serviceSearchInput"
-      placeholder="Cari nomor service, customer, no. HP, unit, jenis service..."
-    >
-  </div>
-
-  <div class="admin-form-group">
-    <label for="serviceStatusFilter">Status</label>
-    <select id="serviceStatusFilter">
-      <option value="all">Semua Status</option>
-      <option value="received">Diterima</option>
-      <option value="in_progress">Dikerjakan</option>
-      <option value="completed">Selesai</option>
-      <option value="cancelled">Dibatalkan</option>
-    </select>
-  </div>
-</div>
-
-<p class="admin-result-count" id="adminServiceResultCount">
-  Service belum dimuat.
-</p>
-
-<div class="admin-service-list" id="adminServiceList">
-    </article>
-  </div>
-</section>
-      <section class="admin-view" id="adminUsersView" data-admin-only-view>
-        <div class="admin-dashboard-header">
-          <div>
-            <p class="admin-eyebrow">User</p>
-            <h1>Manajemen User</h1>
-            <p>
-              Tambah dan kelola akun admin atau staff. Hanya admin yang bisa
-              mengakses halaman ini.
-            </p>
-          </div>
-        </div>
-
-        <article class="admin-panel admin-user-panel" id="adminUserPanel">
-          <div class="admin-panel-header">
-            <div>
-              <h2>Daftar User</h2>
-              <p>Kelola akun yang bisa masuk ke dashboard admin.</p>
-            </div>
-
-            <button type="button" class="btn-secondary" id="refreshUsersBtn">
-              Refresh User
-            </button>
-          </div>
-
-          <form class="admin-user-form" id="adminUserForm">
-            <div class="admin-form-grid">
-              <div class="admin-form-group">
-                <label for="newUserUsernameInput">Username</label>
-                <input
-                  type="text"
-                  id="newUserUsernameInput"
-                  placeholder="Contoh: staff-toko"
-                  autocomplete="off"
-                >
-              </div>
-
-              <div class="admin-form-group">
-                <label for="newUserPasswordInput">Password</label>
-                <input
-                  type="password"
-                  id="newUserPasswordInput"
-                  placeholder="Minimal 8 karakter"
-                  autocomplete="new-password"
-                >
-              </div>
-
-              <div class="admin-form-group">
-                <label for="newUserRoleInput">Role</label>
-                <select id="newUserRoleInput">
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="admin-form-actions">
-              <button type="submit" class="btn-primary" id="createUserBtn">
-                Tambah User
-              </button>
-
-              <p class="admin-form-note" id="adminUserFormNote">
-                Staff bisa mengelola katalog dan invoice. Admin bisa mengelola katalog, invoice, user, dan aktivitas.
-              </p>
-            </div>
-          </form>
-
-          <div class="admin-user-list" id="adminUserList">
-            <div class="admin-empty-state">
-              Data user belum dimuat.
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section class="admin-view" id="adminAuditView" data-admin-only-view>
-        <div class="admin-dashboard-header">
-          <div>
-            <p class="admin-eyebrow">Aktivitas</p>
-            <h1>Aktivitas Terakhir</h1>
-            <p>
-              Riwayat perubahan katalog, user admin, invoice, stok, dan aktivitas operasional showroom.
-            </p>
-          </div>
-        </div>
-
-        <article class="admin-panel admin-audit-panel" id="adminAuditPanel">
-          <div class="admin-panel-header">
-            <div>
-              <h2>Log Aktivitas</h2>
-              <p>Catatan perubahan terbaru di dashboard admin.</p>
-            </div>
-
-            <button type="button" class="btn-secondary" id="refreshAuditLogsBtn">
-              Refresh Aktivitas
-            </button>
-          </div>
-
-          <div class="admin-audit-list" id="adminAuditList">
-            <div class="admin-empty-state">
-              Aktivitas belum dimuat.
-            </div>
-          </div>
-        </article>
-      </section>
     </section>
-    <div class="admin-invoice-modal is-hidden" id="adminInvoiceModal" aria-hidden="true">
-  <div class="admin-invoice-modal-overlay" id="adminInvoiceModalOverlay"></div>
-
-  <section
-    class="admin-invoice-modal-content"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="adminInvoiceModalTitle"
-  >
-    <div class="admin-invoice-modal-actions no-print">
-      <button type="button" class="btn-secondary" id="printInvoiceBtn">
-        Cetak Faktur
-      </button>
-
-      <button type="button" class="btn-secondary" id="closeInvoiceModalBtn">
-        Tutup
-      </button>
-    </div>
-
-    <article class="printable-invoice" id="printableInvoice">
-      <header class="printable-invoice-header">
-        <div class="printable-invoice-brand">
-          <img src="images/logo.jpeg" alt="Logo CV Niaga Bersama Abadi">
-
-          <div>
-            <h1>CV Niaga Bersama Abadi</h1>
-            <p>Showroom Sepeda Listrik</p>
-            <p>Lumajang, Jawa Timur</p>
-          </div>
-        </div>
-
-        <div class="printable-invoice-title">
-          <p>Faktur Penjualan</p>
-          <h2 id="printInvoiceNumber">INV-000000</h2>
-        </div>
-      </header>
-
-      <div class="printable-invoice-meta">
-        <div>
-          <span>Tanggal</span>
-          <strong id="printInvoiceDate">-</strong>
-        </div>
-
-        <div>
-          <span>Petugas</span>
-          <strong id="printInvoiceCreatedBy">-</strong>
-        </div>
-
-        <div>
-          <span>Pembayaran</span>
-          <strong id="printInvoicePayment">-</strong>
-        </div>
-      </div>
-
-      <section class="printable-invoice-section">
-        <h3>Data Pelanggan</h3>
-
-        <div class="printable-invoice-customer">
-          <div>
-            <span>Nama Pelanggan</span>
-            <strong id="printCustomerName">-</strong>
-          </div>
-
-          <div>
-            <span>No. HP</span>
-            <strong id="printCustomerPhone">-</strong>
-          </div>
-
-          <div class="printable-invoice-wide">
-            <span>Alamat</span>
-            <strong id="printCustomerAddress">-</strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="printable-invoice-section">
-        <h3>Rincian Penjualan</h3>
-
-        <div class="printable-invoice-table-wrap">
-          <table class="printable-invoice-table">
-            <thead>
-              <tr>
-                <th>Produk</th>
-                <th>Jumlah</th>
-                <th>Harga Satuan</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td id="printInvoiceItem">-</td>
-                <td id="printInvoiceQuantity">-</td>
-                <td id="printInvoiceUnitPrice">-</td>
-                <td id="printInvoiceLineTotal">-</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="printable-invoice-total-box">
-        <span>Total Pembayaran</span>
-        <strong id="printInvoiceTotal">Rp 0</strong>
-      </section>
-
-      <section class="printable-invoice-section" id="printInvoiceNotesSection">
-        <h3>Catatan</h3>
-        <p id="printInvoiceNotes">-</p>
-      </section>
-
-      <footer class="printable-invoice-footer">
-        <div>
-          <p>Pelanggan</p>
-          <span></span>
-          <strong id="printInvoiceCustomerSignature">-</strong>
-        </div>
-
-        <div>
-          <p>Petugas</p>
-          <span></span>
-          <strong id="printInvoiceStaffSignature">-</strong>
-        </div>
-      </footer>
-    </article>
-  </section>
-</div>
-<div class="admin-service-modal is-hidden" id="adminServiceModal" aria-hidden="true">
-  <div class="admin-service-modal-overlay" id="adminServiceModalOverlay"></div>
-
-  <section
-    class="admin-service-modal-content"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="adminServiceModalTitle"
-  >
-    <div class="admin-service-modal-actions no-print">
-      <button type="button" class="btn-secondary" id="printServiceBtn">
-        Cetak Nota Service
-      </button>
-
-      <button type="button" class="btn-secondary" id="closeServiceModalBtn">
-        Tutup
-      </button>
-    </div>
-
-    <article class="printable-invoice printable-service" id="printableService">
-      <header class="printable-invoice-header">
-        <div class="printable-invoice-brand">
-          <img src="images/logo.jpeg" alt="Logo CV Niaga Bersama Abadi">
-
-          <div>
-            <h1>CV Niaga Bersama Abadi</h1>
-            <p>Showroom & Service Sepeda Listrik</p>
-            <p>Lumajang, Jawa Timur</p>
-          </div>
-        </div>
-
-        <div class="printable-invoice-title">
-          <p>Nota Service</p>
-          <h2 id="printServiceNumber">SRV-000000</h2>
-        </div>
-      </header>
-
-      <div class="printable-invoice-meta">
-        <div>
-          <span>Tanggal Masuk</span>
-          <strong id="printServiceDate">-</strong>
-        </div>
-
-        <div>
-          <span>Petugas</span>
-          <strong id="printServiceCreatedBy">-</strong>
-        </div>
-
-        <div>
-          <span>Status Service</span>
-          <strong id="printServiceStatus">-</strong>
-        </div>
-      </div>
-
-      <section class="printable-invoice-section">
-        <h3>Data Pelanggan</h3>
-
-        <div class="printable-invoice-customer">
-          <div>
-            <span>Nama Pelanggan</span>
-            <strong id="printServiceCustomerName">-</strong>
-          </div>
-
-          <div>
-            <span>No. HP</span>
-            <strong id="printServiceCustomerPhone">-</strong>
-          </div>
-
-          <div class="printable-invoice-wide">
-            <span>Alamat</span>
-            <strong id="printServiceCustomerAddress">-</strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="printable-invoice-section">
-        <h3>Data Unit & Service</h3>
-
-        <div class="printable-invoice-table-wrap">
-          <table class="printable-invoice-table">
-            <thead>
-              <tr>
-                <th>Unit Sepeda</th>
-                <th>Jenis Service</th>
-                <th>Status</th>
-                <th>Biaya</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td id="printServiceBikeLabel">-</td>
-                <td id="printServiceType">-</td>
-                <td id="printServiceStatusTable">-</td>
-                <td id="printServiceCostTable">-</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="printable-invoice-total-box">
-        <span>Biaya Service</span>
-        <strong id="printServiceCost">Rp 0</strong>
-      </section>
-
-      <section class="printable-invoice-section" id="printServiceNotesSection">
-        <h3>Catatan Service</h3>
-        <p id="printServiceNotes">-</p>
-      </section>
-
-      <footer class="printable-invoice-footer">
-        <div>
-          <p>Pelanggan</p>
-          <span></span>
-          <strong id="printServiceCustomerSignature">-</strong>
-        </div>
-
-        <div>
-          <p>Petugas</p>
-          <span></span>
-          <strong id="printServiceStaffSignature">-</strong>
-        </div>
-      </footer>
-    </article>
-  </section>
-</div>
   </main>
-  
-<script src="js/admin-core.js"></script>
-<script src="js/admin-bikes.js"></script>
-<script src="js/admin-invoices.js"></script>
-<script src="js/admin-services.js"></script>
-<script src="js/admin-users.js"></script>
-<script src="js/admin-audit.js"></script>
-<script src="js/admin.js"></script>
+
+  <script src="js/admin-core.js"></script>
+  <script src="js/admin-partials.js"></script>
+  <script src="js/admin-bikes.js"></script>
+  <script src="js/admin-brands.js"></script>
+  <script src="js/admin-invoices.js"></script>
+  <script src="js/admin-services.js"></script>
+  <script src="js/admin-users.js"></script>
+  <script src="js/admin-audit.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

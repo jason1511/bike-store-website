@@ -1,12 +1,25 @@
 /* =========================
    ADMIN INIT
 ========================= */
-async function initializeAdmin() {
-  setupAdminLogin();
-  setupAdminLogout();
-  setupAdminViewNavigation();
+let adminProtectedModulesReady = false;
 
-  await restoreAdminSession();
+async function initializeAdminProtectedModules() {
+  const token = typeof getStoredAdminToken === "function"
+    ? getStoredAdminToken()
+    : "";
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    if (typeof loadAdminPartials === "function") {
+      await loadAdminPartials();
+    }
+  } catch (error) {
+    console.error("Failed to load admin partials:", error);
+    return;
+  }
 
   try {
     if (typeof loadAdminBrands === "function") {
@@ -14,6 +27,12 @@ async function initializeAdmin() {
     }
   } catch (error) {
     console.error("Failed to load admin brands:", error);
+  }
+
+  setupAdminViewNavigation();
+
+  if (typeof setupAdminBrandManager === "function") {
+    await setupAdminBrandManager();
   }
 
   setupBikeRefresh();
@@ -31,6 +50,39 @@ async function initializeAdmin() {
 
   setupAdminUserManagement();
   setupAuditLogs();
+
+  if (typeof loadAdminBikes === "function") {
+    await loadAdminBikes();
+  }
+
+  if (typeof loadInvoicePage === "function") {
+  await loadInvoicePage();
+}
+
+  if (typeof loadServicePage === "function") {
+  await loadServicePage();
+}
+
+  if (typeof loadAdminUsersPage === "function") {
+  await loadAdminUsersPage();
+} else if (typeof loadAdminUsers === "function") {
+  await loadAdminUsers();
+}
+
+  if (typeof loadAuditPage === "function") {
+  await loadAuditPage();
+} else if (typeof loadAuditLogs === "function") {
+  await loadAuditLogs();
+}
+
+  adminProtectedModulesReady = true;
+}
+
+async function initializeAdmin() {
+  setupAdminLogin();
+  setupAdminLogout();
+
+  await restoreAdminSession();
 }
 
 initializeAdmin();
