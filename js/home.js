@@ -175,8 +175,13 @@ function renderHeroFeaturedBike() {
   });
 }
 
-whenBikesLoaded(() => {
+async function initializeHomePage() {
+  if (typeof loadBikes === "function" && !bikesLoaded) {
+    await loadBikes();
+  }
+
   renderHeroFeaturedBike();
   setupBikeFinderForm();
-  setupBikeModalControls();
-});
+}
+
+document.addEventListener("DOMContentLoaded", initializeHomePage);

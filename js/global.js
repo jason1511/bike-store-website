@@ -18,109 +18,28 @@ function formatPrice(price) {
 }
 
 const STORE_WHATSAPP_NUMBER = "6282122065168";
-function normalizeBrandSlug(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
 
-function getCardBrandTheme(bike) {
-  const theme = bike?.brandTheme || {};
-  const slug = theme.slug || normalizeBrandSlug(bike?.brand);
-
-  return {
-    className: theme.className || (slug ? `brand-${slug}` : "brand-default"),
-    logo: theme.logo || "",
-    main: theme.main || "#203333",
-    second: theme.second || "#2f4f4f",
-    soft: theme.soft || "rgba(159, 184, 182, 0.18)",
-    glow: theme.glow || "rgba(0, 0, 0, 0.12)"
-  };
-}
-
-function getBikeThemeStyle(bike) {
-  const brandTheme = getCardBrandTheme(bike);
-
-  return `
-    --card-brand-main: ${brandTheme.main};
-    --card-brand-second: ${brandTheme.second};
-    --card-brand-soft: ${brandTheme.soft};
-    --card-brand-glow: ${brandTheme.glow};
-    --bike-theme-main: ${brandTheme.main};
-    --bike-theme-second: ${brandTheme.second};
-    --bike-theme-soft: ${brandTheme.soft};
-    --bike-theme-glow: ${brandTheme.glow};
-  `;
-}
 /* =========================
    PUBLIC BIKE CARD HELPERS
 ========================= */
 function getBikeColorsForCard(bike) {
-  if (!bike) {
-    return [];
-  }
-
-  if (typeof getBikeColors === "function") {
-    return getBikeColors(bike);
-  }
-
-  let colors = [];
-
-  if (Array.isArray(bike.colors)) {
-    colors = bike.colors;
-  } else if (typeof bike.colors === "string") {
-    try {
-      const parsedColors = JSON.parse(bike.colors);
-      colors = Array.isArray(parsedColors) ? parsedColors : [];
-    } catch (error) {
-      colors = [];
-    }
-  }
-
-  return colors
-    .map((color) => ({
-      name: String(color.name || "").trim(),
-      hex: String(color.hex || "#cccccc").trim(),
-      image: String(color.image || "").trim(),
-      stockQty: Math.max(0, Number(color.stockQty || 0))
-    }))
-    .filter((color) => color.name || color.image || color.stockQty > 0);
+  return getBikeColors(bike);
 }
 
 function getBikeTotalStockForCard(bike) {
-  if (typeof getBikeTotalStock === "function") {
-    return getBikeTotalStock(bike);
-  }
-
-  const colorStockTotal = getBikeColorsForCard(bike).reduce((total, color) => {
-    return total + Math.max(0, Number(color.stockQty || 0));
-  }, 0);
-
-  return colorStockTotal > 0
-    ? colorStockTotal
-    : Math.max(0, Number(bike?.stockQty || 0));
+  return getBikeTotalStock(bike);
 }
 
 function getBikePrimaryColorForCard(bike) {
-  const colors = getBikeColorsForCard(bike);
-
-  return colors.find((color) => color.stockQty > 0 && color.image)
-    || colors.find((color) => color.image)
-    || colors.find((color) => color.stockQty > 0)
-    || colors[0]
-    || null;
+  return getBikePrimaryColor(bike);
 }
 
 function getBikeDisplayImageForCard(bike) {
-  const primaryColor = getBikePrimaryColorForCard(bike);
-
-  return primaryColor?.image || bike?.image || "images/logo.jpeg";
+  return getBikeDisplayImage(bike);
 }
 
 function isBikeUnavailable(bike) {
-  return !bike?.inStock || getBikeTotalStockForCard(bike) <= 0;
+  return !isBikeAvailable(bike);
 }
 
 function getBikeAvailabilityLabel(bike) {
@@ -137,6 +56,7 @@ function getWhatsAppLink(bike) {
 
   return `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
+
 function switchBikeCardColor(button) {
   if (button.disabled) {
     return;
@@ -167,11 +87,12 @@ function switchBikeCardColor(button) {
 
   button.classList.add("is-active");
 }
+
 /* =========================
    BIKE CARD
 ========================= */
 function createBikeCard(bike) {
-  const brandTheme = getCardBrandTheme(bike);
+  const brandTheme = getBrandTheme(bike);
   const badges = getHighlights(bike).slice(0, 2);
   const colorVariants = getBikeColorsForCard(bike);
   const defaultColor = getBikePrimaryColorForCard(bike);
@@ -202,16 +123,16 @@ function createBikeCard(bike) {
 
             return `
               <button
-  type="button"
-  class="bike-color-dot ${isActive ? "is-active" : ""} ${isColorAvailable ? "is-available" : "is-empty"}"
-  style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")}; background-color: ${escapeHtml(color.hex || "#cccccc")};"
-  data-bike-color-image="${escapeHtml(color.image || bike.image || imageSrc)}"
-  data-bike-color-name="${escapeHtml(color.name || "")}"
-  onclick="event.stopPropagation(); switchBikeCardColor(this);"
-  aria-label="Warna ${escapeHtml(color.name || "unit")}"
-  title="${escapeHtml(color.name || "Warna")}"
-  ${isColorAvailable ? "" : "disabled"}
-></button>
+                type="button"
+                class="bike-color-dot ${isActive ? "is-active" : ""} ${isColorAvailable ? "is-available" : "is-empty"}"
+                style="--bike-color-dot: ${escapeHtml(color.hex || "#cccccc")}; background-color: ${escapeHtml(color.hex || "#cccccc")};"
+                data-bike-color-image="${escapeHtml(color.image || bike.image || imageSrc)}"
+                data-bike-color-name="${escapeHtml(color.name || "")}"
+                onclick="event.stopPropagation(); switchBikeCardColor(this);"
+                aria-label="Warna ${escapeHtml(color.name || "unit")}"
+                title="${escapeHtml(color.name || "Warna")}"
+                ${isColorAvailable ? "" : "disabled"}
+              ></button>
             `;
           })
           .join("")}

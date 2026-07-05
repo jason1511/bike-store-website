@@ -1,25 +1,7 @@
 /* =========================
    ADMIN AUDIT LOGS
 ========================= */
-function getAuditActionLabel(action) {
-  const labels = {
-    bike_create: "Tambah Sepeda",
-    bike_update: "Edit Sepeda",
-    bike_deactivate: "Nonaktifkan Sepeda",
-    bike_reactivate: "Aktifkan Sepeda",
-    bike_hard_delete: "Hapus Permanen",
 
-    invoice_create: "Buat Invoice",
-
-    service_create: "Tambah Service",
-    service_update: "Update Service",
-
-    user_create: "Tambah User",
-    user_update: "Edit User"
-  };
-
-  return labels[action] || action || "Aktivitas";
-}
 
 function getAuditActionClass(action) {
   const actionText = String(action || "");
@@ -74,20 +56,9 @@ function createAuditDetailsText(log) {
 }
 
 async function fetchAuditLogs() {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/audit-logs?limit=50", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await fetchAdminJson("/api/admin/audit-logs?limit=50", {
+    method: "GET"
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal memuat audit log.");
-  }
 
   return data.logs || [];
 }
@@ -194,14 +165,18 @@ async function loadAuditLogs() {
     const logs = await fetchAuditLogs();
     renderAuditLogs(logs);
   } catch (error) {
-    if (auditList) {
-      auditList.innerHTML = `
-        <div class="admin-empty-state is-error">
-          ${escapeHtml(error.message)}
-        </div>
-      `;
-    }
+  if (handleAdminAuthError(error)) {
+    return;
   }
+
+  if (auditList) {
+    auditList.innerHTML = `
+      <div class="admin-empty-state is-error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+  }
+}
 }
 
 function setupAuditLogs() {

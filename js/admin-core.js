@@ -91,23 +91,43 @@ function formatAuditDate(value) {
   return formatAdminDate(value);
 }
 
-function parseBikeColors(colors) {
-  if (Array.isArray(colors)) {
-    return colors;
+function handleAdminAuthError(error) {
+  const message = String(error?.message || "");
+
+  if (
+    message.includes("Unauthorized") ||
+    message.includes("Session admin tidak valid") ||
+    message.includes("401")
+  ) {
+    clearStoredAdminSession();
+    showAdminLogin();
+    setAdminMessage("Sesi admin sudah tidak valid. Silakan login ulang.", "is-error");
+    return true;
   }
 
-  if (typeof colors === "string") {
-    try {
-      const parsedColors = JSON.parse(colors);
-      return Array.isArray(parsedColors) ? parsedColors : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  return [];
+  return false;
 }
+async function fetchAdminJson(url, options = {}) {
+  const token = getStoredAdminToken();
 
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const error = new Error(data?.error || `Request failed with status ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
 /* =========================
    MESSAGE HELPERS
 ========================= */
@@ -177,7 +197,6 @@ async function loginAdmin(username, password) {
 
   return data;
 }
-
 async function verifyAdminSession(token) {
   const response = await fetch("/api/admin/verify", {
     method: "POST",
@@ -189,7 +208,9 @@ async function verifyAdminSession(token) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.error || "Session admin tidak valid");
+    const error = new Error(data?.error || "Session admin tidak valid");
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -285,10 +306,11 @@ async function restoreAdminSession() {
       await initializeAdminProtectedModules();
     }
   } catch (error) {
-    console.error("Session restore failed:", error);
-    clearStoredAdminSession();
-    showAdminLogin();
-  }
+  console.error("Session restore failed:", error);
+  clearStoredAdminSession();
+  showAdminLogin();
+  setAdminMessage("Sesi admin sudah habis atau tidak valid. Silakan login ulang.", "is-error");
+}
 }
 
 /* =========================

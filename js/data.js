@@ -1,56 +1,17 @@
 let bikes = [];
 let bikesLoaded = false;
 
-function parseLoadedBikeColors(colors) {
-  if (Array.isArray(colors)) {
-    return colors;
-  }
-
-  if (typeof colors === "string") {
-    try {
-      const parsedColors = JSON.parse(colors);
-      return Array.isArray(parsedColors) ? parsedColors : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  return [];
-}
-
-function normalizeLoadedBikeColors(colors) {
-  return parseLoadedBikeColors(colors)
-    .map((color) => ({
-      name: String(color.name || "").trim(),
-      hex: String(color.hex || "#cccccc").trim(),
-      image: String(color.image || "").trim(),
-      stockQty: Math.max(0, Number(color.stockQty || 0))
-    }))
-    .filter((color) => color.name || color.image || color.stockQty > 0);
-}
-
-function getLoadedBikeStockTotal(bike) {
-  const colorStockTotal = normalizeLoadedBikeColors(bike.colors).reduce((total, color) => {
-    return total + Math.max(0, Number(color.stockQty || 0));
-  }, 0);
-
-  return colorStockTotal > 0
-    ? colorStockTotal
-    : Math.max(0, Number(bike.stockQty || 0));
-}
-
 function normalizeLoadedBike(bike) {
-  const colors = normalizeLoadedBikeColors(bike.colors);
-  const stockQty = getLoadedBikeStockTotal({
+  const colors = normalizeBikeColors(bike.colors);
+  const stockQty = getBikeTotalStock({
     ...bike,
     colors
   });
 
-  const primaryColor = colors.find((color) => color.stockQty > 0 && color.image)
-    || colors.find((color) => color.image)
-    || colors.find((color) => color.stockQty > 0)
-    || colors[0]
-    || null;
+  const primaryColor = getBikePrimaryColor({
+    ...bike,
+    colors
+  });
 
   return {
     ...bike,
@@ -119,5 +80,3 @@ function whenBikesLoaded(callback) {
 
   document.addEventListener("bikesLoaded", callback);
 }
-
-loadBikes();

@@ -17,20 +17,9 @@ function setAdminUserFormNote(message, type = "") {
 }
 
 async function fetchAdminUsers() {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/users", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await fetchAdminJson("/api/admin/users", {
+    method: "GET"
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal memuat data user.");
-  }
 
   return data.users || [];
 }
@@ -114,58 +103,44 @@ async function loadAdminUsers() {
     const users = await fetchAdminUsers();
     renderAdminUsers(users);
   } catch (error) {
-    if (userList) {
-      userList.innerHTML = `
-        <div class="admin-empty-state is-error">
-          ${escapeHtml(error.message)}
-        </div>
-      `;
-    }
+  if (handleAdminAuthError(error)) {
+    return;
   }
+
+  if (userList) {
+    userList.innerHTML = `
+      <div class="admin-empty-state is-error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+  }
+}
 }
 
 async function createAdminUser(userData) {
-  const token = getStoredAdminToken();
+  try {
+    const data = await fetchAdminJson("/api/admin/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(userData)
+    });
 
-  const response = await fetch("/api/admin/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(userData)
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const apiErrors = Array.isArray(data?.errors)
-      ? ` ${data.errors.join(" ")}`
-      : "";
-
-    throw new Error((data?.error || "Gagal membuat user.") + apiErrors);
+    return data.user;
+  } catch (error) {
+    throw new Error(error.message || "Gagal membuat user.");
   }
-
-  return data.user;
 }
 
 async function updateAdminUser(userData) {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/users", {
+  const data = await fetchAdminJson("/api/admin/users", {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(userData)
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal mengubah user.");
-  }
 
   return data.user;
 }
@@ -222,8 +197,12 @@ function setupAdminUserManagement() {
           loadAuditLogs();
         }
       } catch (error) {
-        setAdminUserFormNote(error.message, "is-error");
-      } finally {
+  if (handleAdminAuthError(error)) {
+    return;
+  }
+
+  setAdminUserFormNote(error.message, "is-error");
+} finally {
         if (createButton) {
           createButton.disabled = false;
           createButton.textContent = "Tambah User";
@@ -269,10 +248,14 @@ function setupAdminUserManagement() {
           loadAuditLogs();
         }
       } catch (error) {
-        window.alert(error.message);
-        toggleButton.disabled = false;
-        toggleButton.textContent = isActive ? "Nonaktifkan" : "Aktifkan";
-      }
+  if (handleAdminAuthError(error)) {
+    return;
+  }
+
+  window.alert(error.message);
+  toggleButton.disabled = false;
+  toggleButton.textContent = isActive ? "Nonaktifkan" : "Aktifkan";
+}
     });
   }
 }

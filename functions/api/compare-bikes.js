@@ -1,3 +1,5 @@
+import { rowToBasicBike } from "../_shared/bike-utils.js";
+
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -5,16 +7,6 @@ function jsonResponse(data, status = 200) {
       "Content-Type": "application/json"
     }
   });
-}
-
-function rowToBike(row) {
-  return {
-    ...row,
-    price: Number(row.price || 0),
-    featured: Boolean(row.featured),
-    inStock: Boolean(row.inStock),
-    stockQty: Number(row.stockQty || 0)
-  };
 }
 
 function getOutputText(openAiData) {
@@ -26,75 +18,82 @@ function getOutputText(openAiData) {
   );
 }
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
+function createLocalComparisonFallback(bikes, usage = "") {
+  const scoredBikes = bikes.map((bike) => {
+    let score = 0;
 
-  try {
-    if (!env.OPENAI_API_KEY) {
-      return jsonResponse({ error: "OpenAI API key is missing" }, 500);
+    const numericText = [
+      bike.battery,
+      bike.motor,
+      bike.topSpeed,
+      bike.range
+    ].join(" ");
+
+    const numbers = String(numericText).match(/\d+/g) || [];
+    const maxNumber = numbers.length
+      ? Math.max(...numbers.map(Number))
+      : 0;
+
+    const safetyText = String(bike.safety || "").toLowerCase();
+    const comfortText = String(bike.comfort || "").toLowerCase();
+    const usageText = String(usage || "").toLowerCase();
+
+    score += maxNumber;
+
+    if (comfortText === "high") score += 20;
+    if (safetyText.includes("nfc")) score += 10;
+    if (safetyText.includes("alarm")) score += 8;
+    if (safetyText.includes("remote")) score += 6;
+
+    if (
+      usageText.includes("anak") ||
+      usageText.includes("keluarga") ||
+      usageText.includes("harian")
+    ) {
+      score += comfortText === "high" ? 15 : 5;
     }
 
-    if (!env.BIKE_DB) {
-      return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
+    if (
+      usageText.includes("jauh") ||
+      usageText.includes("kerja") ||
+      usageText.includes("antar")
+    ) {
+      score += maxNumber >= 50 ? 15 : 5;
     }
 
-    const body = await request.json().catch(() => null);
+    return {
+      bike,
+      score
+    };
+  });
 
-    if (!body) {
-      return jsonResponse({ error: "Invalid request body" }, 400);
-    }
+  scoredBikes.sort((a, b) => b.score - a.score);
 
-    const bikeIds = Array.isArray(body.bikeIds)
-      ? body.bikeIds.map((id) => String(id).trim()).filter(Boolean)
-      : [];
+  const bestBike = scoredBikes[0]?.bike || bikes[0];
 
-    const usage = String(body.usage || body.need || "").trim();
+  return {
+    summary: "Berikut perbandingan singkat berdasarkan spesifikasi utama.",
+    bestBikeId: bestBike.id,
+    reason: `${bestBike.brand} ${bestBike.name} terlihat paling seimbang berdasarkan tenaga, jarak tempuh, kenyamanan, dan fitur keamanan yang tersedia.`,
+    comparisonPoints: [
+      {
+        label: "Performa",
+        text: "Bandingkan motor, kecepatan maksimum, dan jarak tempuh untuk melihat sepeda yang lebih kuat untuk kebutuhan harian."
+      },
+      {
+        label: "Kenyamanan",
+        text: "Model dengan kenyamanan tinggi lebih cocok untuk pemakaian rutin, perjalanan lebih lama, atau kebutuhan keluarga."
+      },
+      {
+        label: "Keamanan",
+        text: "Fitur seperti NFC, alarm, remote, dan kunci tambahan dapat menjadi nilai tambah untuk penggunaan harian."
+      }
+    ]
+  };
+}
 
-    if (bikeIds.length < 2) {
-      return jsonResponse(
-        { error: "Pilih minimal 2 sepeda untuk dibandingkan" },
-        400
-      );
-    }
-
-    const placeholders = bikeIds.map(() => "?").join(", ");
-
-    const result = await env.BIKE_DB
-      .prepare(`
-        SELECT *
-        FROM bikes
-        WHERE inStock = 1
-          AND id IN (${placeholders})
-        ORDER BY brand ASC, name ASC
-      `)
-      .bind(...bikeIds)
-      .all();
-
-    const bikes = (result.results || []).map(rowToBike);
-
-    if (bikes.length < 2) {
-      return jsonResponse(
-        { error: "Data sepeda yang dipilih tidak lengkap atau tidak tersedia" },
-        404
-      );
-    }
-
-    const bikesForAI = bikes.map((bike) => ({
-      id: bike.id,
-      brand: bike.brand,
-      name: bike.name,
-      battery: bike.battery,
-      motor: bike.motor,
-      topSpeed: bike.topSpeed,
-      range: bike.range,
-      maxWeight: bike.maxWeight,
-      safety: bike.safety,
-      comfort: bike.comfort,
-      price: bike.price || 0,
-      description: bike.description
-    }));
-
-    const prompt = `
+async function requestAiComparison(env, bikesForAI, usage) {
+  const prompt = `
 Anda adalah asisten showroom sepeda listrik CV Niaga Bersama Abadi.
 
 Tugas:
@@ -125,52 +124,127 @@ Aturan:
 }
 `;
 
-    const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-5.4-mini",
-        input: prompt
-      })
-    });
+  const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "gpt-5.4-mini",
+      input: prompt
+    })
+  });
 
-    if (!openAiResponse.ok) {
-      const errorText = await openAiResponse.text();
-      console.error("OpenAI API error:", errorText);
+  if (!openAiResponse.ok) {
+    const errorText = await openAiResponse.text();
+    console.error("OpenAI API error:", errorText);
+    throw new Error("OpenAI request failed");
+  }
 
+  const openAiData = await openAiResponse.json();
+  const text = getOutputText(openAiData).trim();
+
+  if (!text) {
+    throw new Error("AI returned empty response");
+  }
+
+  return JSON.parse(text);
+}
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+
+  try {
+    if (!env.BIKE_DB) {
+      return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
+    }
+
+    const body = await request.json().catch(() => null);
+
+    if (!body) {
+      return jsonResponse({ error: "Invalid request body" }, 400);
+    }
+
+    const bikeIds = Array.isArray(body.bikeIds)
+      ? body.bikeIds.map((id) => String(id).trim()).filter(Boolean)
+      : [];
+
+    const usage = String(body.usage || body.need || "")
+      .trim()
+      .slice(0, 300);
+
+    if (bikeIds.length < 2) {
       return jsonResponse(
-        { error: "OpenAI request failed" },
-        500
+        { error: "Pilih minimal 2 sepeda untuk dibandingkan" },
+        400
       );
     }
 
-    const openAiData = await openAiResponse.json();
-    const text = getOutputText(openAiData).trim();
+    const uniqueBikeIds = [...new Set(bikeIds)].slice(0, 2);
+    const placeholders = uniqueBikeIds.map(() => "?").join(", ");
 
-    if (!text) {
-      return jsonResponse({ error: "AI returned empty response" }, 500);
+    const result = await env.BIKE_DB
+      .prepare(`
+        SELECT *
+        FROM bikes
+        WHERE inStock = 1
+          AND id IN (${placeholders})
+        ORDER BY brand ASC, name ASC
+      `)
+      .bind(...uniqueBikeIds)
+      .all();
+
+    const bikes = (result.results || []).map(rowToBasicBike);
+
+    if (bikes.length < 2) {
+      return jsonResponse(
+        { error: "Data sepeda yang dipilih tidak lengkap atau tidak tersedia" },
+        404
+      );
     }
+
+    const bikesForAI = bikes.map((bike) => ({
+      id: bike.id,
+      brand: bike.brand,
+      name: bike.name,
+      battery: bike.battery,
+      motor: bike.motor,
+      topSpeed: bike.topSpeed,
+      range: bike.range,
+      maxWeight: bike.maxWeight,
+      safety: bike.safety,
+      comfort: bike.comfort,
+      price: bike.price || 0,
+      description: bike.description
+    }));
 
     let parsed;
 
-    try {
-      parsed = JSON.parse(text);
-    } catch (error) {
-      console.error("AI JSON parse error:", text);
-      return jsonResponse({ error: "AI returned invalid JSON" }, 500);
+    if (env.OPENAI_API_KEY) {
+      try {
+        parsed = await requestAiComparison(env, bikesForAI, usage);
+      } catch (error) {
+        console.error("AI comparison failed, using local fallback:", error);
+        parsed = createLocalComparisonFallback(bikes, usage);
+      }
+    } else {
+      parsed = createLocalComparisonFallback(bikes, usage);
     }
 
-    const bestBike = bikes.find((bike) => bike.id === parsed.bestBikeId);
+    const selectedBikeIds = new Set(bikes.map((bike) => bike.id));
+    const safeBestBikeId = selectedBikeIds.has(parsed.bestBikeId)
+      ? parsed.bestBikeId
+      : bikes[0].id;
+
+    const bestBike = bikes.find((bike) => bike.id === safeBestBikeId) || bikes[0];
 
     return jsonResponse({
       success: true,
       bikes,
       summary: parsed.summary || "Berikut perbandingan sepeda yang dipilih.",
-      bestBikeId: bestBike ? bestBike.id : bikes[0].id,
-      bestBike: bestBike || bikes[0],
+      bestBikeId: bestBike.id,
+      bestBike,
       reason: parsed.reason || "Sepeda ini paling seimbang untuk kebutuhan yang dipilih.",
       comparisonPoints: Array.isArray(parsed.comparisonPoints)
         ? parsed.comparisonPoints

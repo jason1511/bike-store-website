@@ -3,79 +3,9 @@ let currentSort = "default";
 let currentSearch = "";
 let publicBrandOptions = [];
 
-function parseBikeColorsForPage(colors) {
-  if (Array.isArray(colors)) {
-    return colors;
-  }
-
-  if (typeof colors === "string") {
-    try {
-      const parsedColors = JSON.parse(colors);
-      return Array.isArray(parsedColors) ? parsedColors : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  return [];
-}
-
-function getBikeColorsForPage(bike) {
-  if (!bike) {
-    return [];
-  }
-
-  return parseBikeColorsForPage(bike.colors)
-    .map((color) => ({
-      name: String(color.name || "").trim(),
-      hex: String(color.hex || "#cccccc").trim(),
-      image: String(color.image || "").trim(),
-      stockQty: Math.max(0, Number(color.stockQty || 0))
-    }))
-    .filter((color) => color.name || color.image || color.stockQty > 0);
-}
-
-function getBikeTotalStockForPage(bike) {
-  const colors = getBikeColorsForPage(bike);
-  const colorStockTotal = colors.reduce((total, color) => {
-    return total + Math.max(0, Number(color.stockQty || 0));
-  }, 0);
-
-  return colorStockTotal > 0
-    ? colorStockTotal
-    : Math.max(0, Number(bike?.stockQty || 0));
-}
-
-function getBikePrimaryColorForPage(bike) {
-  const colors = getBikeColorsForPage(bike);
-
-  return colors.find((color) => color.stockQty > 0 && color.image)
-    || colors.find((color) => color.image)
-    || colors.find((color) => color.stockQty > 0)
-    || colors[0]
-    || null;
-}
-
-function getBikeDisplayImageForPage(bike) {
-  const primaryColor = getBikePrimaryColorForPage(bike);
-
-  return primaryColor?.image || bike?.image || "images/logo.jpeg";
-}
-
-function getBikeStockLabelForPage(bike) {
-  const totalStock = getBikeTotalStockForPage(bike);
-
-  if (!bike?.inStock) {
-    return "Tidak aktif";
-  }
-
-  if (totalStock <= 0) {
-    return "Stok habis";
-  }
-
-  return `Stok ${totalStock}`;
-}
-
+/* =========================
+   PUBLIC BRAND FILTERS
+========================= */
 async function fetchPublicBrands() {
   const response = await fetch("/api/brands");
   const data = await response.json().catch(() => null);
@@ -87,8 +17,32 @@ async function fetchPublicBrands() {
   return data.brands || [];
 }
 
+function createFallbackPublicBrandsFromBikes() {
+  const uniqueBrands = [...new Set(bikes.map((bike) => bike.brand).filter(Boolean))];
+
+  return uniqueBrands
+    .sort((a, b) => a.localeCompare(b))
+    .map((brandName) => {
+      const theme = getBrandTheme(brandName);
+
+      return {
+        id: normalizeBrandSlug(brandName),
+        name: brandName,
+        slug: normalizeBrandSlug(brandName),
+        logoPath: theme.logo || "",
+        className: theme.className
+      };
+    });
+}
+
 async function loadPublicBrands() {
-  publicBrandOptions = await fetchPublicBrands();
+  try {
+    publicBrandOptions = await fetchPublicBrands();
+  } catch (error) {
+    console.error("Failed to load public brands:", error);
+    publicBrandOptions = createFallbackPublicBrandsFromBikes();
+  }
+
   renderPublicBrandFilters();
 }
 
@@ -145,6 +99,7 @@ function renderPublicBrandFilters() {
       .join("")}
   `;
 }
+
 /* =========================
    FILTER + SORT
 ========================= */
@@ -160,8 +115,8 @@ function getInitialBrandFromUrl() {
 
   const matchedBrand = publicBrandOptions.find((brand) => {
     return (
-      brand.slug.toLowerCase() === normalizedParam ||
-      brand.name.toLowerCase() === normalizedParam
+      String(brand.slug || "").toLowerCase() === normalizedParam ||
+      String(brand.name || "").toLowerCase() === normalizedParam
     );
   });
 
@@ -175,6 +130,7 @@ function getInitialBrandFromUrl() {
 
   return matchedBike ? matchedBike.brand : "all";
 }
+
 function renderBikes() {
   const bikeGrid = document.getElementById("bikeGrid");
 
@@ -404,10 +360,10 @@ function setupCompareBikeDropdowns() {
 
 function createCompareBikePreview(bike, label) {
   const brandTheme = getBrandTheme(bike);
-  const imageSrc = getBikeDisplayImageForPage(bike);
+  const imageSrc = getBikeDisplayImage(bike);
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
-  const stockLabel = getBikeStockLabelForPage(bike);
-  const primaryColor = getBikePrimaryColorForPage(bike);
+  const stockLabel = getBikeStockLabel(bike);
+  const primaryColor = getBikePrimaryColor(bike);
 
   return `
     <button
@@ -453,44 +409,38 @@ function createComparisonPoints(points) {
   `;
 }
 
-function extractNumber(value) {
-  const match = String(value || "").match(/\d+/);
-
-  return match ? Number(match[0]) : 0;
-}
-
 function getCompareCellClass(type, bike, otherBike, winnerId) {
   if (type === "winner") {
     return bike.id === winnerId ? "is-better" : "is-weaker";
   }
 
   if (type === "range") {
-    const bikeValue = extractNumber(bike.range);
-    const otherValue = extractNumber(otherBike.range);
+    const bikeValue = getNumericRange(bike);
+    const otherValue = getNumericRange(otherBike);
 
     if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
     return bikeValue > otherValue ? "is-better" : "is-weaker";
   }
 
   if (type === "motor") {
-    const bikeValue = extractNumber(bike.motor);
-    const otherValue = extractNumber(otherBike.motor);
+    const bikeValue = getMotorWatts(bike);
+    const otherValue = getMotorWatts(otherBike);
 
     if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
     return bikeValue > otherValue ? "is-better" : "is-weaker";
   }
 
   if (type === "battery") {
-    const bikeValue = extractNumber(bike.battery);
-    const otherValue = extractNumber(otherBike.battery);
+    const bikeValue = getBatteryAh(bike);
+    const otherValue = getBatteryAh(otherBike);
 
     if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
     return bikeValue > otherValue ? "is-better" : "is-weaker";
   }
 
   if (type === "speed") {
-    const bikeValue = extractNumber(bike.topSpeed);
-    const otherValue = extractNumber(otherBike.topSpeed);
+    const bikeValue = getNumericTopSpeed(bike);
+    const otherValue = getNumericTopSpeed(otherBike);
 
     if (!bikeValue || !otherValue || bikeValue === otherValue) return "";
     return bikeValue > otherValue ? "is-better" : "is-weaker";
@@ -766,8 +716,8 @@ async function initializeBikesPage() {
     }
 
     if (typeof loadPublicBrands === "function") {
-  await loadPublicBrands();
-}
+      await loadPublicBrands();
+    }
 
     currentBrand = getInitialBrandFromUrl();
 

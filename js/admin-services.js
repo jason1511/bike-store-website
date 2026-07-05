@@ -103,48 +103,29 @@ function validateServiceFormData(service) {
    SERVICE API
 ========================= */
 async function fetchServices() {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/services?limit=100&status=all", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await fetchAdminJson("/api/admin/services?limit=100&status=all", {
+    method: "GET"
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal memuat service.");
-  }
 
   return data.services || [];
 }
 
 async function saveService(service) {
-  const token = getStoredAdminToken();
   const isEditing = Boolean(service.id);
 
-  const response = await fetch("/api/admin/services", {
-    method: isEditing ? "PUT" : "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(service)
-  });
+  try {
+    const data = await fetchAdminJson("/api/admin/services", {
+      method: isEditing ? "PUT" : "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(service)
+    });
 
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const apiErrors = Array.isArray(data?.errors)
-      ? ` ${data.errors.join(" ")}`
-      : "";
-
-    throw new Error((data?.error || "Gagal menyimpan service.") + apiErrors);
+    return data.service;
+  } catch (error) {
+    throw new Error(error.message || "Gagal menyimpan service.");
   }
-
-  return data.service;
 }
 
 /* =========================
@@ -340,18 +321,22 @@ async function loadServices() {
     adminServicesCache = services;
     applyServiceFilters();
   } catch (error) {
-    adminServicesCache = [];
-
-    if (list) {
-      list.innerHTML = `
-        <div class="admin-empty-state is-error">
-          ${escapeHtml(error.message)}
-        </div>
-      `;
-    }
-
-    updateServiceResultCount(0, 0);
+  if (handleAdminAuthError(error)) {
+    return;
   }
+
+  adminServicesCache = [];
+
+  if (list) {
+    list.innerHTML = `
+      <div class="admin-empty-state is-error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+  }
+
+  updateServiceResultCount(0, 0);
+}
 }
 
 function loadServicePage() {
@@ -484,8 +469,12 @@ function setupServiceForm() {
         loadAuditLogs();
       }
     } catch (error) {
-      setServiceFormNote(error.message, "is-error");
-    } finally {
+  if (handleAdminAuthError(error)) {
+    return;
+  }
+
+  setServiceFormNote(error.message, "is-error");
+} finally {
       if (saveButton) {
         saveButton.disabled = false;
         saveButton.textContent = document.getElementById("serviceIdInput")?.value

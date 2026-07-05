@@ -4,38 +4,16 @@ let adminBrandOptions = [];
    ADMIN BIKE LIST
 ========================= */
 async function fetchAdminBikes() {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/bikes", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await fetchAdminJson("/api/admin/bikes", {
+    method: "GET"
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal memuat data sepeda.");
-  }
 
   return data.bikes || [];
 }
 async function fetchAdminBrands() {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/brands", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await fetchAdminJson("/api/admin/brands", {
+    method: "GET"
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal memuat data brand.");
-  }
 
   return data.brands || [];
 }
@@ -105,7 +83,7 @@ function renderAdminBikes(bikes) {
       const isActive = Boolean(bike.inStock);
       const stockQty = Number(bike.stockQty || 0);
       const isAvailable = isActive && stockQty > 0;
-      const colorCount = parseBikeColors(bike.colors).length;
+      const colorCount = normalizeBikeColors(bike.colors).length;
 
       return `
         <article class="admin-bike-list-card">
@@ -298,18 +276,22 @@ async function loadAdminBikes() {
     populateBrandFilter(adminBikesCache);
     applyAdminBikeFilters();
   } catch (error) {
-    adminBikesCache = [];
-
-    if (bikeList) {
-      bikeList.innerHTML = `
-        <div class="admin-empty-state is-error">
-          ${escapeHtml(error.message)}
-        </div>
-      `;
-    }
-
-    updateAdminResultCount(0, 0);
+  if (handleAdminAuthError(error)) {
+    return;
   }
+
+  adminBikesCache = [];
+
+  if (bikeList) {
+    bikeList.innerHTML = `
+      <div class="admin-empty-state is-error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+  }
+
+  updateAdminResultCount(0, 0);
+}
 }
 
 function setupBikeRefresh() {
@@ -633,7 +615,7 @@ function setupImagePreviewInputs() {
     mainImageUploadInput.addEventListener("change", updateMainImagePreview);
   }
 }
-function getColorStockTotal() {
+function getColorVariantFormStockTotal() {
   const cards = document.querySelectorAll("[data-color-variant-card]");
 
   return Array.from(cards).reduce((total, card) => {
@@ -651,7 +633,7 @@ function updateTotalStockFromColors() {
     return;
   }
 
-  stockInput.value = String(getColorStockTotal());
+  stockInput.value = String(getColorVariantFormStockTotal());
 }
 function getPrimaryColorNameFromColors(colors) {
   return colors[0]?.name || "";

@@ -4,22 +4,7 @@
 
 let adminInvoicesCache = [];
 function getBikeColorsForInvoice(bike) {
-  if (!bike) {
-    return [];
-  }
-
-  const colors = Array.isArray(bike.colors)
-    ? bike.colors
-    : parseBikeColors(bike.colors);
-
-  return colors
-    .map((color) => ({
-      name: String(color.name || "").trim(),
-      hex: String(color.hex || "#cccccc").trim(),
-      image: String(color.image || "").trim(),
-      stockQty: Math.max(0, Number(color.stockQty || 0))
-    }))
-    .filter((color) => color.name || color.image || color.stockQty > 0);
+  return getBikeColors(bike);
 }
 
 function getSelectedInvoiceColor() {
@@ -307,47 +292,27 @@ function setInvoiceFormNote(message, type = "") {
 }
 
 async function fetchInvoices() {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/invoices?limit=50", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await fetchAdminJson("/api/admin/invoices?limit=50", {
+    method: "GET"
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal memuat invoice.");
-  }
 
   return data.invoices || [];
 }
 
 async function createInvoice(invoice) {
-  const token = getStoredAdminToken();
+  try {
+    const data = await fetchAdminJson("/api/admin/invoices", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(invoice)
+    });
 
-  const response = await fetch("/api/admin/invoices", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(invoice)
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const apiErrors = Array.isArray(data?.errors)
-      ? ` ${data.errors.join(" ")}`
-      : "";
-
-    throw new Error((data?.error || "Gagal membuat invoice.") + apiErrors);
+    return data.invoice;
+  } catch (error) {
+    throw new Error(error.message || "Gagal membuat invoice.");
   }
-
-  return data.invoice;
 }
 function getFilteredInvoices() {
   const searchInput = document.getElementById("invoiceSearchInput");
@@ -493,29 +458,20 @@ ${invoice.bikeColorName ? ` (${escapeHtml(invoice.bikeColorName)})` : ""}
 async function loadInvoices() {
   const list = document.getElementById("adminInvoiceList");
 
-  if (list) {
-    list.innerHTML = `
-      <div class="admin-empty-state">
-        Memuat invoice...
-      </div>
-    `;
-  }
-
   try {
-    const invoices = await fetchInvoices();
-
-    adminInvoicesCache = invoices;
-    window.adminInvoicesCache = invoices;
-
+    adminInvoicesCache = await fetchInvoices();
     applyInvoiceFilters();
   } catch (error) {
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
     adminInvoicesCache = [];
-    window.adminInvoicesCache = [];
 
     if (list) {
       list.innerHTML = `
         <div class="admin-empty-state is-error">
-          ${escapeHtml(error.message)}
+          ${escapeHtml(error.message || "Gagal memuat invoice.")}
         </div>
       `;
     }
@@ -615,8 +571,12 @@ if (paymentFilter) {
         loadAuditLogs();
       }
     } catch (error) {
-      setInvoiceFormNote(error.message, "is-error");
-    } finally {
+  if (handleAdminAuthError(error)) {
+    return;
+  }
+
+  setInvoiceFormNote(error.message, "is-error");
+} finally {
       if (createButton) {
         createButton.disabled = false;
         createButton.textContent = "Buat Invoice";

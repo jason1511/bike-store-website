@@ -61,6 +61,40 @@ export function jsonResponse(data, status = 200) {
 /* =========================
    PASSWORD HELPERS
 ========================= */
+const PASSWORD_HASH_VERSION = "pbkdf2";
+const PASSWORD_HASH_ITERATIONS = 150000;
+const PASSWORD_SALT_BYTES = 16;
+const PASSWORD_HASH_BITS = 256;
+
+function base64DecodeBytes(value) {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
+}
+
+function constantTimeEqualBytes(a, b) {
+  if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array)) {
+    return false;
+  }
+
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  let diff = 0;
+
+  for (let index = 0; index < a.length; index += 1) {
+    diff |= a[index] ^ b[index];
+  }
+
+  return diff === 0;
+}
+
 async function sha256(value) {
   const digest = await crypto.subtle.digest(
     "SHA-256",
@@ -70,19 +104,97 @@ async function sha256(value) {
   return base64EncodeBytes(new Uint8Array(digest));
 }
 
-export async function hashPassword(password, env) {
+async function derivePbkdf2PasswordHash(password, salt, env, iterations = PASSWORD_HASH_ITERATIONS) {
   if (!env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET is missing");
   }
 
-  return sha256(`${env.SESSION_SECRET}:${password}`);
+  const passwordMaterial = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(`${env.SESSION_SECRET}:${password}`),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt,
+      iterations,
+      hash: "SHA-256"
+    },
+    passwordMaterial,
+    PASSWORD_HASH_BITS
+  );
+
+  return new Uint8Array(derivedBits);
 }
 
-export async function verifyPassword(password, passwordHash, env) {
-  const incomingHash = await hashPassword(password, env);
+function createPasswordSalt() {
+  const salt = new Uint8Array(PASSWORD_SALT_BYTES);
+  crypto.getRandomValues(salt);
+  return salt;
+}
+
+function isPbkdf2PasswordHash(passwordHash) {
+  return String(passwordHash || "").startsWith(`${PASSWORD_HASH_VERSION}$`);
+}
+
+async function verifyLegacyPasswordHash(password, passwordHash, env) {
+  const incomingHash = await sha256(`${env.SESSION_SECRET}:${password}`);
   return incomingHash === passwordHash;
 }
 
+export async function hashPassword(password, env) {
+  const salt = createPasswordSalt();
+  const hash = await derivePbkdf2PasswordHash(password, salt, env);
+
+  return [
+    PASSWORD_HASH_VERSION,
+    PASSWORD_HASH_ITERATIONS,
+    base64EncodeBytes(salt),
+    base64EncodeBytes(hash)
+  ].join("$");
+}
+
+export async function verifyPassword(password, passwordHash, env) {
+  if (!passwordHash) {
+    return false;
+  }
+
+  if (!isPbkdf2PasswordHash(passwordHash)) {
+    return verifyLegacyPasswordHash(password, passwordHash, env);
+  }
+
+  const parts = String(passwordHash).split("$");
+
+  if (parts.length !== 4) {
+    return false;
+  }
+
+  const [, iterationsText, saltText, expectedHashText] = parts;
+  const iterations = Number(iterationsText);
+
+  if (!Number.isInteger(iterations) || iterations <= 0) {
+    return false;
+  }
+
+  try {
+    const salt = base64DecodeBytes(saltText);
+    const expectedHash = base64DecodeBytes(expectedHashText);
+    const incomingHash = await derivePbkdf2PasswordHash(
+      password,
+      salt,
+      env,
+      iterations
+    );
+
+    return constantTimeEqualBytes(incomingHash, expectedHash);
+  } catch (error) {
+    return false;
+  }
+}
 /* =========================
    SESSION TOKEN HELPERS
 ========================= */
@@ -181,10 +293,64 @@ export async function getAuthUser(request, env) {
   return verifySessionToken(token, env);
 }
 
-export async function requireRole(request, env, allowedRoles = []) {
-  const user = await getAuthUser(request, env);
+async function getActiveAuthUserFromD1(env, tokenUser) {
+  if (!tokenUser) {
+    return null;
+  }
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (tokenUser.id === "secret_admin") {
+    const fallbackAdminAllowed =
+      String(env.ALLOW_FALLBACK_ADMIN || "").toLowerCase() === "true";
+
+    if (!fallbackAdminAllowed) {
+      return null;
+    }
+
+    return {
+      id: tokenUser.id,
+      username: tokenUser.username,
+      role: tokenUser.role
+    };
+  }
+
+  if (!env.BIKE_DB || !tokenUser.id) {
+    return null;
+  }
+
+  const userRow = await env.BIKE_DB
+    .prepare(`
+      SELECT
+        id,
+        username,
+        role,
+        is_active
+      FROM admin_users
+      WHERE id = ?
+      LIMIT 1
+    `)
+    .bind(tokenUser.id)
+    .first();
+
+  if (!userRow || !userRow.is_active) {
+    return null;
+  }
+
+  if (!["admin", "staff"].includes(userRow.role)) {
+    return null;
+  }
+
+  return {
+    id: userRow.id,
+    username: userRow.username,
+    role: userRow.role
+  };
+}
+
+export async function requireRole(request, env, allowedRoles = []) {
+  const tokenUser = await getAuthUser(request, env);
+  const activeUser = await getActiveAuthUserFromD1(env, tokenUser);
+
+  if (!activeUser || !allowedRoles.includes(activeUser.role)) {
     return {
       ok: false,
       user: null,
@@ -194,7 +360,7 @@ export async function requireRole(request, env, allowedRoles = []) {
 
   return {
     ok: true,
-    user,
+    user: activeUser,
     response: null
   };
 }

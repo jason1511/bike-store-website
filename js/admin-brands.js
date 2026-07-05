@@ -115,63 +115,41 @@ async function uploadBrandLogoToR2(file, brandName) {
 }
 
 async function createAdminBrand(brand) {
-  const token = getStoredAdminToken();
+  try {
+    const data = await fetchAdminJson("/api/admin/brands", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(brand)
+    });
 
-  const response = await fetch("/api/admin/brands", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(brand)
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const detail = data?.errors?.length
-      ? data.errors.join(" ")
-      : data?.error;
-
-    throw new Error(detail || "Gagal menyimpan brand.");
+    return data.brand;
+  } catch (error) {
+    throw new Error(error.message || "Gagal menyimpan brand.");
   }
-
-  return data.brand;
 }
-
 async function updateAdminBrand(brand) {
-  const token = getStoredAdminToken();
+  try {
+    const data = await fetchAdminJson("/api/admin/brands", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(brand)
+    });
 
-  const response = await fetch("/api/admin/brands", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(brand)
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const detail = data?.errors?.length
-      ? data.errors.join(" ")
-      : data?.error;
-
-    throw new Error(detail || "Gagal mengupdate brand.");
+    return data.brand;
+  } catch (error) {
+    throw new Error(error.message || "Gagal mengupdate brand.");
   }
-
-  return data.brand;
 }
 
 async function toggleAdminBrandStatus(brandId, isActive) {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/brands", {
+  const data = await fetchAdminJson("/api/admin/brands", {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
       id: brandId,
@@ -179,29 +157,12 @@ async function toggleAdminBrandStatus(brandId, isActive) {
     })
   });
 
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal mengubah status brand.");
-  }
-
   return data.brand;
 }
 async function fetchAllAdminBrandsForManager() {
-  const token = getStoredAdminToken();
-
-  const response = await fetch("/api/admin/brands?includeInactive=1", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await fetchAdminJson("/api/admin/brands?includeInactive=1", {
+    method: "GET"
   });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal memuat semua data brand.");
-  }
 
   return data.brands || [];
 }
@@ -465,9 +426,14 @@ await refreshBikeBrandDropdown();
           "success"
         );
       } catch (error) {
-        console.error("Failed to toggle brand:", error);
-        setBrandFormNote(error.message || "Gagal mengubah status brand.", "error");
-      } finally {
+  console.error("Failed to toggle brand:", error);
+
+  if (handleAdminAuthError(error)) {
+    return;
+  }
+
+  setBrandFormNote(error.message || "Gagal mengubah status brand.", "error");
+} finally {
         button.disabled = false;
       }
     });
@@ -503,9 +469,14 @@ function setupBrandRefreshButton() {
       refreshButton.disabled = true;
       await refreshAdminBrands();
     } catch (error) {
-      console.error("Failed to refresh brands:", error);
-      setBrandFormNote(error.message || "Gagal refresh brand.", "error");
-    } finally {
+  console.error("Failed to refresh brands:", error);
+
+  if (handleAdminAuthError(error)) {
+    return;
+  }
+
+  setBrandFormNote(error.message || "Gagal refresh brand.", "error");
+} finally {
       refreshButton.disabled = false;
     }
   });
@@ -576,9 +547,14 @@ await refreshBikeBrandDropdown();
       resetBrandForm();
       setBrandFormNote(successMessage, "success");
     } catch (error) {
-      console.error("Failed to save brand:", error);
-      setBrandFormNote(error.message || "Gagal menyimpan brand.", "error");
-    } finally {
+  console.error("Failed to save brand:", error);
+
+  if (handleAdminAuthError(error)) {
+    return;
+  }
+
+  setBrandFormNote(error.message || "Gagal menyimpan brand.", "error");
+} finally {
       if (submitButton) {
         submitButton.disabled = false;
         submitButton.textContent = editingBrandId ? "Simpan Perubahan" : "Simpan Brand";
@@ -606,8 +582,9 @@ async function setupAdminBrandManager() {
   resetBrandForm();
 
   try {
-    await refreshAdminBrands();
-  } catch (error) {
-    console.error("Failed to load brand manager:", error);
-  }
+  await refreshAdminBrands();
+} catch (error) {
+  console.error("Failed to load brand manager:", error);
+  handleAdminAuthError(error);
+}
 }
