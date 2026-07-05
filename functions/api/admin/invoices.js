@@ -4,6 +4,10 @@ import {
   writeAuditLog
 } from "../../_shared/auth.js";
 
+import {
+  getColorStockTotal,
+  normalizeBikeColors
+} from "../../_shared/bike-utils.js";
 function createInvoiceId() {
   return `invoice_${Date.now()}_${crypto.randomUUID()}`;
 }
@@ -22,56 +26,23 @@ function createInvoiceNumber() {
   return `INV-${year}${month}${day}-${shortId}`;
 }
 
-function parseBikeColors(colors) {
-  if (Array.isArray(colors)) {
-    return colors;
-  }
-
-  if (typeof colors === "string") {
-    try {
-      const parsedColors = JSON.parse(colors);
-      return Array.isArray(parsedColors) ? parsedColors : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  return [];
-}
-
-function normalizeBikeColors(colors) {
-  return parseBikeColors(colors)
-    .map((color) => ({
-      name: String(color.name || "").trim(),
-      hex: String(color.hex || "#cccccc").trim(),
-      image: String(color.image || "").trim(),
-      stockQty: Math.max(0, Number(color.stockQty || 0))
-    }))
-    .filter((color) => color.name || color.image || color.stockQty > 0);
-}
-
-function getColorStockTotal(colors) {
-  return normalizeBikeColors(colors).reduce((total, color) => {
-    return total + Math.max(0, Number(color.stockQty || 0));
-  }, 0);
-}
-
 function findBikeColor(colors, colorName) {
   const targetName = String(colorName || "").trim().toLowerCase();
 
-  return normalizeBikeColors(colors).find((color) => {
-    return color.name.toLowerCase() === targetName;
+  return colors.find((color) => {
+    return String(color.name || "").trim().toLowerCase() === targetName;
   }) || null;
 }
 
 function deductColorStock(colors, colorName, quantity) {
-  const normalizedColors = normalizeBikeColors(colors);
   const targetName = String(colorName || "").trim().toLowerCase();
 
   let foundColor = null;
 
-  const nextColors = normalizedColors.map((color) => {
-    if (color.name.toLowerCase() !== targetName) {
+  const nextColors = colors.map((color) => {
+    const colorNameText = String(color.name || "").trim().toLowerCase();
+
+    if (colorNameText !== targetName) {
       return color;
     }
 
