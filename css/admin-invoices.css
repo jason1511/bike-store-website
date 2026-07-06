@@ -429,3 +429,177 @@
     margin: 14mm;
   }
 }
+.admin-invoice-card.is-voided {
+  opacity: 0.78;
+}
+
+.admin-invoice-card-side {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+
+.invoice-status-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.invoice-status-badge.is-active {
+  color: #14532d;
+  background: #dcfce7;
+}
+
+.invoice-status-badge.is-voided {
+  color: #7f1d1d;
+  background: #fee2e2;
+}
+
+.invoice-void-note {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(127, 29, 29, 0.18);
+  border-radius: 0.9rem;
+  color: #7f1d1d;
+  background: rgba(254, 226, 226, 0.55);
+}
+
+.invoice-void-note strong {
+  font-size: 0.85rem;
+}
+
+.invoice-void-note span,
+.invoice-void-note small {
+  font-size: 0.82rem;
+}
+
+.admin-action-btn-danger {
+  color: #ffffff;
+  border-color: #dc2626;
+  background: #dc2626;
+}
+
+.admin-action-btn-danger:hover {
+  border-color: #b91c1c;
+  background: #b91c1c;
+}
+/* =========================
+   VOID INVOICE MODAL
+========================= */
+.admin-void-modal {
+  width: min(520px, 100%);
+  max-width: 520px;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.14), transparent 36%),
+    rgba(15, 25, 25, 0.96);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+}
+
+.admin-void-modal .admin-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.admin-void-modal .admin-modal-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.25rem;
+}
+
+.admin-void-modal .admin-modal-body {
+  display: grid;
+  gap: 12px;
+  color: #dce5e3;
+}
+
+.admin-void-modal .admin-modal-body p {
+  margin: 0;
+  color: #dce5e3;
+  line-height: 1.55;
+}
+
+.admin-void-modal label {
+  color: #9fb8b6;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.admin-void-modal textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  background: rgba(5, 10, 10, 0.5);
+  outline: none;
+}
+
+.admin-void-modal textarea:focus {
+  border-color: rgba(220, 38, 38, 0.7);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
+}
+
+.admin-void-modal .admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.admin-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.admin-modal-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+/* =========================
+   GENERAL ADMIN MODAL
+========================= */
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.admin-modal.is-hidden {
+  display: none;
+}
+
+.admin-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(5, 10, 10, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.admin-modal-content {
+  position: relative;
+  z-index: 1;
+}

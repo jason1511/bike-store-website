@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS invoice_sequences (
+  date_code TEXT PRIMARY KEY,
+  last_sequence INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

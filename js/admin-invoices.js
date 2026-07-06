@@ -1,7 +1,7 @@
 /* =========================
    ADMIN INVOICES / SALES
 ========================= */
-
+let pendingVoidInvoiceId = "";
 let adminInvoicesCache = [];
 function getBikeColorsForInvoice(bike) {
   return getBikeColors(bike);
@@ -314,6 +314,32 @@ async function createInvoice(invoice) {
     throw new Error(error.message || "Gagal membuat invoice.");
   }
 }
+async function voidInvoice(invoiceId, reason) {
+  const data = await fetchAdminJson("/api/admin/invoices", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      id: invoiceId,
+      reason
+    })
+  });
+
+  return data.invoice;
+}
+
+function isInvoiceVoided(invoice) {
+  return invoice?.status === "voided";
+}
+
+function getInvoiceStatusLabel(invoice) {
+  return isInvoiceVoided(invoice) ? "Dibatalkan" : "Aktif";
+}
+
+function getInvoiceStatusClass(invoice) {
+  return isInvoiceVoided(invoice) ? "is-voided" : "is-active";
+}
 function getFilteredInvoices() {
   const searchInput = document.getElementById("invoiceSearchInput");
   const paymentFilter = document.getElementById("invoicePaymentFilter");
@@ -397,61 +423,101 @@ function renderInvoices(invoices) {
   }
 
   list.innerHTML = invoices
-    .map((invoice) => `
-      <article class="admin-invoice-card">
-        <div class="admin-invoice-card-main">
-          <div>
-            <p class="admin-invoice-number">
-              ${escapeHtml(invoice.invoiceNumber)}
-            </p>
+    .map((invoice) => {
+      const voided = isInvoiceVoided(invoice);
 
-            <h3>
-              ${escapeHtml(invoice.customerName)}
-            </h3>
+      return `
+        <article class="admin-invoice-card ${voided ? "is-voided" : ""}">
+          <div class="admin-invoice-card-main">
+            <div>
+              <p class="admin-invoice-number">
+                ${escapeHtml(invoice.invoiceNumber)}
+              </p>
+
+              <h3>
+                ${escapeHtml(invoice.customerName)}
+              </h3>
+            </div>
+
+            <div class="admin-invoice-card-side">
+              <span class="invoice-status-badge ${getInvoiceStatusClass(invoice)}">
+                ${escapeHtml(getInvoiceStatusLabel(invoice))}
+              </span>
+
+              <strong class="admin-invoice-total">
+                ${formatRupiah(invoice.totalPrice)}
+              </strong>
+            </div>
           </div>
 
-          <strong class="admin-invoice-total">
-            ${formatRupiah(invoice.totalPrice)}
-          </strong>
-        </div>
+          <div class="admin-invoice-meta">
+            <strong>Sepeda:</strong>
+            ${escapeHtml(invoice.bikeBrand)} ${escapeHtml(invoice.bikeName)}
+            ${invoice.bikeColorName ? ` (${escapeHtml(invoice.bikeColorName)})` : ""}
 
-        <div class="admin-invoice-meta">
-          <strong>Sepeda:</strong>
-${escapeHtml(invoice.bikeBrand)} ${escapeHtml(invoice.bikeName)}
-${invoice.bikeColorName ? ` (${escapeHtml(invoice.bikeColorName)})` : ""}
+            <span>
+              <strong>Jumlah:</strong>
+              ${Number(invoice.quantity || 1)} unit × ${formatRupiah(invoice.unitPrice)}
+            </span>
 
-          <span>
-            <strong>Jumlah:</strong>
-            ${Number(invoice.quantity || 1)} unit × ${formatRupiah(invoice.unitPrice)}
-          </span>
+            <span>
+              <strong>Pembayaran:</strong>
+              ${escapeHtml(invoice.paymentMethod || "-")}
+            </span>
 
-          <span>
-            <strong>Pembayaran:</strong>
-            ${escapeHtml(invoice.paymentMethod || "-")}
-          </span>
+            <span>
+              <strong>Dibuat oleh:</strong>
+              ${escapeHtml(invoice.createdByUsername || "-")} (${escapeHtml(invoice.createdByRole || "-")})
+            </span>
 
-          <span>
-            <strong>Dibuat oleh:</strong>
-            ${escapeHtml(invoice.createdByUsername || "-")} (${escapeHtml(invoice.createdByRole || "-")})
-          </span>
+            <span>
+              <strong>Tanggal:</strong>
+              ${escapeHtml(formatAuditDate(invoice.createdAt))}
+            </span>
+          </div>
 
-          <span>
-            <strong>Tanggal:</strong>
-            ${escapeHtml(formatAuditDate(invoice.createdAt))}
-          </span>
-        </div>
+          ${
+            voided
+              ? `
+                <div class="invoice-void-note">
+                  <strong>Invoice dibatalkan</strong>
+                  <span>${escapeHtml(invoice.voidReason || "Tidak ada alasan.")}</span>
+                  ${
+                    invoice.voidedByUsername
+                      ? `<small>Dibatalkan oleh ${escapeHtml(invoice.voidedByUsername)} pada ${escapeHtml(formatAuditDate(invoice.voidedAt))}</small>`
+                      : ""
+                  }
+                </div>
+              `
+              : ""
+          }
 
-        <div class="admin-card-actions">
-          <button
-            type="button"
-            class="admin-action-btn"
-            data-open-invoice="${escapeHtml(invoice.id)}"
-          >
-            Lihat / Print
-          </button>
-        </div>
-      </article>
-    `)
+          <div class="admin-card-actions">
+            <button
+  type="button"
+  class="admin-action-btn"
+  data-open-invoice="${escapeHtml(invoice.id)}"
+>
+  ${voided ? "Lihat" : "Lihat / Print"}
+</button>
+
+            ${
+              voided
+                ? ""
+                : `
+                  <button
+                    type="button"
+                    class="admin-action-btn admin-action-btn-danger"
+                    data-void-invoice="${escapeHtml(invoice.id)}"
+                  >
+                    Batalkan
+                  </button>
+                `
+            }
+          </div>
+        </article>
+      `;
+    })
     .join("");
 }
 
@@ -606,7 +672,11 @@ function openInvoiceModal(invoice) {
   if (!modal || !invoice) {
     return;
   }
+const printButton = document.getElementById("printInvoiceBtn");
 
+if (printButton) {
+  printButton.classList.toggle("is-hidden", isInvoiceVoided(invoice));
+}
   const itemName = [
   `${invoice.bikeBrand || ""} ${invoice.bikeName || ""}`.trim(),
   invoice.bikeColorName ? `Warna ${invoice.bikeColorName}` : ""
@@ -630,7 +700,12 @@ function openInvoiceModal(invoice) {
   setPrintText("printInvoiceLineTotal", formatRupiah(totalPrice));
   setPrintText("printInvoiceTotal", formatRupiah(totalPrice));
 
-  setPrintText("printInvoiceNotes", invoice.notes || "-");
+  setPrintText(
+  "printInvoiceNotes",
+  isInvoiceVoided(invoice)
+    ? `DIBATALKAN: ${invoice.voidReason || "Tidak ada alasan."}`
+    : invoice.notes || "-"
+);
   setPrintText("printInvoiceCustomerSignature", invoice.customerName || "-");
   setPrintText("printInvoiceStaffSignature", invoice.createdByUsername || "-");
 
@@ -659,50 +734,216 @@ function printCurrentInvoice() {
   document.body.classList.add("is-printing-invoice");
   window.print();
 }
+function openVoidInvoiceModal(invoice) {
+  const modal = document.getElementById("voidInvoiceModal");
+  const title = document.getElementById("voidInvoiceModalTitle");
+  const reasonInput = document.getElementById("voidInvoiceReasonInput");
+
+  if (!modal || !invoice) {
+    return;
+  }
+
+  pendingVoidInvoiceId = invoice.id;
+
+  if (title) {
+    title.textContent = `Batalkan ${invoice.invoiceNumber}`;
+  }
+
+  if (reasonInput) {
+    reasonInput.value = "Salah input";
+    reasonInput.focus();
+  }
+
+  modal.classList.remove("is-hidden");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeVoidInvoiceModal() {
+  const modal = document.getElementById("voidInvoiceModal");
+  const reasonInput = document.getElementById("voidInvoiceReasonInput");
+
+  pendingVoidInvoiceId = "";
+
+  if (reasonInput) {
+    reasonInput.value = "";
+  }
+
+  if (!modal) {
+    return;
+  }
+
+  modal.classList.add("is-hidden");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function submitVoidInvoice() {
+  const reasonInput = document.getElementById("voidInvoiceReasonInput");
+  const submitButton = document.getElementById("confirmVoidInvoiceBtn");
+
+  const invoice = getInvoiceByIdFromCache(pendingVoidInvoiceId);
+
+  if (!invoice) {
+    window.alert("Data invoice tidak ditemukan. Coba refresh invoice.");
+    closeVoidInvoiceModal();
+    return;
+  }
+
+  const reason = reasonInput?.value.trim() || "Dibatalkan oleh admin";
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Membatalkan...";
+  }
+
+  try {
+    await voidInvoice(invoice.id, reason);
+
+    closeVoidInvoiceModal();
+
+    setInvoiceFormNote(
+      `Invoice ${invoice.invoiceNumber} berhasil dibatalkan dan stok dikembalikan.`,
+      "is-success"
+    );
+
+    if (typeof loadAdminBikes === "function") {
+      await loadAdminBikes();
+    }
+
+    populateInvoiceBikeOptions();
+    await loadInvoices();
+
+    if (
+      typeof isCurrentUserAdmin === "function" &&
+      isCurrentUserAdmin() &&
+      typeof loadAuditLogs === "function"
+    ) {
+      loadAuditLogs();
+    }
+  } catch (error) {
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    setInvoiceFormNote(error.message || "Gagal membatalkan invoice.", "is-error");
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Batalkan Invoice";
+    }
+  }
+}
+async function handleInvoiceListClick(event) {
+  const openButton = event.target.closest("[data-open-invoice]");
+
+  if (openButton) {
+    const invoice = getInvoiceByIdFromCache(openButton.dataset.openInvoice);
+
+    if (!invoice) {
+      setInvoiceFormNote("Data invoice tidak ditemukan. Coba refresh invoice.", "is-error");
+      return;
+    }
+
+    openInvoiceModal(invoice);
+    return;
+  }
+
+  const voidButton = event.target.closest("[data-void-invoice]");
+
+  if (!voidButton) {
+    return;
+  }
+
+  const invoice = getInvoiceByIdFromCache(voidButton.dataset.voidInvoice);
+
+  if (!invoice) {
+    setInvoiceFormNote("Data invoice tidak ditemukan. Coba refresh invoice.", "is-error");
+    return;
+  }
+
+  if (isInvoiceVoided(invoice)) {
+    setInvoiceFormNote("Invoice ini sudah dibatalkan.", "is-error");
+    return;
+  }
+
+  openVoidInvoiceModal(invoice);
+}
 
 function setupInvoiceModal() {
   const closeButton = document.getElementById("closeInvoiceModalBtn");
   const overlay = document.getElementById("adminInvoiceModalOverlay");
   const printButton = document.getElementById("printInvoiceBtn");
   const invoiceList = document.getElementById("adminInvoiceList");
+const voidModalClose = document.getElementById("closeVoidInvoiceModalBtn");
+const voidModalCancel = document.getElementById("cancelVoidInvoiceBtn");
+const voidModalConfirm = document.getElementById("confirmVoidInvoiceBtn");
+const voidModalOverlay = document.getElementById("voidInvoiceModalOverlay");
 
-  if (closeButton) {
+if (voidModalClose && !voidModalClose.dataset.voidModalBound) {
+  voidModalClose.dataset.voidModalBound = "true";
+  voidModalClose.addEventListener("click", closeVoidInvoiceModal);
+}
+
+if (voidModalCancel && !voidModalCancel.dataset.voidModalBound) {
+  voidModalCancel.dataset.voidModalBound = "true";
+  voidModalCancel.addEventListener("click", closeVoidInvoiceModal);
+}
+
+if (voidModalOverlay && !voidModalOverlay.dataset.voidModalBound) {
+  voidModalOverlay.dataset.voidModalBound = "true";
+  voidModalOverlay.addEventListener("click", closeVoidInvoiceModal);
+}
+
+if (voidModalConfirm && !voidModalConfirm.dataset.voidModalBound) {
+  voidModalConfirm.dataset.voidModalBound = "true";
+  voidModalConfirm.addEventListener("click", submitVoidInvoice);
+}
+  if (closeButton && !closeButton.dataset.invoiceModalBound) {
+    closeButton.dataset.invoiceModalBound = "true";
     closeButton.addEventListener("click", closeInvoiceModal);
   }
 
-  if (overlay) {
+  if (overlay && !overlay.dataset.invoiceModalBound) {
+    overlay.dataset.invoiceModalBound = "true";
     overlay.addEventListener("click", closeInvoiceModal);
   }
 
-  if (printButton) {
+  if (printButton && !printButton.dataset.invoiceModalBound) {
+    printButton.dataset.invoiceModalBound = "true";
     printButton.addEventListener("click", printCurrentInvoice);
   }
 
-  if (invoiceList) {
-    invoiceList.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-open-invoice]");
+  if (!document.body.dataset.invoiceActionsBound) {
+  document.body.dataset.invoiceActionsBound = "true";
 
-      if (!button) {
-        return;
-      }
+  document.addEventListener("click", async (event) => {
+    const isInvoiceAction =
+      event.target.closest("[data-open-invoice]") ||
+      event.target.closest("[data-void-invoice]");
 
-      const invoice = getInvoiceByIdFromCache(button.dataset.openInvoice);
+    if (!isInvoiceAction) {
+      return;
+    }
 
-      if (!invoice) {
-        window.alert("Data invoice tidak ditemukan. Coba refresh invoice.");
-        return;
-      }
+    await handleInvoiceListClick(event);
+  });
+}
 
-      openInvoiceModal(invoice);
+  if (!document.body.dataset.invoiceAfterprintBound) {
+    document.body.dataset.invoiceAfterprintBound = "true";
+
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("is-printing-invoice");
+      document.body.classList.remove("is-printing-service");
     });
   }
-  window.addEventListener("afterprint", () => {
-  document.body.classList.remove("is-printing-invoice");
-  document.body.classList.remove("is-printing-service");
-});
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeInvoiceModal();
-    }
-  });
+
+  if (!document.body.dataset.invoiceEscapeBound) {
+    document.body.dataset.invoiceEscapeBound = "true";
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeInvoiceModal();
+      }
+    });
+  }
 }
