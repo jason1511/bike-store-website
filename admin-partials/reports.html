@@ -1,0 +1,211 @@
+<section class="admin-view" id="adminReportsView">
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-eyebrow">Laporan</p>
+      <h1>Analitik & Laporan</h1>
+      <p>
+        Pantau omzet, invoice aktif, pembatalan, stok, dan pergerakan penjualan.
+      </p>
+    </div>
+  </div>
+
+  <div class="admin-reports-grid">
+    <!-- =========================
+         SALES ANALYTICS
+    ========================== -->
+    <section class="admin-panel admin-invoice-analytics-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Analitik Penjualan</h2>
+          <p>Omzet, unit terjual, invoice aktif, void, dan profit/loss.</p>
+        </div>
+
+        <div class="admin-panel-actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            id="refreshInvoiceAnalyticsBtn"
+          >
+            Refresh Penjualan
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-invoice-summary-grid">
+        <article class="admin-invoice-summary-card">
+          <span>Omzet Aktif</span>
+          <strong id="invoiceAnalyticsRevenue">Rp 0</strong>
+          <small>Total invoice yang tidak dibatalkan</small>
+        </article>
+
+        <article class="admin-invoice-summary-card">
+          <span>Unit Terjual</span>
+          <strong id="invoiceAnalyticsUnitsSold">0</strong>
+          <small>Total unit dari invoice aktif</small>
+        </article>
+
+        <article class="admin-invoice-summary-card">
+          <span>Invoice Aktif</span>
+          <strong id="invoiceAnalyticsActiveInvoices">0</strong>
+          <small>Invoice yang belum dibatalkan</small>
+        </article>
+
+        <article class="admin-invoice-summary-card">
+          <span>Profit/Loss</span>
+          <strong id="invoiceAnalyticsGrossProfit">-</strong>
+          <small id="invoiceAnalyticsProfitNote">Butuh data modal</small>
+        </article>
+      </div>
+
+      <div class="admin-invoice-chart-card">
+        <div>
+          <h3>Grafik Penjualan Harian</h3>
+          <p>Omzet, net omzet, dan void dalam 14 hari terakhir.</p>
+        </div>
+
+        <div
+          class="admin-invoice-line-chart"
+          id="invoiceAnalyticsChart"
+        >
+          <div class="admin-empty-state">
+            Grafik belum dimuat.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================
+         STOCK ANALYTICS
+    ========================== -->
+    <section class="admin-panel admin-report-stock-panel">
+  <div class="admin-panel-header">
+    <div>
+      <h2>Analitik Stok Detail</h2>
+      <p>
+        Ringkasan stok, stok bermasalah, dan pergerakan stok harian untuk laporan.
+      </p>
+    </div>
+
+    <div class="admin-panel-actions">
+      <button
+        type="button"
+        class="btn-secondary"
+        id="reportRefreshStockAnalyticsBtn"
+      >
+        Refresh Stok
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-report-stock-summary-grid">
+    <article class="admin-stock-summary-card">
+      <span>Total Stok</span>
+      <strong id="reportStockAnalyticsTotalStock">0</strong>
+      <small>Grand total semua unit</small>
+    </article>
+
+    <article class="admin-stock-summary-card">
+      <span>Model Aktif</span>
+      <strong id="reportStockAnalyticsActiveBikes">0</strong>
+      <small>Sepeda aktif di katalog</small>
+    </article>
+
+    <article class="admin-stock-summary-card">
+      <span>Stok Rendah</span>
+      <strong id="reportStockAnalyticsLowStock">0</strong>
+      <small>Stok 1 sampai 3 unit</small>
+    </article>
+
+    <article class="admin-stock-summary-card">
+      <span>Stok Habis</span>
+      <strong id="reportStockAnalyticsOutOfStock">0</strong>
+      <small>Unit dengan stok 0</small>
+    </article>
+  </div>
+
+  <div class="admin-report-stock-layout">
+    <div class="admin-stock-movement-card">
+      <div>
+        <h3>Grafik Pergerakan Stok</h3>
+        <p>Net change stok harian dalam 14 hari terakhir.</p>
+      </div>
+
+      <div
+        class="admin-stock-movement-chart"
+        id="reportStockAnalyticsMovementChart"
+      >
+        <div class="admin-empty-state">
+          Grafik belum dimuat.
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-stock-movement-card">
+      <div>
+        <h3>Detail Harian</h3>
+        <p>Masuk, terjual, adjustment, dan net change per hari.</p>
+      </div>
+
+      <div
+        class="admin-stock-movement-list admin-report-stock-movement-list"
+        id="reportStockAnalyticsMovementList"
+      >
+        <div class="admin-empty-state">
+          Statistik belum dimuat.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <!-- =========================
+         REPORT GENERATION
+    ========================== -->
+    <section class="admin-panel admin-report-generation-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Generate Laporan</h2>
+          <p>
+            Area untuk export laporan penjualan, stok, service, PDF, dan CSV.
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-report-filter-grid">
+        <div class="admin-form-group">
+          <label for="reportDateFromInput">Dari Tanggal</label>
+          <input type="date" id="reportDateFromInput">
+        </div>
+
+        <div class="admin-form-group">
+          <label for="reportDateToInput">Sampai Tanggal</label>
+          <input type="date" id="reportDateToInput">
+        </div>
+
+        <div class="admin-form-group">
+          <label for="reportTypeInput">Jenis Laporan</label>
+          <select id="reportTypeInput">
+            <option value="sales">Penjualan</option>
+            <option value="stock">Stok</option>
+            <option value="service">Service</option>
+            <option value="full">Gabungan</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="admin-report-actions">
+        <button type="button" class="btn-secondary" id="previewReportBtn" disabled>
+          Preview Report Coming Soon
+        </button>
+
+        <button type="button" class="btn-secondary" id="exportReportPdfBtn" disabled>
+          Export PDF Coming Soon
+        </button>
+
+        <button type="button" class="btn-secondary" id="exportReportCsvBtn" disabled>
+          Export CSV Coming Soon
+        </button>
+      </div>
+    </section>
+  </div>
+</section>

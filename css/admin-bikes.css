@@ -15,12 +15,219 @@
 }
 
 /* =========================
+   CATALOG PAGE LAYOUT
+========================= */
+#adminCatalogueView .admin-workspace {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(520px, 1.4fr);
+  align-items: start;
+  gap: 22px;
+}
+
+#adminCatalogueView .admin-stock-analytics-panel,
+#adminCatalogueView .admin-list-panel {
+  min-width: 0;
+}
+
+/* =========================
+   STOCK ANALYTICS
+========================= */
+.admin-stock-analytics-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-stock-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-stock-summary-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(37, 211, 102, 0.16);
+  background:
+    radial-gradient(circle at top right, rgba(37, 211, 102, 0.1), transparent 34%),
+    rgba(8, 20, 20, 0.62);
+}
+
+.admin-stock-summary-card span {
+  color: #9fb8b6;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-stock-summary-card strong {
+  color: #8fffc0;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.admin-stock-summary-card small {
+  color: #dce5e3;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.admin-stock-movement-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(8, 20, 20, 0.5);
+}
+
+.admin-stock-movement-card h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.admin-stock-movement-card p {
+  margin: 4px 0 0;
+  color: #9fb8b6;
+  font-size: 0.88rem;
+}
+
+/* =========================
+   STOCK MOVEMENT LINE CHART
+========================= */
+.admin-stock-movement-chart {
+  min-height: 210px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(37, 211, 102, 0.08), transparent 34%),
+    rgba(7, 18, 18, 0.62);
+  overflow: hidden;
+}
+
+.admin-stock-movement-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.stock-chart-axis {
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1;
+}
+
+.stock-chart-zero-line {
+  stroke: rgba(159, 184, 182, 0.28);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.stock-chart-line {
+  fill: none;
+  stroke: #8fffc0;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stock-chart-area {
+  fill: rgba(37, 211, 102, 0.08);
+}
+
+.stock-chart-point {
+  fill: #8fffc0;
+  stroke: #071312;
+  stroke-width: 2;
+}
+
+.stock-chart-label,
+.stock-chart-value {
+  fill: #9fb8b6;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.stock-chart-value {
+  fill: #dce5e3;
+}
+
+.stock-chart-title {
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.stock-chart-subtitle {
+  fill: #9fb8b6;
+  font-size: 11px;
+}
+
+/* =========================
+   STOCK MOVEMENT LIST
+========================= */
+.admin-stock-movement-list {
+  display: grid;
+  gap: 10px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.admin-stock-movement-row {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(4, minmax(72px, 1fr));
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(7, 18, 18, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-stock-movement-row div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-stock-movement-row span {
+  order: -1;
+  color: #9fb8b6;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-stock-movement-row strong {
+  color: #ffffff;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.admin-stock-movement-row .is-positive strong {
+  color: #8fffc0;
+}
+
+.admin-stock-movement-row .is-negative strong {
+  color: #ffb4b4;
+}
+
+/* =========================
    BIKE LIST
 ========================= */
 .admin-bike-list {
   display: grid;
   gap: 14px;
-  max-height: 760px;
+  max-height: min(760px, calc(100vh - 360px));
   overflow: auto;
   padding-right: 4px;
 }
@@ -44,12 +251,12 @@
 }
 
 .admin-bike-brand {
+  margin-bottom: 4px;
   color: #9fb8b6;
   font-size: 0.76rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 4px;
 }
 
 .admin-bike-list-card h3 {
@@ -101,15 +308,63 @@
 }
 
 .admin-stock-pill.is-in {
-  background-color: rgba(37, 211, 102, 0.14);
   color: #25d366;
+  background-color: rgba(37, 211, 102, 0.14);
   border: 1px solid rgba(37, 211, 102, 0.28);
 }
 
 .admin-stock-pill.is-out {
-  background-color: rgba(255, 143, 143, 0.14);
   color: #ff8f8f;
+  background-color: rgba(255, 143, 143, 0.14);
   border: 1px solid rgba(255, 143, 143, 0.28);
+}
+
+/* =========================
+   BIKE EDITOR MODAL
+========================= */
+.admin-bike-editor-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.admin-bike-editor-modal.is-hidden {
+  display: none;
+}
+
+.admin-bike-editor-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 10, 10, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.admin-bike-editor-modal-content {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  margin: 0;
+  border-radius: 24px;
+}
+
+.admin-bike-editor-modal-content .admin-bike-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-bike-editor-modal-content .admin-form-wide,
+.admin-bike-editor-modal-content .admin-color-variants,
+.admin-bike-editor-modal-content .admin-checkbox-row,
+.admin-bike-editor-modal-content .admin-form-actions {
+  grid-column: 1 / -1;
+}
+
+body.is-bike-editor-open {
+  overflow: hidden;
 }
 
 /* =========================
@@ -250,9 +505,9 @@
 }
 
 .admin-image-status.is-success {
+  color: #8ff0b9;
   border-color: rgba(37, 211, 102, 0.35);
   background: rgba(37, 211, 102, 0.1);
-  color: #8ff0b9;
 }
 
 .admin-form-group input[readonly] {
@@ -264,4 +519,133 @@
 .admin-stock-input .admin-form-note {
   margin-top: 6px;
   font-size: 0.78rem;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (min-width: 1500px) {
+  #adminCatalogueView .admin-workspace {
+    grid-template-columns: minmax(420px, 0.85fr) minmax(680px, 1.35fr);
+  }
+
+  .admin-bike-editor-modal-content {
+    width: min(1360px, 100%);
+  }
+
+  .admin-bike-editor-modal-content .admin-bike-form {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  #adminCatalogueView .admin-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  #adminCatalogueView .admin-bike-list,
+  #adminCatalogueView .admin-stock-movement-list {
+    max-height: none;
+  }
+
+  .admin-stock-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-stock-movement-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .admin-bike-editor-modal {
+    padding: 14px;
+    place-items: stretch;
+  }
+
+  .admin-bike-editor-modal-content {
+    width: 100%;
+    max-height: calc(100vh - 28px);
+  }
+
+  .admin-bike-editor-modal-content .admin-bike-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  #adminCatalogueView .admin-workspace {
+    gap: 16px;
+  }
+
+  #adminCatalogueView .admin-panel-header,
+  #adminCatalogueView .admin-subsection-header,
+  #adminCatalogueView .admin-bike-list-main,
+  #adminCatalogueView .admin-color-variant-header,
+  .admin-bike-editor-modal-content .admin-panel-header,
+  .admin-bike-editor-modal-content .admin-subsection-header,
+  .admin-bike-editor-modal-content .admin-color-variant-header {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  #adminCatalogueView .admin-panel-actions,
+  .admin-bike-editor-modal-content .admin-panel-actions,
+  .admin-bike-editor-modal-content .admin-form-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  #adminCatalogueView .admin-panel-actions button,
+  #adminCatalogueView .admin-subsection-header button,
+  .admin-bike-editor-modal-content button {
+    width: 100%;
+  }
+
+  .admin-bike-editor-modal-content .admin-bike-form {
+    grid-template-columns: 1fr;
+  }
+
+  #adminCatalogueView .admin-bike-meta,
+  #adminCatalogueView .admin-color-variant-fields,
+  .admin-bike-editor-modal-content .admin-color-variant-fields,
+  #adminCatalogueView .admin-checkbox-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stock-movement-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-stock-movement-row div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stock-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  #adminCatalogueView .admin-dashboard-header h1 {
+    font-size: clamp(2rem, 12vw, 3rem);
+  }
+
+  #adminCatalogueView .admin-panel {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  #adminCatalogueView .admin-stock-summary-card,
+  #adminCatalogueView .admin-bike-list-card,
+  #adminCatalogueView .admin-color-variant-card {
+    padding: 14px;
+  }
 }

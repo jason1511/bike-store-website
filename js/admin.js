@@ -50,6 +50,9 @@ async function initializeAdminProtectedModules() {
 
   setupAdminUserManagement();
   setupAuditLogs();
+  if (typeof setupReportsPage === "function") {
+  setupReportsPage();
+}
 
   if (typeof loadAdminBikes === "function") {
     await loadAdminBikes();
@@ -74,7 +77,9 @@ async function initializeAdminProtectedModules() {
 } else if (typeof loadAuditLogs === "function") {
   await loadAuditLogs();
 }
-
+if (typeof loadReportsPage === "function") {
+  await loadReportsPage();
+}
   adminProtectedModulesReady = true;
 }
 

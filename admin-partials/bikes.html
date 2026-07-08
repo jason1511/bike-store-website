@@ -9,11 +9,79 @@
     </div>
   </div>
 
-  <div class="admin-workspace">
-    <article class="admin-panel admin-list-panel">
-      <div class="admin-panel-header">
-        <div>
-          <h2>Data Sepeda</h2>
+<div class="admin-workspace">
+  <section class="admin-panel admin-stock-analytics-panel">
+    <div class="admin-panel-header">
+      <div>
+        <h2>Ringkasan Stok</h2>
+        <p>Total stok dan pergerakan stok harian.</p>
+      </div>
+
+      <div class="admin-panel-actions">
+        <button
+          type="button"
+          class="btn-secondary"
+          id="refreshStockAnalyticsBtn"
+        >
+          Refresh Statistik
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-stock-summary-grid">
+      <article class="admin-stock-summary-card">
+        <span>Total Stok</span>
+        <strong id="stockAnalyticsTotalStock">0</strong>
+        <small>Grand total semua unit</small>
+      </article>
+
+      <article class="admin-stock-summary-card">
+        <span>Model Aktif</span>
+        <strong id="stockAnalyticsActiveBikes">0</strong>
+        <small>Sepeda aktif di katalog</small>
+      </article>
+
+      <article class="admin-stock-summary-card">
+        <span>Stok Rendah</span>
+        <strong id="stockAnalyticsLowStock">0</strong>
+        <small>Stok 1 sampai 3 unit</small>
+      </article>
+
+      <article class="admin-stock-summary-card">
+        <span>Stok Habis</span>
+        <strong id="stockAnalyticsOutOfStock">0</strong>
+        <small>Unit dengan stok 0</small>
+      </article>
+    </div>
+
+    <div class="admin-stock-movement-card">
+      <div>
+        <h3>Pergerakan Stok Harian</h3>
+        <p>Masuk, terjual, adjustment, dan net change.</p>
+      </div>
+      <div
+  class="admin-stock-movement-chart"
+  id="stockAnalyticsMovementChart"
+>
+  <div class="admin-empty-state">
+    Grafik belum dimuat.
+  </div>
+</div>
+      <div
+        class="admin-stock-movement-list"
+        id="stockAnalyticsMovementList"
+      >
+        <div class="admin-empty-state">
+          Statistik belum dimuat.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <article class="admin-panel admin-list-panel">
+    <div class="admin-panel-header">
+      <div>
+        <h2>Data Sepeda</h2>
           <p>Daftar sepeda dari katalog saat ini.</p>
         </div>
 
@@ -66,7 +134,14 @@
       </div>
     </article>
 
-    <article class="admin-panel admin-editor-panel is-hidden" id="adminBikeEditorPanel">
+    <div
+  class="admin-bike-editor-modal is-hidden"
+  id="adminBikeEditorModal"
+  aria-hidden="true"
+>
+  <div class="admin-bike-editor-modal-overlay" id="adminBikeEditorModalOverlay"></div>
+
+  <article class="admin-panel admin-editor-panel admin-bike-editor-modal-content" id="adminBikeEditorPanel">
       <div class="admin-panel-header">
         <div>
           <h2 id="adminBikeEditorTitle">Tambah Sepeda</h2>
@@ -271,5 +346,6 @@
         </div>
       </form>
     </article>
+    </div>
   </div>
 </section>

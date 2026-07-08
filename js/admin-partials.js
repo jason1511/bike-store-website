@@ -1,7 +1,7 @@
 /* =========================
    ADMIN PARTIAL LOADER
 ========================= */
-const ADMIN_PARTIAL_VERSION = "admin-partials-2";
+const ADMIN_PARTIAL_VERSION = "admin-partials-3";
 
 const ADMIN_PARTIALS = [
   "bikes",
@@ -10,6 +10,7 @@ const ADMIN_PARTIALS = [
   "services",
   "users",
   "audit",
+  "reports",
   "printable-invoice",
   "printable-service"
 ];

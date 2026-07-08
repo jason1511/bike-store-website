@@ -416,6 +416,9 @@ function showAdminView(viewId) {
   if (viewId === "adminAuditView" && isAdmin && typeof loadAuditLogs === "function") {
     loadAuditLogs();
   }
+  if (viewId === "adminReportsView" && typeof loadReportsPage === "function") {
+  loadReportsPage();
+}
 }
 
 function setupAdminViewNavigation() {

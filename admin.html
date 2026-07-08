@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="css/admin-invoices.css">
 <link rel="stylesheet" href="css/admin-services.css">
 <link rel="stylesheet" href="css/admin-users.css">
+<link rel="stylesheet" href="css/admin-reports.css">
 <link rel="stylesheet" href="css/admin-audit.css">
 </head>
 
@@ -132,7 +133,7 @@
           >
             User
           </button>
-
+          
           <button
             type="button"
             class="admin-nav-link"
@@ -141,7 +142,13 @@
           >
             Aktivitas
           </button>
-
+          <button
+  type="button"
+  class="admin-nav-link"
+  data-admin-view-target="adminReportsView"
+>
+  Laporan
+</button>
           <span class="admin-current-user" id="adminCurrentUserLabel">
             User
           </span>
@@ -173,6 +180,7 @@
 <script src="js/admin-services.js"></script>
 <script src="js/admin-users.js"></script>
 <script src="js/admin-audit.js"></script>
+<script src="js/admin-reports.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>

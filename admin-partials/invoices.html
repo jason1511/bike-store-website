@@ -10,6 +10,9 @@
     </div>
   </div>
 
+  <!-- =========================
+       MAIN INVOICE WORKSPACE
+  ========================== -->
   <div class="admin-workspace">
     <article class="admin-panel admin-editor-panel">
       <div class="admin-panel-header">
@@ -21,34 +24,35 @@
 
       <form class="admin-bike-form" id="adminInvoiceForm">
         <div class="admin-form-group admin-form-wide">
-  <div class="admin-section-card">
-    <div class="admin-section-card-header">
-      <div>
-        <h3>Item Invoice</h3>
-        <p>
-          Tambahkan sepeda, warna, jumlah, dan harga untuk invoice ini.
-        </p>
-      </div>
+          <div class="admin-section-card">
+            <div class="admin-section-card-header">
+              <div>
+                <h3>Item Invoice</h3>
+                <p>
+                  Tambahkan sepeda, warna, jumlah, dan harga untuk invoice ini.
+                </p>
+              </div>
 
-      <button
-        type="button"
-        id="openInvoiceItemModalBtn"
-        class="admin-action-btn"
-      >
-        Tambah Item
-      </button>
-    </div>
+              <button
+                type="button"
+                id="openInvoiceItemModalBtn"
+                class="admin-action-btn"
+              >
+                Tambah Item
+              </button>
+            </div>
 
-    <div
-      id="pendingInvoiceItemsList"
-      class="pending-invoice-items-list"
-    >
-      <div class="admin-empty-state">
-        Belum ada item invoice. Klik Tambah Item untuk mulai.
-      </div>
-    </div>
-  </div>
-</div>
+            <div
+              id="pendingInvoiceItemsList"
+              class="pending-invoice-items-list"
+            >
+              <div class="admin-empty-state">
+                Belum ada item invoice. Klik Tambah Item untuk mulai.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="admin-form-group">
           <label for="invoiceCustomerNameInput">Nama Customer</label>
           <input
@@ -163,6 +167,9 @@
     </article>
   </div>
 
+  <!-- =========================
+       PRINTABLE INVOICE MODAL
+  ========================== -->
   <div
     class="admin-invoice-modal is-hidden"
     id="adminInvoiceModal"
@@ -201,10 +208,10 @@
             >
 
             <div>
-  <h1>CV Niaga Bersama Abadi</h1>
-  <p>Panglima Sudirman No.90, Tompokersan</p>
-  <p>Lumajang, Jawa Timur 67311</p>
-</div>
+              <h1>CV Niaga Bersama Abadi</h1>
+              <p>Panglima Sudirman No.90, Tompokersan</p>
+              <p>Lumajang, Jawa Timur 67311</p>
+            </div>
           </div>
 
           <div class="printable-invoice-title">
@@ -251,34 +258,34 @@
           </div>
         </section>
 
-<section class="printable-invoice-section">
-  <h3>Detail Produk</h3>
+        <section class="printable-invoice-section">
+          <h3>Detail Produk</h3>
 
-  <div class="printable-invoice-table-wrap">
-    <table class="printable-invoice-table">
-      <thead>
-        <tr>
-          <th>Produk</th>
-          <th>Warna</th>
-          <th class="is-center">Jumlah</th>
-          <th class="is-right">Harga Satuan</th>
-          <th class="is-right">Total</th>
-        </tr>
-      </thead>
+          <div class="printable-invoice-table-wrap">
+            <table class="printable-invoice-table">
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th>Warna</th>
+                  <th class="is-center">Jumlah</th>
+                  <th class="is-right">Harga Satuan</th>
+                  <th class="is-right">Total</th>
+                </tr>
+              </thead>
 
-      <tbody id="printInvoiceItems">
-        <tr>
-          <td colspan="5">Data invoice belum dimuat.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+              <tbody id="printInvoiceItems">
+                <tr>
+                  <td colspan="5">Data invoice belum dimuat.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-  <div class="printable-invoice-total-box">
-    <span>Total</span>
-    <strong id="printInvoiceGrandTotal">Rp 0</strong>
-  </div>
-</section>
+          <div class="printable-invoice-total-box">
+            <span>Total</span>
+            <strong id="printInvoiceGrandTotal">Rp 0</strong>
+          </div>
+        </section>
 
         <section
           class="printable-invoice-section"
@@ -304,142 +311,150 @@
       </article>
     </div>
   </div>
+
+  <!-- =========================
+       ADD INVOICE ITEM MODAL
+  ========================== -->
   <div
-  id="invoiceItemModal"
-  class="admin-modal is-hidden"
-  aria-hidden="true"
->
-  <div id="invoiceItemModalOverlay" class="admin-modal-overlay"></div>
+    id="invoiceItemModal"
+    class="admin-modal is-hidden"
+    aria-hidden="true"
+  >
+    <div id="invoiceItemModalOverlay" class="admin-modal-overlay"></div>
 
-  <div class="admin-modal-content admin-void-modal">
-    <div class="admin-modal-header">
-      <h2>Tambah Item Invoice</h2>
+    <div class="admin-modal-content admin-void-modal">
+      <div class="admin-modal-header">
+        <h2>Tambah Item Invoice</h2>
 
-      <button
-        type="button"
-        id="closeInvoiceItemModalBtn"
-        class="admin-modal-close"
-        aria-label="Tutup"
-      >
-        ×
-      </button>
-    </div>
-
-    <div class="admin-modal-body">
-      <div class="admin-form-group">
-        <label for="invoiceBikeInput">Sepeda</label>
-        <select id="invoiceBikeInput">
-          <option value="">Pilih sepeda</option>
-        </select>
+        <button
+          type="button"
+          id="closeInvoiceItemModalBtn"
+          class="admin-modal-close"
+          aria-label="Tutup"
+        >
+          ×
+        </button>
       </div>
 
-      <div class="admin-form-group">
-        <label for="invoiceBikeColorInput">Warna Unit</label>
-        <select id="invoiceBikeColorInput">
-          <option value="">Pilih sepeda terlebih dahulu</option>
-        </select>
+      <div class="admin-modal-body">
+        <div class="admin-form-group">
+          <label for="invoiceBikeInput">Sepeda</label>
+          <select id="invoiceBikeInput">
+            <option value="">Pilih sepeda</option>
+          </select>
+        </div>
 
-        <p class="admin-form-note" id="invoiceColorStockNote">
-          Pilih sepeda terlebih dahulu untuk melihat stok warna.
+        <div class="admin-form-group">
+          <label for="invoiceBikeColorInput">Warna Unit</label>
+          <select id="invoiceBikeColorInput">
+            <option value="">Pilih sepeda terlebih dahulu</option>
+          </select>
+
+          <p class="admin-form-note" id="invoiceColorStockNote">
+            Pilih sepeda terlebih dahulu untuk melihat stok warna.
+          </p>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceQuantityInput">Jumlah</label>
+          <input
+            type="number"
+            id="invoiceQuantityInput"
+            value="1"
+            min="1"
+            step="1"
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceUnitPriceInput">Harga Satuan</label>
+          <input
+            type="number"
+            id="invoiceUnitPriceInput"
+            min="0"
+            step="1000"
+            placeholder="Harga jual"
+          >
+        </div>
+      </div>
+
+      <div class="admin-modal-actions">
+        <button
+          type="button"
+          id="cancelInvoiceItemModalBtn"
+          class="admin-action-btn"
+        >
+          Batal
+        </button>
+
+        <button
+          type="button"
+          id="addInvoiceItemBtn"
+          class="admin-action-btn"
+        >
+          Tambahkan Item
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       VOID INVOICE MODAL
+  ========================== -->
+  <div
+    id="voidInvoiceModal"
+    class="admin-modal is-hidden"
+    aria-hidden="true"
+  >
+    <div id="voidInvoiceModalOverlay" class="admin-modal-overlay"></div>
+
+    <div class="admin-modal-content admin-void-modal">
+      <div class="admin-modal-header">
+        <h2 id="voidInvoiceModalTitle">Batalkan Invoice</h2>
+
+        <button
+          type="button"
+          id="closeVoidInvoiceModalBtn"
+          class="admin-modal-close"
+          aria-label="Tutup"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="admin-modal-body">
+        <p>
+          Invoice akan dibatalkan dan stok unit akan dikembalikan.
         </p>
+
+        <label for="voidInvoiceReasonInput">
+          Alasan pembatalan
+        </label>
+
+        <textarea
+          id="voidInvoiceReasonInput"
+          rows="4"
+          placeholder="Contoh: Salah input, customer batal, salah warna..."
+        ></textarea>
       </div>
 
-      <div class="admin-form-group">
-        <label for="invoiceQuantityInput">Jumlah</label>
-        <input
-          type="number"
-          id="invoiceQuantityInput"
-          value="1"
-          min="1"
-          step="1"
+      <div class="admin-modal-actions">
+        <button
+          type="button"
+          id="cancelVoidInvoiceBtn"
+          class="admin-action-btn"
         >
-      </div>
+          Batal
+        </button>
 
-      <div class="admin-form-group">
-        <label for="invoiceUnitPriceInput">Harga Satuan</label>
-        <input
-          type="number"
-          id="invoiceUnitPriceInput"
-          min="0"
-          step="1000"
-          placeholder="Harga jual"
+        <button
+          type="button"
+          id="confirmVoidInvoiceBtn"
+          class="admin-action-btn admin-action-btn-danger"
         >
+          Batalkan Invoice
+        </button>
       </div>
-    </div>
-
-    <div class="admin-modal-actions">
-      <button
-        type="button"
-        id="cancelInvoiceItemModalBtn"
-        class="admin-action-btn"
-      >
-        Batal
-      </button>
-
-      <button
-        type="button"
-        id="addInvoiceItemBtn"
-        class="admin-action-btn"
-      >
-        Tambahkan Item
-      </button>
     </div>
   </div>
-</div>
-  <div
-  id="voidInvoiceModal"
-  class="admin-modal is-hidden"
-  aria-hidden="true"
->
-  <div id="voidInvoiceModalOverlay" class="admin-modal-overlay"></div>
-
-  <div class="admin-modal-content admin-void-modal">
-    <div class="admin-modal-header">
-      <h2 id="voidInvoiceModalTitle">Batalkan Invoice</h2>
-
-      <button
-        type="button"
-        id="closeVoidInvoiceModalBtn"
-        class="admin-modal-close"
-        aria-label="Tutup"
-      >
-        ×
-      </button>
-    </div>
-
-    <div class="admin-modal-body">
-      <p>
-        Invoice akan dibatalkan dan stok unit akan dikembalikan.
-      </p>
-
-      <label for="voidInvoiceReasonInput">
-        Alasan pembatalan
-      </label>
-
-      <textarea
-        id="voidInvoiceReasonInput"
-        rows="4"
-        placeholder="Contoh: Salah input, customer batal, salah warna..."
-      ></textarea>
-    </div>
-
-    <div class="admin-modal-actions">
-      <button
-        type="button"
-        id="cancelVoidInvoiceBtn"
-        class="admin-action-btn"
-      >
-        Batal
-      </button>
-
-      <button
-        type="button"
-        id="confirmVoidInvoiceBtn"
-        class="admin-action-btn admin-action-btn-danger"
-      >
-        Batalkan Invoice
-      </button>
-    </div>
-  </div>
-</div>
 </section>
