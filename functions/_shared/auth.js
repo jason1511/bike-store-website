@@ -62,7 +62,7 @@ export function jsonResponse(data, status = 200) {
    PASSWORD HELPERS
 ========================= */
 const PASSWORD_HASH_VERSION = "pbkdf2";
-const PASSWORD_HASH_ITERATIONS = 150000;
+const PASSWORD_HASH_ITERATIONS = 100000;
 const PASSWORD_SALT_BYTES = 16;
 const PASSWORD_HASH_BITS = 256;
 
