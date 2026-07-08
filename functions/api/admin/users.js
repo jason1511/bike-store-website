@@ -4,12 +4,12 @@ import {
   requireRole
 } from "../../_shared/auth.js";
 
-function createUserId(username) {
-  return `user_${String(username || "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")}`;
+function createUserId() {
+  return `user_${Date.now()}_${crypto.randomUUID()}`;
+}
+
+function normalizeUsername(username) {
+  return String(username || "").trim();
 }
 
 function normalizeRole(role) {
@@ -23,6 +23,10 @@ function normalizeRole(role) {
 }
 
 function rowToUser(row) {
+  if (!row) {
+    return null;
+  }
+
   return {
     id: row.id,
     username: row.username,
@@ -31,6 +35,36 @@ function rowToUser(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
+}
+
+function createErrorResponse(error, fallbackMessage, status = 500) {
+  return jsonResponse(
+    {
+      error: fallbackMessage,
+      detail: error?.message || fallbackMessage
+    },
+    status
+  );
+}
+
+async function getUserById(db, id) {
+  const row = await db
+    .prepare(`
+      SELECT
+        id,
+        username,
+        role,
+        is_active,
+        created_at,
+        updated_at
+      FROM admin_users
+      WHERE id = ?
+      LIMIT 1
+    `)
+    .bind(id)
+    .first();
+
+  return row ? rowToUser(row) : null;
 }
 
 async function getUserByUsername(db, username) {
@@ -44,13 +78,57 @@ async function getUserByUsername(db, username) {
         created_at,
         updated_at
       FROM admin_users
-      WHERE username = ?
+      WHERE lower(username) = lower(?)
       LIMIT 1
     `)
     .bind(username)
     .first();
 
   return row ? rowToUser(row) : null;
+}
+
+function validateCreateUserPayload({ username, password, role }) {
+  const errors = [];
+
+  if (!username) {
+    errors.push("Username wajib diisi.");
+  }
+
+  if (username && username.length < 3) {
+    errors.push("Username minimal 3 karakter.");
+  }
+
+  if (!password) {
+    errors.push("Password wajib diisi.");
+  }
+
+  if (password && password.length < 8) {
+    errors.push("Password minimal 8 karakter.");
+  }
+
+  if (!role) {
+    errors.push("Role harus admin atau staff.");
+  }
+
+  return errors;
+}
+
+function validateUpdateUserPayload({ id, role, password }) {
+  const errors = [];
+
+  if (!id) {
+    errors.push("User ID wajib diisi.");
+  }
+
+  if (!role) {
+    errors.push("Role harus admin atau staff.");
+  }
+
+  if (password && password.length < 8) {
+    errors.push("Password minimal 8 karakter.");
+  }
+
+  return errors;
 }
 
 export async function onRequestGet(context) {
@@ -77,7 +155,7 @@ export async function onRequestGet(context) {
           created_at,
           updated_at
         FROM admin_users
-        ORDER BY created_at DESC
+        ORDER BY datetime(created_at) DESC, username ASC
       `)
       .all();
 
@@ -87,11 +165,7 @@ export async function onRequestGet(context) {
     });
   } catch (error) {
     console.error("Admin users GET error:", error);
-
-    return jsonResponse(
-      { error: "Failed to load users" },
-      500
-    );
+    return createErrorResponse(error, "Failed to load users");
   }
 }
 
@@ -115,21 +189,22 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: "Invalid user data" }, 400);
     }
 
-    const username = String(payload.username || "").trim();
+    const username = normalizeUsername(payload.username);
     const password = String(payload.password || "");
     const role = normalizeRole(payload.role);
 
-    const errors = [];
-
-    if (!username) errors.push("Username wajib diisi.");
-    if (username.length < 3) errors.push("Username minimal 3 karakter.");
-    if (!password) errors.push("Password wajib diisi.");
-    if (password.length < 8) errors.push("Password minimal 8 karakter.");
-    if (!role) errors.push("Role harus admin atau staff.");
+    const errors = validateCreateUserPayload({
+      username,
+      password,
+      role
+    });
 
     if (errors.length) {
       return jsonResponse(
-        { error: "Invalid user data", errors },
+        {
+          error: "Invalid user data",
+          errors
+        },
         400
       );
     }
@@ -143,7 +218,7 @@ export async function onRequestPost(context) {
       );
     }
 
-    const userId = createUserId(username);
+    const userId = createUserId();
     const passwordHash = await hashPassword(password, env);
 
     await env.BIKE_DB
@@ -153,9 +228,11 @@ export async function onRequestPost(context) {
           username,
           password_hash,
           role,
-          is_active
+          is_active,
+          created_at,
+          updated_at
         )
-        VALUES (?, ?, ?, ?, 1)
+        VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `)
       .bind(
         userId,
@@ -167,15 +244,11 @@ export async function onRequestPost(context) {
 
     return jsonResponse({
       success: true,
-      user: await getUserByUsername(env.BIKE_DB, username)
+      user: await getUserById(env.BIKE_DB, userId)
     });
   } catch (error) {
     console.error("Admin users POST error:", error);
-
-    return jsonResponse(
-      { error: "Failed to create user" },
-      500
-    );
+    return createErrorResponse(error, "Failed to create user");
   }
 }
 
@@ -201,15 +274,32 @@ export async function onRequestPut(context) {
 
     const id = String(payload.id || "").trim();
     const role = normalizeRole(payload.role);
-    const isActive = payload.isActive ? 1 : 0;
     const password = String(payload.password || "");
+    const isActive = payload.isActive ? 1 : 0;
 
-    if (!id) {
-      return jsonResponse({ error: "User ID wajib diisi." }, 400);
+    const errors = validateUpdateUserPayload({
+      id,
+      role,
+      password
+    });
+
+    if (errors.length) {
+      return jsonResponse(
+        {
+          error: "Invalid user data",
+          errors
+        },
+        400
+      );
     }
 
     const existingUser = await env.BIKE_DB
-      .prepare("SELECT * FROM admin_users WHERE id = ? LIMIT 1")
+      .prepare(`
+        SELECT id
+        FROM admin_users
+        WHERE id = ?
+        LIMIT 1
+      `)
       .bind(id)
       .first();
 
@@ -217,15 +307,7 @@ export async function onRequestPut(context) {
       return jsonResponse({ error: "User tidak ditemukan." }, 404);
     }
 
-    if (!role) {
-      return jsonResponse({ error: "Role harus admin atau staff." }, 400);
-    }
-
     if (password) {
-      if (password.length < 8) {
-        return jsonResponse({ error: "Password minimal 8 karakter." }, 400);
-      }
-
       const passwordHash = await hashPassword(password, env);
 
       await env.BIKE_DB
@@ -254,32 +336,12 @@ export async function onRequestPut(context) {
         .run();
     }
 
-    const updatedUser = await env.BIKE_DB
-      .prepare(`
-        SELECT
-          id,
-          username,
-          role,
-          is_active,
-          created_at,
-          updated_at
-        FROM admin_users
-        WHERE id = ?
-        LIMIT 1
-      `)
-      .bind(id)
-      .first();
-
     return jsonResponse({
       success: true,
-      user: rowToUser(updatedUser)
+      user: await getUserById(env.BIKE_DB, id)
     });
   } catch (error) {
     console.error("Admin users PUT error:", error);
-
-    return jsonResponse(
-      { error: "Failed to update user" },
-      500
-    );
+    return createErrorResponse(error, "Failed to update user");
   }
 }

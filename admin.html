@@ -11,14 +11,14 @@
   <meta name="robots" content="noindex, nofollow">
 
   <link rel="stylesheet" href="css/global.css">
-<link rel="stylesheet" href="css/admin.css">
-<link rel="stylesheet" href="css/admin-bikes.css">
-<link rel="stylesheet" href="css/admin-brands.css">
-<link rel="stylesheet" href="css/admin-invoices.css">
-<link rel="stylesheet" href="css/admin-services.css">
-<link rel="stylesheet" href="css/admin-users.css">
-<link rel="stylesheet" href="css/admin-reports.css">
-<link rel="stylesheet" href="css/admin-audit.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin-bikes.css">
+  <link rel="stylesheet" href="css/admin-brands.css">
+  <link rel="stylesheet" href="css/admin-invoices.css">
+  <link rel="stylesheet" href="css/admin-services.css">
+  <link rel="stylesheet" href="css/admin-users.css">
+  <link rel="stylesheet" href="css/admin-reports.css">
+  <link rel="stylesheet" href="css/admin-audit.css">
 </head>
 
 <body class="admin-body">
@@ -36,7 +36,7 @@
             <h1>CV Niaga Bersama Abadi</h1>
             <p>
               Login untuk mengelola katalog sepeda, brand, invoice, service,
-              user, dan aktivitas.
+              user, laporan, dan aktivitas.
             </p>
           </div>
         </div>
@@ -128,12 +128,20 @@
           <button
             type="button"
             class="admin-nav-link"
+            data-admin-view-target="adminReportsView"
+          >
+            Laporan
+          </button>
+
+          <button
+            type="button"
+            class="admin-nav-link"
             data-admin-view-target="adminUsersView"
             data-admin-only
           >
             User
           </button>
-          
+
           <button
             type="button"
             class="admin-nav-link"
@@ -142,13 +150,7 @@
           >
             Aktivitas
           </button>
-          <button
-  type="button"
-  class="admin-nav-link"
-  data-admin-view-target="adminReportsView"
->
-  Laporan
-</button>
+
           <span class="admin-current-user" id="adminCurrentUserLabel">
             User
           </span>
@@ -171,16 +173,16 @@
     </section>
   </main>
 
-<script src="js/bike-utils.js"></script>
-<script src="js/admin-core.js"></script>
-<script src="js/admin-partials.js"></script>
-<script src="js/admin-bikes.js"></script>
-<script src="js/admin-brands.js"></script>
-<script src="js/admin-invoices.js"></script>
-<script src="js/admin-services.js"></script>
-<script src="js/admin-users.js"></script>
-<script src="js/admin-audit.js"></script>
-<script src="js/admin-reports.js"></script>
-<script src="js/admin.js"></script>
+  <script src="js/bike-utils.js"></script>
+  <script src="js/admin-core.js"></script>
+  <script src="js/admin-partials.js"></script>
+  <script src="js/admin-bikes.js"></script>
+  <script src="js/admin-brands.js"></script>
+  <script src="js/admin-invoices.js"></script>
+  <script src="js/admin-services.js"></script>
+  <script src="js/admin-users.js"></script>
+  <script src="js/admin-audit.js"></script>
+  <script src="js/admin-reports.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

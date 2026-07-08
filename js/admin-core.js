@@ -86,7 +86,6 @@ function formatAdminDate(value) {
   });
 }
 
-/* Backward-compatible name because invoice/audit code already uses this */
 function formatAuditDate(value) {
   return formatAdminDate(value);
 }
@@ -95,6 +94,7 @@ function handleAdminAuthError(error) {
   const message = String(error?.message || "");
 
   if (
+    error?.status === 401 ||
     message.includes("Unauthorized") ||
     message.includes("Session admin tidak valid") ||
     message.includes("401")
@@ -107,6 +107,7 @@ function handleAdminAuthError(error) {
 
   return false;
 }
+
 async function fetchAdminJson(url, options = {}) {
   const token = getStoredAdminToken();
 
@@ -121,13 +122,20 @@ async function fetchAdminJson(url, options = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const error = new Error(data?.error || `Request failed with status ${response.status}`);
+    const message =
+      data?.detail ||
+      data?.error ||
+      `Request failed with status ${response.status}`;
+
+    const error = new Error(message);
     error.status = response.status;
+    error.data = data;
     throw error;
   }
 
   return data;
 }
+
 /* =========================
    MESSAGE HELPERS
 ========================= */
@@ -192,11 +200,12 @@ async function loginAdmin(username, password) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.error || "Username atau password salah");
+    throw new Error(data?.detail || data?.error || "Username atau password salah");
   }
 
   return data;
 }
+
 async function verifyAdminSession(token) {
   const response = await fetch("/api/admin/verify", {
     method: "POST",
@@ -208,7 +217,7 @@ async function verifyAdminSession(token) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const error = new Error(data?.error || "Session admin tidak valid");
+    const error = new Error(data?.detail || data?.error || "Session admin tidak valid");
     error.status = response.status;
     throw error;
   }
@@ -221,9 +230,11 @@ function setupAdminLogin() {
   const usernameInput = document.getElementById("adminUsernameInput");
   const passwordInput = document.getElementById("adminPasswordInput");
 
-  if (!form || !usernameInput || !passwordInput) {
+  if (!form || !usernameInput || !passwordInput || form.dataset.adminLoginBound) {
     return;
   }
+
+  form.dataset.adminLoginBound = "true";
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -264,9 +275,11 @@ function setupAdminLogin() {
 function setupAdminLogout() {
   const logoutButton = document.getElementById("adminLogoutBtn");
 
-  if (!logoutButton) {
+  if (!logoutButton || logoutButton.dataset.adminLogoutBound) {
     return;
   }
+
+  logoutButton.dataset.adminLogoutBound = "true";
 
   logoutButton.addEventListener("click", () => {
     clearStoredAdminSession();
@@ -306,11 +319,11 @@ async function restoreAdminSession() {
       await initializeAdminProtectedModules();
     }
   } catch (error) {
-  console.error("Session restore failed:", error);
-  clearStoredAdminSession();
-  showAdminLogin();
-  setAdminMessage("Sesi admin sudah habis atau tidak valid. Silakan login ulang.", "is-error");
-}
+    console.error("Session restore failed:", error);
+    clearStoredAdminSession();
+    showAdminLogin();
+    setAdminMessage("Sesi admin sudah habis atau tidak valid. Silakan login ulang.", "is-error");
+  }
 }
 
 /* =========================
@@ -332,6 +345,7 @@ function renderAdminCurrentUserLabel() {
     <strong>${escapeHtml(role)}</strong>
   `;
 }
+
 function showAdminLogin() {
   const loginSection = document.getElementById("adminLoginSection");
   const dashboard = document.getElementById("adminDashboard");
@@ -344,6 +358,7 @@ function showAdminLogin() {
     dashboard.classList.add("is-hidden");
   }
 }
+
 function showAdminDashboard() {
   const loginSection = document.getElementById("adminLoginSection");
   const dashboard = document.getElementById("adminDashboard");
@@ -360,7 +375,7 @@ function showAdminDashboard() {
 }
 
 /* =========================
-   FAKE PAGE NAVIGATION
+   ADMIN NAVIGATION
 ========================= */
 function configureAdminNavigationForRole() {
   const isAdmin = isCurrentUserAdmin();
@@ -381,6 +396,7 @@ function showAdminView(viewId) {
   const targetView = document.getElementById(viewId);
 
   if (!targetView) {
+    console.warn(`Admin view not found: ${viewId}`);
     return;
   }
 
@@ -401,12 +417,20 @@ function showAdminView(viewId) {
     loadAdminBikes();
   }
 
+  if (viewId === "brandsAdminView" && isAdmin && typeof loadAdminBrandsPage === "function") {
+    loadAdminBrandsPage();
+  }
+
   if (viewId === "adminSalesView" && typeof loadInvoicePage === "function") {
     loadInvoicePage();
   }
 
   if (viewId === "adminServiceView" && typeof loadServicePage === "function") {
     loadServicePage();
+  }
+
+  if (viewId === "adminReportsView" && typeof loadReportsPage === "function") {
+    loadReportsPage();
   }
 
   if (viewId === "adminUsersView" && isAdmin && typeof loadAdminUsers === "function") {
@@ -416,13 +440,16 @@ function showAdminView(viewId) {
   if (viewId === "adminAuditView" && isAdmin && typeof loadAuditLogs === "function") {
     loadAuditLogs();
   }
-  if (viewId === "adminReportsView" && typeof loadReportsPage === "function") {
-  loadReportsPage();
-}
 }
 
 function setupAdminViewNavigation() {
   document.querySelectorAll("[data-admin-view-target]").forEach((button) => {
+    if (button.dataset.adminNavigationBound) {
+      return;
+    }
+
+    button.dataset.adminNavigationBound = "true";
+
     button.addEventListener("click", () => {
       showAdminView(button.dataset.adminViewTarget);
     });

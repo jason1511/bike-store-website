@@ -24,6 +24,56 @@ async function fetchAdminUsers() {
   return data.users || [];
 }
 
+async function createAdminUser(userData) {
+  const data = await fetchAdminJson("/api/admin/users", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(userData)
+  });
+
+  return data.user;
+}
+
+async function updateAdminUser(userData) {
+  const data = await fetchAdminJson("/api/admin/users", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(userData)
+  });
+
+  return data.user;
+}
+
+function getNewAdminUserFormData() {
+  return {
+    username: document.getElementById("newUserUsernameInput")?.value.trim() || "",
+    password: document.getElementById("newUserPasswordInput")?.value || "",
+    role: document.getElementById("newUserRoleInput")?.value || "staff"
+  };
+}
+
+function validateNewAdminUser(user) {
+  const errors = [];
+
+  if (!user.username) {
+    errors.push("Username wajib diisi.");
+  }
+
+  if (!user.password) {
+    errors.push("Password wajib diisi.");
+  }
+
+  if (!["admin", "staff"].includes(user.role)) {
+    errors.push("Role tidak valid.");
+  }
+
+  return errors;
+}
+
 function renderAdminUsers(users) {
   const userList = document.getElementById("adminUserList");
   const resultCount = document.getElementById("adminUserResultCount");
@@ -48,39 +98,44 @@ function renderAdminUsers(users) {
   }
 
   userList.innerHTML = users
-    .map((user) => `
-      <article class="admin-user-card">
-        <div class="admin-user-card-main">
-          <h3>${escapeHtml(user.username)}</h3>
+    .map((user) => {
+      const isActive = Boolean(user.isActive);
+      const role = user.role || "staff";
 
-          <div class="admin-user-meta">
-            <span class="admin-user-role ${user.role === "admin" ? "is-admin" : "is-staff"}">
-              ${escapeHtml(user.role)}
-            </span>
+      return `
+        <article class="admin-user-card">
+          <div class="admin-user-card-main">
+            <h3>${escapeHtml(user.username)}</h3>
 
-            <span class="admin-user-status ${user.isActive ? "is-active" : "is-inactive"}">
-              ${user.isActive ? "Aktif" : "Nonaktif"}
-            </span>
+            <div class="admin-user-meta">
+              <span class="admin-user-role ${role === "admin" ? "is-admin" : "is-staff"}">
+                ${escapeHtml(role)}
+              </span>
 
-            <span>
-              Dibuat: ${escapeHtml(formatAuditDate(user.createdAt || "-"))}
-            </span>
+              <span class="admin-user-status ${isActive ? "is-active" : "is-inactive"}">
+                ${isActive ? "Aktif" : "Nonaktif"}
+              </span>
+
+              <span>
+                Dibuat: ${escapeHtml(formatAuditDate(user.createdAt || "-"))}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div class="admin-user-actions">
-          <button
-            type="button"
-            class="admin-action-btn ${user.isActive ? "admin-danger-btn" : "admin-success-btn"}"
-            data-toggle-user-status="${escapeHtml(user.id)}"
-            data-user-active="${user.isActive ? "1" : "0"}"
-            data-user-role="${escapeHtml(user.role)}"
-          >
-            ${user.isActive ? "Nonaktifkan" : "Aktifkan"}
-          </button>
-        </div>
-      </article>
-    `)
+          <div class="admin-user-actions">
+            <button
+              type="button"
+              class="admin-action-btn ${isActive ? "admin-danger-btn" : "admin-success-btn"}"
+              data-toggle-user-status="${escapeHtml(user.id)}"
+              data-user-active="${isActive ? "1" : "0"}"
+              data-user-role="${escapeHtml(role)}"
+            >
+              ${isActive ? "Nonaktifkan" : "Aktifkan"}
+            </button>
+          </div>
+        </article>
+      `;
+    })
     .join("");
 }
 
@@ -103,159 +158,143 @@ async function loadAdminUsers() {
     const users = await fetchAdminUsers();
     renderAdminUsers(users);
   } catch (error) {
-  if (handleAdminAuthError(error)) {
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    if (userList) {
+      userList.innerHTML = `
+        <div class="admin-empty-state is-error">
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+    }
+  }
+}
+
+async function handleCreateAdminUserSubmit(event) {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const createButton = document.getElementById("createUserBtn");
+
+  if (form.dataset.isSubmitting === "true") {
     return;
   }
 
-  if (userList) {
-    userList.innerHTML = `
-      <div class="admin-empty-state is-error">
-        ${escapeHtml(error.message)}
-      </div>
-    `;
+  const user = getNewAdminUserFormData();
+  const errors = validateNewAdminUser(user);
+
+  if (errors.length) {
+    setAdminUserFormNote(errors.join(" "), "is-error");
+    return;
+  }
+
+  form.dataset.isSubmitting = "true";
+
+  if (createButton) {
+    createButton.disabled = true;
+    createButton.textContent = "Membuat...";
+  }
+
+  setAdminUserFormNote("Membuat user baru...");
+
+  try {
+    await createAdminUser(user);
+
+    form.reset();
+
+    const roleInput = document.getElementById("newUserRoleInput");
+
+    if (roleInput) {
+      roleInput.value = "staff";
+    }
+
+    setAdminUserFormNote("User berhasil dibuat.", "is-success");
+    await loadAdminUsers();
+
+    if (typeof loadAuditLogs === "function") {
+      loadAuditLogs();
+    }
+  } catch (error) {
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    setAdminUserFormNote(error.message || "Gagal membuat user.", "is-error");
+  } finally {
+    form.dataset.isSubmitting = "false";
+
+    if (createButton) {
+      createButton.disabled = false;
+      createButton.textContent = "Tambah User";
+    }
   }
 }
-}
 
-async function createAdminUser(userData) {
+async function handleToggleAdminUserStatus(toggleButton) {
+  const id = toggleButton.dataset.toggleUserStatus;
+  const role = toggleButton.dataset.userRole || "staff";
+  const isActive = toggleButton.dataset.userActive === "1";
+  const nextStatus = !isActive;
+
+  if (!id || toggleButton.disabled) {
+    return;
+  }
+
+  toggleButton.disabled = true;
+  toggleButton.textContent = nextStatus ? "Mengaktifkan..." : "Menonaktifkan...";
+
   try {
-    const data = await fetchAdminJson("/api/admin/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(userData)
+    await updateAdminUser({
+      id,
+      role,
+      isActive: nextStatus
     });
 
-    return data.user;
+    await loadAdminUsers();
+
+    if (typeof loadAuditLogs === "function") {
+      loadAuditLogs();
+    }
   } catch (error) {
-    throw new Error(error.message || "Gagal membuat user.");
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    setAdminUserFormNote(error.message || "Gagal mengubah status user.", "is-error");
+
+    toggleButton.disabled = false;
+    toggleButton.textContent = isActive ? "Nonaktifkan" : "Aktifkan";
   }
-}
-
-async function updateAdminUser(userData) {
-  const data = await fetchAdminJson("/api/admin/users", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(userData)
-  });
-
-  return data.user;
 }
 
 function setupAdminUserManagement() {
   const form = document.getElementById("adminUserForm");
   const refreshButton = document.getElementById("refreshUsersBtn");
   const userList = document.getElementById("adminUserList");
-  const createButton = document.getElementById("createUserBtn");
 
-  if (refreshButton) {
+  if (refreshButton && !refreshButton.dataset.adminUsersRefreshBound) {
+    refreshButton.dataset.adminUsersRefreshBound = "true";
     refreshButton.addEventListener("click", loadAdminUsers);
   }
 
-  if (form) {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const username = document.getElementById("newUserUsernameInput")?.value.trim() || "";
-      const password = document.getElementById("newUserPasswordInput")?.value || "";
-      const role = document.getElementById("newUserRoleInput")?.value || "staff";
-
-      if (!username || !password) {
-        setAdminUserFormNote("Username dan password wajib diisi.", "is-error");
-        return;
-      }
-
-      if (createButton) {
-        createButton.disabled = true;
-        createButton.textContent = "Membuat...";
-      }
-
-      setAdminUserFormNote("Membuat user baru...");
-
-      try {
-        await createAdminUser({
-          username,
-          password,
-          role
-        });
-
-        form.reset();
-
-        const roleInput = document.getElementById("newUserRoleInput");
-
-        if (roleInput) {
-          roleInput.value = "staff";
-        }
-
-        setAdminUserFormNote("User berhasil dibuat.", "is-success");
-        await loadAdminUsers();
-
-        if (typeof loadAuditLogs === "function") {
-          loadAuditLogs();
-        }
-      } catch (error) {
-  if (handleAdminAuthError(error)) {
-    return;
+  if (form && !form.dataset.adminUsersFormBound) {
+    form.dataset.adminUsersFormBound = "true";
+    form.addEventListener("submit", handleCreateAdminUserSubmit);
   }
 
-  setAdminUserFormNote(error.message, "is-error");
-} finally {
-        if (createButton) {
-          createButton.disabled = false;
-          createButton.textContent = "Tambah User";
-        }
-      }
-    });
-  }
+  if (userList && !userList.dataset.adminUsersActionsBound) {
+    userList.dataset.adminUsersActionsBound = "true";
 
-  if (userList) {
-    userList.addEventListener("click", async (event) => {
+    userList.addEventListener("click", (event) => {
       const toggleButton = event.target.closest("[data-toggle-user-status]");
 
       if (!toggleButton) {
         return;
       }
 
-      const id = toggleButton.dataset.toggleUserStatus;
-      const role = toggleButton.dataset.userRole;
-      const isActive = toggleButton.dataset.userActive === "1";
-      const nextStatus = !isActive;
-
-      const confirmed = window.confirm(
-        `${nextStatus ? "Aktifkan" : "Nonaktifkan"} user ini?`
-      );
-
-      if (!confirmed) {
-        return;
-      }
-
-      toggleButton.disabled = true;
-      toggleButton.textContent = "Memproses...";
-
-      try {
-        await updateAdminUser({
-          id,
-          role,
-          isActive: nextStatus
-        });
-
-        await loadAdminUsers();
-
-        if (typeof loadAuditLogs === "function") {
-          loadAuditLogs();
-        }
-      } catch (error) {
-  if (handleAdminAuthError(error)) {
-    return;
-  }
-
-  window.alert(error.message);
-  toggleButton.disabled = false;
-  toggleButton.textContent = isActive ? "Nonaktifkan" : "Aktifkan";
-}
+      handleToggleAdminUserStatus(toggleButton);
     });
   }
 }
