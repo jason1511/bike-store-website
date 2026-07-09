@@ -66,18 +66,35 @@ function formatRupiah(value) {
   return `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
 }
 
-function formatAdminDate(value) {
+function parseAdminDate(value) {
   if (!value) {
-    return "-";
+    return null;
   }
 
-  const date = new Date(value);
+  const rawValue = String(value).trim();
+
+  const normalizedValue = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(rawValue)
+    ? `${rawValue.replace(" ", "T")}Z`
+    : rawValue;
+
+  const date = new Date(normalizedValue);
 
   if (Number.isNaN(date.getTime())) {
-    return value;
+    return null;
+  }
+
+  return date;
+}
+
+function formatAdminDate(value) {
+  const date = parseAdminDate(value);
+
+  if (!date) {
+    return value || "-";
   }
 
   return date.toLocaleString("id-ID", {
+    timeZone: "Asia/Jakarta",
     day: "2-digit",
     month: "long",
     year: "numeric",
