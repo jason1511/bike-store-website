@@ -6,6 +6,8 @@ let adminAuditLogsCache = [];
 const AUDIT_ACTION_LABELS = {
   bike_create: "Tambah Sepeda",
   bike_update: "Edit Sepeda",
+  bike_reactivate: "Aktifkan Sepeda",
+  bike_deactivate: "Nonaktifkan Sepeda",
   bike_toggle: "Aktif / Nonaktif Sepeda",
 
   brand_create: "Tambah Brand",
