@@ -97,24 +97,29 @@
   color: #9fb8b6;
   font-size: 0.88rem;
 }
-
 /* =========================
    STOCK MOVEMENT LINE CHART
 ========================= */
 .admin-stock-movement-chart {
-  min-height: 210px;
-  padding: 14px;
+  width: 100%;
+  min-height: 240px;
+  min-width: 0;
+  padding: 18px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
     radial-gradient(circle at top right, rgba(37, 211, 102, 0.08), transparent 34%),
     rgba(7, 18, 18, 0.62);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
 }
 
 .admin-stock-movement-chart svg {
   display: block;
   width: 100%;
+  min-width: 820px;
   height: auto;
 }
 
@@ -132,7 +137,7 @@
 .stock-chart-line {
   fill: none;
   stroke: #8fffc0;
-  stroke-width: 3;
+  stroke-width: 3.4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -144,29 +149,61 @@
 .stock-chart-point {
   fill: #8fffc0;
   stroke: #071312;
-  stroke-width: 2;
+  stroke-width: 2.4;
+}
+
+.stock-chart-title {
+  fill: #ffffff;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.stock-chart-subtitle {
+  fill: #9fb8b6;
+  font-size: 12px;
 }
 
 .stock-chart-label,
 .stock-chart-value {
   fill: #9fb8b6;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .stock-chart-value {
   fill: #dce5e3;
 }
 
-.stock-chart-title {
-  fill: #ffffff;
-  font-size: 13px;
-  font-weight: 900;
+@media (max-width: 760px) {
+  .admin-stock-movement-chart {
+    min-height: 230px;
+    padding: 12px;
+  }
+
+  .admin-stock-movement-chart svg {
+    min-width: 860px;
+  }
+
+  .stock-chart-title {
+    font-size: 14px;
+  }
+
+  .stock-chart-subtitle,
+  .stock-chart-label,
+  .stock-chart-value {
+    font-size: 11px;
+  }
 }
 
-.stock-chart-subtitle {
-  fill: #9fb8b6;
-  font-size: 11px;
+@media (max-width: 430px) {
+  .admin-stock-movement-chart {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .admin-stock-movement-chart svg {
+    min-width: 900px;
+  }
 }
 
 /* =========================
