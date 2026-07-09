@@ -314,3 +314,84 @@
     min-width: 1040px;
   }
 }
+/* =========================
+   REPORT CHART READABILITY
+========================= */
+#adminReportsView .admin-invoice-chart-card,
+#adminReportsView .admin-stock-movement-card {
+  gap: 18px;
+}
+
+#adminReportsView .admin-invoice-line-chart,
+#adminReportsView .admin-stock-movement-chart {
+  width: 100%;
+  min-height: 300px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#adminReportsView .admin-invoice-line-chart svg,
+#adminReportsView .admin-stock-movement-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+}
+
+#adminReportsView .invoice-chart-title,
+#adminReportsView .stock-chart-title {
+  font-size: 15px;
+}
+
+#adminReportsView .invoice-chart-subtitle,
+#adminReportsView .stock-chart-subtitle {
+  font-size: 12px;
+}
+
+#adminReportsView .invoice-chart-label,
+#adminReportsView .invoice-chart-value,
+#adminReportsView .invoice-chart-legend,
+#adminReportsView .stock-chart-label,
+#adminReportsView .stock-chart-value {
+  font-size: 11px;
+}
+
+/* Detail harian is a narrow side panel, so do not force 5 columns there */
+#adminReportsView .admin-report-stock-movement-list .admin-stock-movement-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#adminReportsView .admin-report-stock-movement-list .admin-stock-movement-row div:first-child {
+  grid-column: 1 / -1;
+}
+
+#adminReportsView .admin-report-stock-movement-list .admin-stock-movement-row span {
+  font-size: 0.6rem;
+  letter-spacing: 0.035em;
+}
+
+#adminReportsView .admin-report-stock-movement-list .admin-stock-movement-row strong {
+  font-size: 0.82rem;
+}
+
+@media (max-width: 760px) {
+  #adminReportsView .admin-invoice-line-chart,
+  #adminReportsView .admin-stock-movement-chart {
+    min-height: 250px;
+  }
+
+  #adminReportsView .invoice-chart-title,
+  #adminReportsView .stock-chart-title {
+    font-size: 13px;
+  }
+
+  #adminReportsView .invoice-chart-subtitle,
+  #adminReportsView .invoice-chart-label,
+  #adminReportsView .invoice-chart-value,
+  #adminReportsView .invoice-chart-legend,
+  #adminReportsView .stock-chart-subtitle,
+  #adminReportsView .stock-chart-label,
+  #adminReportsView .stock-chart-value {
+    font-size: 10px;
+  }
+}
