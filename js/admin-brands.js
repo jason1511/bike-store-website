@@ -85,64 +85,99 @@ function validateBrandFormData(brand) {
   return errors;
 }
 
+/* =========================
+   BRAND LOGO UPLOAD
+========================= */
+function brandFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Gagal membaca file logo brand."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function buildBrandLogoBaseName(brandName, fileName = "") {
+  return [
+    "brand",
+    brandName || fileName || "logo"
+  ]
+    .filter(Boolean)
+    .map(slugifyBrand)
+    .filter(Boolean)
+    .join("-");
+}
+
 async function uploadBrandLogoToR2(file, brandName) {
   if (!file || !(file instanceof File)) {
     return "";
   }
 
-  const token = getStoredAdminToken();
-  const formData = new FormData();
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
 
-  formData.append("image", file);
-  formData.append("folder", "brands");
-  formData.append("fileBaseName", `brand-${slugifyBrand(brandName || file.name)}`);
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error("Logo brand harus JPG, PNG, atau WEBP.");
+  }
 
-  const response = await fetch("/api/admin/upload-image", {
+  setBrandLogoUploadNote("Membaca file logo...");
+
+  const imageBase64 = await brandFileToBase64(file);
+
+  setBrandLogoUploadNote("Mengupload logo ke R2...");
+
+  const data = await fetchAdminJson("/api/admin/upload-image", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`
+      "Content-Type": "application/json"
     },
-    body: formData
+    body: JSON.stringify({
+      imageBase64,
+      fileName: file.name,
+      fileType: file.type,
+      folder: "brands",
+      fileBaseName: buildBrandLogoBaseName(brandName, file.name)
+    })
   });
 
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.error || "Gagal upload logo brand.");
+  if (!data?.imagePath) {
+    throw new Error("Upload logo berhasil, tetapi path logo tidak dikembalikan.");
   }
+
+  setBrandLogoUploadNote("Logo brand berhasil diupload.", "success");
 
   return data.imagePath;
 }
 
+/* =========================
+   BRAND API
+========================= */
 async function createAdminBrand(brand) {
-  try {
-    const data = await fetchAdminJson("/api/admin/brands", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(brand)
-    });
+  const data = await fetchAdminJson("/api/admin/brands", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(brand)
+  });
 
-    return data.brand;
-  } catch (error) {
-    throw new Error(error.message || "Gagal menyimpan brand.");
-  }
+  return data.brand;
 }
-async function updateAdminBrand(brand) {
-  try {
-    const data = await fetchAdminJson("/api/admin/brands", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(brand)
-    });
 
-    return data.brand;
-  } catch (error) {
-    throw new Error(error.message || "Gagal mengupdate brand.");
-  }
+async function updateAdminBrand(brand) {
+  const data = await fetchAdminJson("/api/admin/brands", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(brand)
+  });
+
+  return data.brand;
 }
 
 async function toggleAdminBrandStatus(brandId, isActive) {
@@ -159,6 +194,7 @@ async function toggleAdminBrandStatus(brandId, isActive) {
 
   return data.brand;
 }
+
 async function fetchAllAdminBrandsForManager() {
   const data = await fetchAdminJson("/api/admin/brands?includeInactive=1", {
     method: "GET"
@@ -166,10 +202,14 @@ async function fetchAllAdminBrandsForManager() {
 
   return data.brands || [];
 }
+
 function getAdminBrandByIdFromManager(brandId) {
   return adminBrandOptions.find((brand) => brand.id === brandId) || null;
 }
 
+/* =========================
+   BRAND PREVIEW
+========================= */
 function renderBrandPreview() {
   const preview = document.getElementById("brandPreviewCard");
   const logoPreview = document.getElementById("brandPreviewLogo");
@@ -210,6 +250,9 @@ function renderBrandPreview() {
   logoPreview.textContent = "Logo";
 }
 
+/* =========================
+   BRAND LIST
+========================= */
 function renderAdminBrandList() {
   const brandList = document.getElementById("brandList");
 
@@ -261,7 +304,7 @@ function renderAdminBrandList() {
               </p>
 
               <p class="admin-brand-item-meta">
-                ${statusText}
+                ${escapeHtml(statusText)}
               </p>
             </div>
           </button>
@@ -270,13 +313,13 @@ function renderAdminBrandList() {
             <div class="admin-brand-theme-dots">
               <span
                 class="admin-brand-theme-dot"
-                style="--brand-dot-color: ${escapeHtml(mainColor)}; background-color: ${escapeHtml(mainColor)};"
+                style="background-color: ${escapeHtml(mainColor)};"
                 title="Warna utama"
               ></span>
 
               <span
                 class="admin-brand-theme-dot"
-                style="--brand-dot-color: ${escapeHtml(secondColor)}; background-color: ${escapeHtml(secondColor)};"
+                style="background-color: ${escapeHtml(secondColor)};"
                 title="Warna kedua"
               ></span>
             </div>
@@ -296,7 +339,7 @@ function renderAdminBrandList() {
                 data-brand-toggle="${escapeHtml(brand.id)}"
                 data-next-active="${brand.isActive ? "0" : "1"}"
               >
-                ${statusActionText}
+                ${escapeHtml(statusActionText)}
               </button>
             </div>
           </div>
@@ -304,14 +347,13 @@ function renderAdminBrandList() {
       `;
     })
     .join("");
-
-  setupBrandListActions();
 }
 
 async function refreshAdminBrands() {
   adminBrandOptions = await fetchAllAdminBrandsForManager();
   renderAdminBrandList();
 }
+
 async function refreshBikeBrandDropdown() {
   if (typeof loadAdminBrands === "function") {
     await loadAdminBrands();
@@ -321,6 +363,10 @@ async function refreshBikeBrandDropdown() {
     populateBikeBrandSelect();
   }
 }
+
+/* =========================
+   BRAND FORM
+========================= */
 function resetBrandForm() {
   editingBrandId = "";
 
@@ -328,6 +374,7 @@ function resetBrandForm() {
 
   if (brandForm) {
     brandForm.reset();
+    brandForm.dataset.isSubmitting = "false";
   }
 
   setBrandFormValue("brandLogoPathInput", "");
@@ -344,6 +391,7 @@ function resetBrandForm() {
   const submitButton = document.querySelector("#brandForm button[type='submit']");
 
   if (submitButton) {
+    submitButton.disabled = false;
     submitButton.textContent = "Simpan Brand";
   }
 
@@ -370,6 +418,7 @@ function fillBrandForm(brand) {
   const submitButton = document.querySelector("#brandForm button[type='submit']");
 
   if (submitButton) {
+    submitButton.disabled = false;
     submitButton.textContent = "Simpan Perubahan";
   }
 
@@ -383,63 +432,119 @@ function fillBrandForm(brand) {
   });
 }
 
-function setupBrandListActions() {
-  document.querySelectorAll("[data-brand-edit]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const brandId = button.dataset.brandEdit;
-      const brand = getAdminBrandByIdFromManager(brandId);
+/* =========================
+   BRAND ACTION HANDLERS
+========================= */
+async function handleBrandToggle(button) {
+  const brandId = button.dataset.brandToggle;
+  const nextActive = button.dataset.nextActive === "1";
+  const brand = getAdminBrandByIdFromManager(brandId);
 
-      if (brand) {
-        fillBrandForm(brand);
-      }
-    });
-  });
-
-  document.querySelectorAll("[data-brand-toggle]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const brandId = button.dataset.brandToggle;
-      const nextActive = button.dataset.nextActive === "1";
-      const brand = getAdminBrandByIdFromManager(brandId);
-
-      if (!brand) {
-        return;
-      }
-
-      const confirmed = window.confirm(
-        `${nextActive ? "Aktifkan" : "Nonaktifkan"} brand ${brand.name}?`
-      );
-
-      if (!confirmed) {
-        return;
-      }
-
-      try {
-        button.disabled = true;
-        button.textContent = "Memproses...";
-
-        await toggleAdminBrandStatus(brandId, nextActive);
-await refreshAdminBrands();
-await refreshBikeBrandDropdown();
-
-        setBrandFormNote(
-          `Brand ${brand.name} berhasil ${nextActive ? "diaktifkan" : "dinonaktifkan"}.`,
-          "success"
-        );
-      } catch (error) {
-  console.error("Failed to toggle brand:", error);
-
-  if (handleAdminAuthError(error)) {
+  if (!brand || button.disabled) {
     return;
   }
 
-  setBrandFormNote(error.message || "Gagal mengubah status brand.", "error");
-} finally {
-        button.disabled = false;
-      }
-    });
-  });
+  button.disabled = true;
+  button.textContent = "Memproses...";
+
+  try {
+    await toggleAdminBrandStatus(brandId, nextActive);
+    await refreshAdminBrands();
+    await refreshBikeBrandDropdown();
+
+    setBrandFormNote(
+      `Brand ${brand.name} berhasil ${nextActive ? "diaktifkan" : "dinonaktifkan"}.`,
+      "success"
+    );
+  } catch (error) {
+    console.error("Failed to toggle brand:", error);
+
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    setBrandFormNote(error.message || "Gagal mengubah status brand.", "error");
+  } finally {
+    button.disabled = false;
+  }
 }
 
+async function handleBrandFormSubmit(event) {
+  event.preventDefault();
+
+  const brandForm = event.currentTarget;
+  const submitButton = brandForm.querySelector("button[type='submit']");
+
+  if (brandForm.dataset.isSubmitting === "true") {
+    return;
+  }
+
+  const brand = getBrandFormData();
+  const errors = validateBrandFormData(brand);
+
+  if (errors.length) {
+    setBrandFormNote(errors.join(" "), "error");
+    return;
+  }
+
+  brandForm.dataset.isSubmitting = "true";
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Menyimpan...";
+  }
+
+  setBrandFormNote("Menyimpan brand...");
+
+  try {
+    const logoFile = document.getElementById("brandLogoUploadInput")?.files?.[0];
+
+    if (logoFile) {
+      const logoPath = await uploadBrandLogoToR2(logoFile, brand.name);
+
+      brand.logoPath = logoPath;
+      setBrandFormValue("brandLogoPathInput", logoPath);
+    }
+
+    const successMessage = editingBrandId
+      ? "Perubahan brand berhasil disimpan."
+      : "Brand berhasil disimpan.";
+
+    if (editingBrandId) {
+      await updateAdminBrand({
+        ...brand,
+        id: editingBrandId
+      });
+    } else {
+      await createAdminBrand(brand);
+    }
+
+    await refreshAdminBrands();
+    await refreshBikeBrandDropdown();
+
+    resetBrandForm();
+    setBrandFormNote(successMessage, "success");
+  } catch (error) {
+    console.error("Failed to save brand:", error);
+
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    setBrandFormNote(error.message || "Gagal menyimpan brand.", "error");
+  } finally {
+    brandForm.dataset.isSubmitting = "false";
+
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = editingBrandId ? "Simpan Perubahan" : "Simpan Brand";
+    }
+  }
+}
+
+/* =========================
+   SETUP
+========================= */
 function setupBrandPreviewInputs() {
   [
     "brandNameInput",
@@ -450,33 +555,42 @@ function setupBrandPreviewInputs() {
   ].forEach((id) => {
     const input = document.getElementById(id);
 
-    if (input) {
-      input.addEventListener("input", renderBrandPreview);
-      input.addEventListener("change", renderBrandPreview);
+    if (!input || input.dataset.brandPreviewBound) {
+      return;
     }
+
+    input.dataset.brandPreviewBound = "true";
+    input.addEventListener("input", renderBrandPreview);
+    input.addEventListener("change", renderBrandPreview);
   });
 }
 
 function setupBrandRefreshButton() {
   const refreshButton = document.getElementById("refreshBrandListBtn");
 
-  if (!refreshButton) {
+  if (!refreshButton || refreshButton.dataset.brandRefreshBound) {
     return;
   }
 
+  refreshButton.dataset.brandRefreshBound = "true";
+
   refreshButton.addEventListener("click", async () => {
+    if (refreshButton.disabled) {
+      return;
+    }
+
     try {
       refreshButton.disabled = true;
       await refreshAdminBrands();
     } catch (error) {
-  console.error("Failed to refresh brands:", error);
+      console.error("Failed to refresh brands:", error);
 
-  if (handleAdminAuthError(error)) {
-    return;
-  }
+      if (handleAdminAuthError(error)) {
+        return;
+      }
 
-  setBrandFormNote(error.message || "Gagal refresh brand.", "error");
-} finally {
+      setBrandFormNote(error.message || "Gagal refresh brand.", "error");
+    } finally {
       refreshButton.disabled = false;
     }
   });
@@ -485,80 +599,51 @@ function setupBrandRefreshButton() {
 function setupBrandResetButton() {
   const resetButton = document.getElementById("resetBrandFormBtn");
 
-  if (!resetButton) {
+  if (!resetButton || resetButton.dataset.brandResetBound) {
     return;
   }
 
+  resetButton.dataset.brandResetBound = "true";
   resetButton.addEventListener("click", resetBrandForm);
 }
 
 function setupBrandForm() {
   const brandForm = document.getElementById("brandForm");
 
-  if (!brandForm) {
+  if (!brandForm || brandForm.dataset.brandFormBound) {
     return;
   }
 
-  brandForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  brandForm.dataset.brandFormBound = "true";
+  brandForm.addEventListener("submit", handleBrandFormSubmit);
+}
 
-    const submitButton = brandForm.querySelector("button[type='submit']");
-    const brand = getBrandFormData();
-    const errors = validateBrandFormData(brand);
+function setupBrandListActions() {
+  const brandList = document.getElementById("brandList");
 
-    if (errors.length) {
-      setBrandFormNote(errors.join(" "), "error");
+  if (!brandList || brandList.dataset.brandListActionsBound) {
+    return;
+  }
+
+  brandList.dataset.brandListActionsBound = "true";
+
+  brandList.addEventListener("click", (event) => {
+    const editButton = event.target.closest("[data-brand-edit]");
+    const toggleButton = event.target.closest("[data-brand-toggle]");
+
+    if (editButton) {
+      const brandId = editButton.dataset.brandEdit;
+      const brand = getAdminBrandByIdFromManager(brandId);
+
+      if (brand) {
+        fillBrandForm(brand);
+      }
+
       return;
     }
 
-    try {
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = "Menyimpan...";
-      }
-
-      const logoFile = document.getElementById("brandLogoUploadInput")?.files?.[0];
-
-      if (logoFile) {
-        setBrandLogoUploadNote("Mengupload logo ke R2...");
-
-        const logoPath = await uploadBrandLogoToR2(logoFile, brand.name);
-
-        brand.logoPath = logoPath;
-        setBrandFormValue("brandLogoPathInput", logoPath);
-      }
-
-      const successMessage = editingBrandId
-        ? "Perubahan brand berhasil disimpan."
-        : "Brand berhasil disimpan.";
-
-      if (editingBrandId) {
-        await updateAdminBrand({
-          ...brand,
-          id: editingBrandId
-        });
-      } else {
-        await createAdminBrand(brand);
-      }
-
-      await refreshAdminBrands();
-await refreshBikeBrandDropdown();
-
-      resetBrandForm();
-      setBrandFormNote(successMessage, "success");
-    } catch (error) {
-  console.error("Failed to save brand:", error);
-
-  if (handleAdminAuthError(error)) {
-    return;
-  }
-
-  setBrandFormNote(error.message || "Gagal menyimpan brand.", "error");
-} finally {
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = editingBrandId ? "Simpan Perubahan" : "Simpan Brand";
-      }
+    if (toggleButton) {
+      handleBrandToggle(toggleButton);
     }
   });
 }
@@ -576,15 +661,16 @@ async function setupAdminBrandManager() {
   setupBrandRefreshButton();
   setupBrandResetButton();
   setupBrandForm();
+  setupBrandListActions();
 
   adminBrandManagerInitialized = true;
 
   resetBrandForm();
 
   try {
-  await refreshAdminBrands();
-} catch (error) {
-  console.error("Failed to load brand manager:", error);
-  handleAdminAuthError(error);
-}
+    await refreshAdminBrands();
+  } catch (error) {
+    console.error("Failed to load brand manager:", error);
+    handleAdminAuthError(error);
+  }
 }
