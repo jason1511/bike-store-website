@@ -1,0 +1,575 @@
+/* =========================
+   ADMIN MOBILE OVERRIDES
+   Load this file LAST.
+========================= */
+
+/* =========================
+   TABLET / SMALL LAPTOP
+========================= */
+@media (max-width: 1100px) {
+  .admin-page {
+    padding: 18px 14px 36px;
+  }
+
+  .admin-dashboard {
+    gap: 18px;
+  }
+
+  .admin-navbar {
+    position: sticky;
+    top: 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 12px;
+  }
+
+  .admin-navbar-brand {
+    width: 100%;
+  }
+
+  .admin-navbar-links {
+    justify-content: flex-start;
+    gap: 8px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .admin-navbar-links > * {
+    flex: 0 0 auto;
+  }
+
+  .admin-current-user {
+    order: -1;
+    margin-left: auto;
+  }
+
+  .admin-workspace,
+  #adminCatalogueView .admin-workspace,
+  .admin-brand-layout,
+  .admin-report-stock-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-panel,
+  .admin-dashboard-header {
+    padding: 22px;
+  }
+
+  .admin-list-panel,
+  .admin-editor-panel,
+  .admin-brand-editor-panel,
+  .admin-brand-list-panel {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-bike-list,
+  .admin-brand-list,
+  .admin-invoice-list,
+  .admin-service-list,
+  .admin-user-list,
+  .admin-audit-list {
+    max-height: none;
+  }
+}
+
+/* =========================
+   MOBILE GENERAL
+========================= */
+@media (max-width: 760px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .admin-page {
+    padding: 12px 10px 28px;
+  }
+
+  .admin-login-card,
+  .admin-navbar,
+  .admin-dashboard-header,
+  .admin-panel {
+    border-radius: 18px;
+  }
+
+  .admin-login-card {
+    margin-top: 28px;
+    padding: 22px;
+  }
+
+  .admin-dashboard-header {
+    padding: 22px;
+  }
+
+  .admin-dashboard-header h1,
+  .admin-login-card h1 {
+    font-size: clamp(2rem, 10vw, 2.8rem);
+  }
+
+  .admin-dashboard-header p,
+  .admin-panel p {
+    font-size: 0.95rem;
+  }
+
+  .admin-panel {
+    padding: 18px;
+  }
+
+  .admin-panel-header,
+  .admin-section-card-header,
+  .admin-subsection-header {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .admin-panel-actions,
+  .admin-form-actions,
+  .admin-report-actions,
+  .admin-card-actions,
+  .admin-service-actions,
+  .admin-user-actions,
+  .admin-brand-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .admin-panel-actions button,
+  .admin-form-actions button,
+  .admin-report-actions button,
+  .admin-card-actions button,
+  .admin-service-actions button,
+  .admin-user-actions button,
+  .admin-brand-actions button,
+  .btn-primary,
+  .btn-secondary,
+  .admin-action-btn,
+  .admin-small-btn,
+  .admin-primary-btn,
+  .admin-secondary-btn {
+    width: 100%;
+  }
+
+  .admin-filter-bar,
+  .admin-report-filter-grid,
+  .admin-brand-form-grid,
+  .admin-bike-form,
+  .admin-color-variant-fields,
+  .admin-checkbox-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form-group input,
+  .admin-form-group select,
+  .admin-form-group textarea {
+    min-height: 50px;
+    font-size: 16px;
+  }
+
+  .admin-result-count {
+    font-size: 0.86rem;
+  }
+}
+
+/* =========================
+   MOBILE NAVBAR
+========================= */
+@media (max-width: 760px) {
+  .admin-navbar {
+    top: 8px;
+    gap: 12px;
+    padding: 10px;
+  }
+
+  .admin-navbar-brand img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .admin-navbar-brand div {
+    min-width: 0;
+  }
+
+  .admin-navbar-brand small {
+    display: none;
+  }
+
+  .admin-navbar-links {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 2px 2px 6px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-nav-link,
+  .admin-current-user {
+    min-height: 40px;
+    padding: 9px 12px;
+    font-size: 0.82rem;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  .admin-current-user {
+    margin-left: 0;
+  }
+
+  .admin-current-user span {
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* =========================
+   SUMMARY CARDS / ANALYTICS
+========================= */
+@media (max-width: 760px) {
+  .admin-stock-summary-grid,
+  .admin-report-stock-summary-grid,
+  .admin-invoice-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .admin-stock-summary-card,
+  .admin-invoice-summary-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .admin-stock-summary-card strong,
+  .admin-invoice-summary-card strong {
+    font-size: clamp(1.55rem, 9vw, 2rem);
+    word-break: break-word;
+  }
+
+  .admin-stock-movement-card,
+  .admin-invoice-chart-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .admin-stock-movement-chart,
+  .admin-invoice-line-chart {
+    min-height: 210px;
+    padding: 10px;
+    overflow-x: auto;
+  }
+
+  .admin-stock-movement-chart svg,
+  .admin-invoice-line-chart svg {
+    min-width: 620px;
+  }
+
+  .admin-stock-movement-list,
+  .admin-report-stock-movement-list {
+    max-height: none;
+  }
+
+  .admin-stock-movement-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .admin-stock-movement-row div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================
+   CATALOG / BIKE CARDS
+========================= */
+@media (max-width: 760px) {
+  .admin-bike-list-card,
+  .admin-color-variant-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .admin-bike-list-main,
+  .admin-color-variant-header {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-bike-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-bike-meta span {
+    padding: 10px;
+  }
+
+  .admin-bike-editor-modal {
+    padding: 8px;
+    place-items: stretch;
+  }
+
+  .admin-bike-editor-modal-content {
+    width: 100%;
+    max-height: calc(100dvh - 16px);
+    border-radius: 18px;
+  }
+
+  .admin-bike-editor-modal-content .admin-bike-form {
+    grid-template-columns: 1fr;
+  }
+
+  body.is-bike-editor-open {
+    overflow: hidden;
+  }
+}
+
+/* =========================
+   BRAND PAGE
+========================= */
+@media (max-width: 760px) {
+  .admin-brand-upload-box,
+  .admin-brand-preview {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-brand-preview {
+    max-width: none;
+  }
+
+  .admin-brand-item {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .admin-brand-item-main {
+    width: 100%;
+  }
+
+  .admin-brand-item-side {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .admin-brand-theme-dots {
+    justify-content: flex-start;
+  }
+}
+
+/* =========================
+   INVOICE PAGE
+========================= */
+@media (max-width: 760px) {
+  .admin-invoice-preview {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .admin-invoice-preview span {
+    font-size: clamp(1.65rem, 9vw, 2.2rem);
+  }
+
+  .pending-invoice-item,
+  .admin-invoice-card-main {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .pending-invoice-item-side,
+  .admin-invoice-card-side {
+    justify-items: start;
+  }
+
+  .admin-invoice-total {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .admin-invoice-meta strong {
+    display: block;
+    min-width: 0;
+    margin-bottom: 2px;
+  }
+
+  .admin-invoice-modal,
+  .admin-modal {
+    padding: 10px;
+    place-items: stretch;
+  }
+
+  .admin-invoice-modal-content,
+  .admin-modal-content,
+  .admin-void-modal {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 20px);
+    overflow: auto;
+    border-radius: 18px;
+  }
+
+  .admin-invoice-modal-actions,
+  .admin-modal-actions,
+  .admin-void-modal .admin-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .printable-invoice {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .printable-invoice-header,
+  .printable-invoice-brand {
+    flex-direction: column;
+  }
+
+  .printable-invoice-title {
+    text-align: left;
+  }
+
+  .printable-invoice-meta,
+  .printable-invoice-customer,
+  .printable-invoice-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .printable-invoice-table-wrap {
+    overflow-x: auto;
+  }
+
+  .printable-invoice-table {
+    min-width: 620px;
+  }
+}
+
+/* =========================
+   SERVICE PAGE
+========================= */
+@media (max-width: 760px) {
+  .admin-service-card-main {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-service-total {
+    white-space: normal;
+  }
+
+  .admin-service-modal {
+    padding: 10px;
+    place-items: stretch;
+  }
+
+  .admin-service-modal-content {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    overflow: auto;
+    border-radius: 18px;
+  }
+
+  .admin-service-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .printable-service {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .printable-service-table-wrap {
+    overflow-x: auto;
+  }
+
+  .printable-service-table {
+    min-width: 560px;
+  }
+}
+
+/* =========================
+   USERS / AUDIT
+========================= */
+@media (max-width: 760px) {
+  .admin-user-card,
+  .admin-user-item,
+  .admin-user-row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .admin-user-meta {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-audit-card-main {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-audit-time {
+    white-space: normal;
+  }
+
+  .admin-audit-details,
+  .admin-audit-details-text {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* =========================
+   EXTRA SMALL PHONES
+========================= */
+@media (max-width: 430px) {
+  .admin-page {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .admin-panel,
+  .admin-dashboard-header,
+  .admin-login-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .admin-navbar {
+    border-radius: 16px;
+  }
+
+  .admin-nav-link,
+  .admin-current-user {
+    font-size: 0.78rem;
+    padding-inline: 10px;
+  }
+
+  .admin-eyebrow {
+    font-size: 0.72rem;
+  }
+
+  .admin-panel h2 {
+    font-size: 1.25rem;
+  }
+
+  .admin-panel h3 {
+    font-size: 1rem;
+  }
+
+  .admin-empty-state {
+    padding: 14px;
+  }
+}
