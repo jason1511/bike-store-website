@@ -4,78 +4,35 @@ import {
   writeAuditLog
 } from "../../_shared/auth.js";
 
-function parseBikeColors(colors) {
-  if (Array.isArray(colors)) {
-    return colors;
-  }
+import {
+  createBrandTheme,
+  getColorStockTotal,
+  normalizeBikeColors,
+  parseBikeColors
+} from "../../_shared/bike-utils.js";
 
-  if (typeof colors === "string") {
-    try {
-      const parsedColors = JSON.parse(colors);
-      return Array.isArray(parsedColors) ? parsedColors : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  return [];
-}
-
-function normalizeBikeColors(colors) {
-  const parsedColors = parseBikeColors(colors);
-
-  const cleanedColors = parsedColors
-    .map((color) => ({
-      name: String(color.name || "").trim(),
-      hex: String(color.hex || "#cccccc").trim(),
-      image: String(color.image || "").trim(),
-      stockQty: Math.max(0, Number(color.stockQty || 0))
-    }))
-    .filter((color) => color.name || color.image || color.stockQty > 0);
-
-  return JSON.stringify(cleanedColors);
-}
-
-function getColorStockTotal(colors) {
-  return parseBikeColors(colors).reduce((total, color) => {
-    return total + Math.max(0, Number(color.stockQty || 0));
-  }, 0);
-}
-function createFallbackBrandSlug(brand) {
-  return String(brand || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
-
-function createBrandTheme(row) {
-  const slug = row.brand_slug || createFallbackBrandSlug(row.brand);
-  const main = row.brand_theme_main || "#203333";
-  const second = row.brand_theme_second || "#2f4f4f";
-
-  return {
-    id: row.brand_id || "",
-    name: row.brand_name || row.brand || "",
-    slug,
-    logo: row.brand_logo_path || "",
-    className: slug ? `brand-${slug}` : "brand-default",
-    main,
-    second,
-    soft: row.brand_theme_soft || `${main}24`,
-    glow: row.brand_theme_glow || `${main}33`
-  };
-}
 function normalizeBikePayload(payload) {
   const normalizedColors = normalizeBikeColors(payload.colors);
+  const normalizedColorsText = JSON.stringify(normalizedColors);
+
   const colorStockTotal = getColorStockTotal(normalizedColors);
-  const fallbackStockQty = Math.max(0, Number(payload.stockQty || 0));
-  const stockQty = colorStockTotal > 0 ? colorStockTotal : fallbackStockQty;
+  const fallbackStockQty = Math.max(
+    0,
+    Number(payload.stockQty || 0)
+  );
+
+  const stockQty = colorStockTotal > 0
+    ? colorStockTotal
+    : fallbackStockQty;
 
   return {
     id: String(payload.id || "").trim(),
-    brandId: String(payload.brandId || payload.brand_id || "").trim(),
-brand: String(payload.brand || "").trim(),
+    brandId: String(
+      payload.brandId ||
+      payload.brand_id ||
+      ""
+    ).trim(),
+    brand: String(payload.brand || "").trim(),
     name: String(payload.name || "").trim(),
     battery: String(payload.battery || "").trim(),
     motor: String(payload.motor || "").trim(),
@@ -85,10 +42,14 @@ brand: String(payload.brand || "").trim(),
     safety: String(payload.safety || "").trim(),
     image: String(payload.image || "").trim(),
     alt: String(payload.alt || "").trim(),
-    comfort: String(payload.comfort || "medium").trim(),
+    comfort: String(
+      payload.comfort || "medium"
+    ).trim(),
     colorName: String(payload.colorName || "").trim(),
-    colors: normalizedColors,
-    description: String(payload.description || "").trim(),
+    colors: normalizedColorsText,
+    description: String(
+      payload.description || ""
+    ).trim(),
     price: Number(payload.price || 0),
     featured: payload.featured ? 1 : 0,
     inStock: payload.inStock ? 1 : 0,
@@ -134,7 +95,7 @@ function validateBike(bike) {
 }
 
 function rowToBike(row) {
-  const colors = parseBikeColors(row.colors);
+  const colors = normalizeBikeColors(row.colors);
   const colorStockTotal = getColorStockTotal(colors);
   const stockQty = colorStockTotal > 0
     ? colorStockTotal

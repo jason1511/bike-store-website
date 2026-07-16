@@ -4,14 +4,6 @@
 let editingBrandId = "";
 let adminBrandManagerInitialized = false;
 
-function slugifyBrand(value) {
-  return String(value || "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function getBrandFormValue(id) {
   return document.getElementById(id)?.value?.trim() || "";
 }
@@ -48,7 +40,7 @@ function setBrandLogoUploadNote(message, type = "") {
 
 function getBrandFormData() {
   const name = getBrandFormValue("brandNameInput");
-  const slug = slugifyBrand(name);
+  const slug = createSlugFromName(name);
   const themeMain = getBrandFormValue("brandThemeMainInput") || "#203333";
   const themeSecond = getBrandFormValue("brandThemeSecondInput") || "#2f4f4f";
 
@@ -88,15 +80,7 @@ function validateBrandFormData(brand) {
 /* =========================
    BRAND LOGO UPLOAD
 ========================= */
-function brandFileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
 
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Gagal membaca file logo brand."));
-    reader.readAsDataURL(file);
-  });
-}
 
 function buildBrandLogoBaseName(brandName, fileName = "") {
   return [
@@ -104,7 +88,7 @@ function buildBrandLogoBaseName(brandName, fileName = "") {
     brandName || fileName || "logo"
   ]
     .filter(Boolean)
-    .map(slugifyBrand)
+    .map(createSlugFromName)
     .filter(Boolean)
     .join("-");
 }
@@ -126,7 +110,7 @@ async function uploadBrandLogoToR2(file, brandName) {
 
   setBrandLogoUploadNote("Membaca file logo...");
 
-  const imageBase64 = await brandFileToBase64(file);
+  const imageBase64 = await readFileAsDataUrl(file);
 
   setBrandLogoUploadNote("Mengupload logo ke R2...");
 

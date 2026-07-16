@@ -1,9 +1,18 @@
 /* =========================
-   ADMIN INIT
+   ADMIN MODULE STATE
 ========================= */
 let adminProtectedModulesReady = false;
+let adminProtectedModulesPromise = null;
 
-async function initializeAdminProtectedModules() {
+function resetAdminProtectedModules() {
+  adminProtectedModulesReady = false;
+  adminProtectedModulesPromise = null;
+}
+
+/* =========================
+   ADMIN MODULE SETUP
+========================= */
+async function setupAdminProtectedModules() {
   const token = typeof getStoredAdminToken === "function"
     ? getStoredAdminToken()
     : "";
@@ -12,13 +21,8 @@ async function initializeAdminProtectedModules() {
     return;
   }
 
-  try {
-    if (typeof loadAdminPartials === "function") {
-      await loadAdminPartials();
-    }
-  } catch (error) {
-    console.error("Failed to load admin partials:", error);
-    return;
+  if (typeof loadAdminPartials === "function") {
+    await loadAdminPartials();
   }
 
   try {
@@ -26,68 +30,154 @@ async function initializeAdminProtectedModules() {
       await loadAdminBrands();
     }
   } catch (error) {
-    console.error("Failed to load admin brands:", error);
+    console.error(
+      "Failed to load admin brands:",
+      error
+    );
   }
 
-  setupAdminViewNavigation();
+  if (typeof setupAdminViewNavigation === "function") {
+    setupAdminViewNavigation();
+  }
 
   if (typeof setupAdminBrandManager === "function") {
     await setupAdminBrandManager();
   }
 
-  setupBikeRefresh();
-  setupImagePreviewInputs();
-  setupColorVariantEditor();
-  setupBikeEditor();
-  setupBikeFormSave();
-  setupAdminBikeFilters();
+  if (typeof setupBikeRefresh === "function") {
+    setupBikeRefresh();
+  }
 
-  setupInvoiceForm();
-  setupInvoiceModal();
+  if (typeof setupImagePreviewInputs === "function") {
+    setupImagePreviewInputs();
+  }
 
-  setupServiceForm();
-  setupServiceModal();
+  if (typeof setupColorVariantEditor === "function") {
+    setupColorVariantEditor();
+  }
 
-  setupAdminUserManagement();
-  setupAuditLogs();
+  if (typeof setupBikeEditor === "function") {
+    setupBikeEditor();
+  }
+
+  if (typeof setupBikeFormSave === "function") {
+    setupBikeFormSave();
+  }
+
+  if (typeof setupAdminBikeFilters === "function") {
+    setupAdminBikeFilters();
+  }
+
+  if (typeof setupInvoiceForm === "function") {
+    setupInvoiceForm();
+  }
+
+  if (typeof setupInvoiceModal === "function") {
+    setupInvoiceModal();
+  }
+
+  if (typeof setupServiceForm === "function") {
+    setupServiceForm();
+  }
+
+  if (typeof setupServiceModal === "function") {
+    setupServiceModal();
+  }
+
+  if (typeof setupAdminUserManagement === "function") {
+    setupAdminUserManagement();
+  }
+
+  if (typeof setupAuditLogs === "function") {
+    setupAuditLogs();
+  }
+
   if (typeof setupReportsPage === "function") {
-  setupReportsPage();
-}
+    setupReportsPage();
+  }
 
   if (typeof loadAdminBikes === "function") {
     await loadAdminBikes();
   }
 
   if (typeof loadInvoicePage === "function") {
-  await loadInvoicePage();
-}
+    await loadInvoicePage();
+  }
 
   if (typeof loadServicePage === "function") {
-  await loadServicePage();
-}
+    await loadServicePage();
+  }
 
   if (typeof loadAdminUsersPage === "function") {
-  await loadAdminUsersPage();
-} else if (typeof loadAdminUsers === "function") {
-  await loadAdminUsers();
-}
+    await loadAdminUsersPage();
+  } else if (typeof loadAdminUsers === "function") {
+    await loadAdminUsers();
+  }
 
   if (typeof loadAuditPage === "function") {
-  await loadAuditPage();
-} else if (typeof loadAuditLogs === "function") {
-  await loadAuditLogs();
-}
-if (typeof loadReportsPage === "function") {
-  await loadReportsPage();
-}
-  adminProtectedModulesReady = true;
+    await loadAuditPage();
+  } else if (typeof loadAuditLogs === "function") {
+    await loadAuditLogs();
+  }
+
+  if (typeof loadReportsPage === "function") {
+    await loadReportsPage();
+  }
 }
 
+/* =========================
+   PROTECTED INITIALIZATION
+========================= */
+async function initializeAdminProtectedModules() {
+  if (adminProtectedModulesReady) {
+    return;
+  }
+
+  if (adminProtectedModulesPromise) {
+    return adminProtectedModulesPromise;
+  }
+
+  adminProtectedModulesPromise = (
+    async () => {
+      try {
+        await setupAdminProtectedModules();
+        adminProtectedModulesReady = true;
+      } catch (error) {
+        console.error(
+          "Failed to initialize protected admin modules:",
+          error
+        );
+
+        throw error;
+      } finally {
+        adminProtectedModulesPromise = null;
+      }
+    }
+  )();
+
+  return adminProtectedModulesPromise;
+}
+
+/* =========================
+   ADMIN STARTUP
+========================= */
 async function initializeAdmin() {
-  setupAdminLogin();
-  setupAdminLogout();
+  if (typeof setupAdminLogin === "function") {
+    setupAdminLogin();
+  }
 
-  await restoreAdminSession();
+  if (typeof setupAdminLogout === "function") {
+    setupAdminLogout();
+  }
+
+  if (typeof restoreAdminSession === "function") {
+    await restoreAdminSession();
+  }
 }
 
-initializeAdmin();
+initializeAdmin().catch((error) => {
+  console.error(
+    "Failed to initialize admin dashboard:",
+    error
+  );
+});

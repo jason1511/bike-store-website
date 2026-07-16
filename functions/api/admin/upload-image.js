@@ -4,8 +4,13 @@ import {
 } from "../../_shared/auth.js";
 
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
+
+const IMAGE_TYPES = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp"
+};
 
 function slugify(value) {
   return String(value || "")
@@ -15,15 +20,11 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
-function getFileExtension(fileName, fallback = "jpg") {
-  const extension = String(fileName || "")
+function getFileExtension(fileName) {
+  return String(fileName || "")
     .split(".")
     .pop()
-    ?.toLowerCase();
-
-  return ALLOWED_IMAGE_EXTENSIONS.includes(extension)
-    ? extension
-    : fallback;
+    ?.toLowerCase() || "";
 }
 
 function createSafeFolderName(folder) {
@@ -33,13 +34,6 @@ function createSafeFolderName(folder) {
     .replace(/[^a-z0-9/-]+/g, "-")
     .replace(/\/+/g, "/")
     .replace(/^\/+|\/+$/g, "") || "bikes";
-}
-
-function isAllowedImage(fileName, fileType) {
-  const extension = getFileExtension(fileName, "");
-  const type = String(fileType || "").toLowerCase();
-
-  return ALLOWED_IMAGE_TYPES.includes(type) || ALLOWED_IMAGE_EXTENSIONS.includes(extension);
 }
 
 function decodeBase64Image(imageBase64) {
@@ -63,6 +57,125 @@ function decodeBase64Image(imageBase64) {
   return bytes;
 }
 
+function isJpeg(bytes) {
+  return (
+    bytes.length >= 3 &&
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+  );
+}
+
+function isPng(bytes) {
+  const signature = [
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a
+  ];
+
+  return (
+    bytes.length >= signature.length &&
+    signature.every((byte, index) => bytes[index] === byte)
+  );
+}
+
+function isWebp(bytes) {
+  if (bytes.length < 12) {
+    return false;
+  }
+
+  const riff = String.fromCharCode(
+    bytes[0],
+    bytes[1],
+    bytes[2],
+    bytes[3]
+  );
+
+  const webp = String.fromCharCode(
+    bytes[8],
+    bytes[9],
+    bytes[10],
+    bytes[11]
+  );
+
+  return riff === "RIFF" && webp === "WEBP";
+}
+
+function detectImageType(bytes) {
+  if (isJpeg(bytes)) {
+    return {
+      extension: "jpg",
+      contentType: "image/jpeg"
+    };
+  }
+
+  if (isPng(bytes)) {
+    return {
+      extension: "png",
+      contentType: "image/png"
+    };
+  }
+
+  if (isWebp(bytes)) {
+    return {
+      extension: "webp",
+      contentType: "image/webp"
+    };
+  }
+
+  return null;
+}
+
+function verifyImageFile(bytes, fileName, fileType) {
+  const detectedType = detectImageType(bytes);
+
+  if (!detectedType) {
+    return {
+      ok: false,
+      error: "File content is not a supported image."
+    };
+  }
+
+  const suppliedExtension = getFileExtension(fileName);
+  const suppliedContentType = String(fileType || "")
+    .trim()
+    .toLowerCase();
+
+  const expectedContentType = IMAGE_TYPES[suppliedExtension];
+
+  if (!expectedContentType) {
+    return {
+      ok: false,
+      error: "Only JPG, PNG, and WEBP files are allowed."
+    };
+  }
+
+  if (expectedContentType !== detectedType.contentType) {
+    return {
+      ok: false,
+      error: "The file extension does not match the image content."
+    };
+  }
+
+  if (suppliedContentType !== detectedType.contentType) {
+    return {
+      ok: false,
+      error: "The reported file type does not match the image content."
+    };
+  }
+
+  return {
+    ok: true,
+    extension: detectedType.extension,
+    contentType: detectedType.contentType
+  };
+}
+
 async function readJsonUpload(request) {
   const payload = await request.json().catch(() => null);
 
@@ -73,10 +186,18 @@ async function readJsonUpload(request) {
   }
 
   const imageBase64 = String(payload.imageBase64 || "");
-  const fileName = String(payload.fileName || "bike-image.jpg");
-  const fileType = String(payload.fileType || "application/octet-stream");
-  const folder = createSafeFolderName(payload.folder || "bikes");
-  const fileBaseName = slugify(payload.fileBaseName || "");
+  const fileName = String(
+    payload.fileName || "uploaded-image.jpg"
+  );
+  const fileType = String(
+    payload.fileType || "application/octet-stream"
+  );
+  const folder = createSafeFolderName(
+    payload.folder || "bikes"
+  );
+  const fileBaseName = slugify(
+    payload.fileBaseName || ""
+  );
 
   if (!imageBase64) {
     return {
@@ -84,10 +205,17 @@ async function readJsonUpload(request) {
     };
   }
 
-  const bytes = decodeBase64Image(imageBase64);
+  let bytes;
+
+  try {
+    bytes = decodeBase64Image(imageBase64);
+  } catch (error) {
+    return {
+      error: "Image data is not valid base64."
+    };
+  }
 
   return {
-    imageBase64,
     bytes,
     fileName,
     fileType,
@@ -101,7 +229,11 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin", "staff"]);
+    const auth = await requireRole(
+      request,
+      env,
+      ["admin", "staff"]
+    );
 
     if (!auth.ok) {
       return auth.response;
@@ -109,17 +241,21 @@ export async function onRequestPost(context) {
 
     if (!env.BIKE_IMAGES) {
       return jsonResponse(
-        { error: "R2 binding BIKE_IMAGES is missing." },
+        {
+          error: "R2 binding BIKE_IMAGES is missing."
+        },
         500
       );
     }
 
-    const contentType = request.headers.get("content-type") || "";
+    const contentType =
+      request.headers.get("content-type") || "";
 
     if (!contentType.includes("application/json")) {
       return jsonResponse(
         {
-          error: "This endpoint only accepts JSON image uploads.",
+          error:
+            "This endpoint only accepts JSON image uploads.",
           expected: "application/json"
         },
         400
@@ -129,7 +265,10 @@ export async function onRequestPost(context) {
     const upload = await readJsonUpload(request);
 
     if (upload.error) {
-      return jsonResponse({ error: upload.error }, 400);
+      return jsonResponse(
+        { error: upload.error },
+        400
+      );
     }
 
     if (!upload.bytes || upload.size <= 0) {
@@ -149,10 +288,16 @@ export async function onRequestPost(context) {
       );
     }
 
-    if (!isAllowedImage(upload.fileName, upload.fileType)) {
+    const verification = verifyImageFile(
+      upload.bytes,
+      upload.fileName,
+      upload.fileType
+    );
+
+    if (!verification.ok) {
       return jsonResponse(
         {
-          error: "Only JPG, PNG, and WEBP images are allowed.",
+          error: verification.error,
           receivedFile: {
             name: upload.fileName,
             type: upload.fileType,
@@ -163,26 +308,39 @@ export async function onRequestPost(context) {
       );
     }
 
-    const extension = getFileExtension(upload.fileName);
     const timestamp = Date.now();
-    const originalBaseName = upload.fileName.replace(/\.[^/.]+$/, "");
-    const baseName = upload.fileBaseName || slugify(originalBaseName) || "bike-image";
+    const originalBaseName = upload.fileName.replace(
+      /\.[^/.]+$/,
+      ""
+    );
 
-    const objectKey = `${upload.folder}/${baseName}-${timestamp}.${extension}`;
+    const baseName =
+      upload.fileBaseName ||
+      slugify(originalBaseName) ||
+      "uploaded-image";
+
+    const objectKey =
+      `${upload.folder}/${baseName}-${timestamp}.` +
+      verification.extension;
+
     const imagePath = `/api/images/${objectKey}`;
 
-    await env.BIKE_IMAGES.put(objectKey, upload.bytes, {
-      httpMetadata: {
-        contentType: upload.fileType || "application/octet-stream"
-      },
-      customMetadata: {
-        uploadedBy: auth.user.username,
-        uploadedRole: auth.user.role,
-        originalName: upload.fileName,
-        fileBaseName: baseName,
-        uploadSource: "json-base64"
+    await env.BIKE_IMAGES.put(
+      objectKey,
+      upload.bytes,
+      {
+        httpMetadata: {
+          contentType: verification.contentType
+        },
+        customMetadata: {
+          uploadedBy: auth.user.username,
+          uploadedRole: auth.user.role,
+          originalName: upload.fileName,
+          fileBaseName: baseName,
+          uploadSource: "json-base64"
+        }
       }
-    });
+    );
 
     return jsonResponse({
       success: true,
@@ -190,12 +348,11 @@ export async function onRequestPost(context) {
       imagePath
     });
   } catch (error) {
-    console.error("Upload bike image error:", error);
+    console.error("Image upload error:", error);
 
     return jsonResponse(
       {
-        error: "Failed to upload image.",
-        message: error.message
+        error: "Failed to upload image."
       },
       500
     );

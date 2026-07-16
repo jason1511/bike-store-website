@@ -1,22 +1,14 @@
-import { rowToBasicBike } from "../_shared/bike-utils.js";
+import {
+  jsonResponse
+} from "../_shared/auth.js";
 
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-}
+import {
+  rowToBasicBike
+} from "../_shared/bike-utils.js";
+import {
+  getOpenAiOutputText
+} from "../_shared/openai-utils.js";
 
-function getOutputText(openAiData) {
-  return (
-    openAiData.output_text ||
-    openAiData.output?.[0]?.content?.[0]?.text ||
-    openAiData.output?.[1]?.content?.[0]?.text ||
-    ""
-  );
-}
 
 function createLocalComparisonFallback(bikes, usage = "") {
   const scoredBikes = bikes.map((bike) => {
@@ -143,7 +135,7 @@ Aturan:
   }
 
   const openAiData = await openAiResponse.json();
-  const text = getOutputText(openAiData).trim();
+  const text = getOpenAiOutputText(openAiData).trim();
 
   if (!text) {
     throw new Error("AI returned empty response");

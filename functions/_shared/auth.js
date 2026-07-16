@@ -236,7 +236,6 @@ export function getPermissions(role) {
     canDeactivate: role === "admin" || role === "staff",
     canReactivate: role === "admin" || role === "staff",
     canHardDelete: role === "admin",
-    canSeedDatabase: role === "admin",
     canManageUsers: role === "admin"
   };
 }
@@ -263,12 +262,35 @@ export async function verifySessionToken(token, env) {
     return null;
   }
 
-  const [encodedPayload, signature] = token.split(".");
-  const expectedSignature = await createHmacSignature(encodedPayload, env.SESSION_SECRET);
+const tokenParts = token.split(".");
 
-  if (signature !== expectedSignature) {
-    return null;
-  }
+if (tokenParts.length !== 2) {
+  return null;
+}
+
+const [encodedPayload, signature] = tokenParts;
+
+const expectedSignature = await createHmacSignature(
+  encodedPayload,
+  env.SESSION_SECRET
+);
+
+const suppliedSignatureBytes = new TextEncoder().encode(
+  signature
+);
+
+const expectedSignatureBytes = new TextEncoder().encode(
+  expectedSignature
+);
+
+if (
+  !constantTimeEqualBytes(
+    suppliedSignatureBytes,
+    expectedSignatureBytes
+  )
+) {
+  return null;
+}
 
   try {
     const payload = JSON.parse(base64UrlDecode(encodedPayload));
@@ -293,7 +315,10 @@ export async function getAuthUser(request, env) {
   return verifySessionToken(token, env);
 }
 
-async function getActiveAuthUserFromD1(env, tokenUser) {
+export async function getActiveAuthUserFromD1(
+  env,
+  tokenUser
+) {
   if (!tokenUser) {
     return null;
   }
@@ -347,8 +372,11 @@ async function getActiveAuthUserFromD1(env, tokenUser) {
 }
 
 export async function requireRole(request, env, allowedRoles = []) {
-  const tokenUser = await getAuthUser(request, env);
-  const activeUser = await getActiveAuthUserFromD1(env, tokenUser);
+const tokenUser = await getAuthUser(request, env);
+const activeUser = await getActiveAuthUserFromD1(
+  env,
+  tokenUser
+);
 
   if (!activeUser || !allowedRoles.includes(activeUser.role)) {
     return {

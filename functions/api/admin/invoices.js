@@ -668,6 +668,87 @@ async function prepareInvoiceItemsAndStockUpdates(db, invoice) {
     }, 0)
   };
 }
+async function prepareInvoiceVoidStockUpdates(db, invoice) {
+  const invoiceItems = Array.isArray(invoice.items) && invoice.items.length
+    ? invoice.items
+    : [
+        {
+          bikeId: invoice.bikeId,
+          bikeBrand: invoice.bikeBrand,
+          bikeName: invoice.bikeName,
+          bikeColorName: invoice.bikeColorName,
+          quantity: invoice.quantity
+        }
+      ];
+
+  const bikePlans = new Map();
+  const movementPlans = [];
+
+  for (const item of invoiceItems) {
+    let bikePlan = bikePlans.get(item.bikeId);
+
+    if (!bikePlan) {
+      const bike = await getBikeById(db, item.bikeId);
+
+      if (!bike) {
+        throw new Error(
+          `Sepeda ${item.bikeBrand || ""} ${item.bikeName || ""} tidak ditemukan.`
+        );
+      }
+
+      const originalColors = normalizeBikeColors(bike.colors);
+
+      bikePlan = {
+        bike,
+        originalColors,
+        workingColors: originalColors,
+        stockBefore: getColorStockTotal(originalColors)
+      };
+
+      bikePlans.set(item.bikeId, bikePlan);
+    }
+
+    const quantity = Math.max(0, Number(item.quantity || 0));
+    const itemStockBefore = getColorStockTotal(bikePlan.workingColors);
+
+    const stockResult = restoreColorStock(
+      bikePlan.workingColors,
+      item.bikeColorName,
+      quantity
+    );
+
+    if (!stockResult.foundColor) {
+      throw new Error(
+        `Warna ${item.bikeColorName} untuk ${item.bikeBrand} ${item.bikeName} tidak ditemukan di data stok.`
+      );
+    }
+
+    bikePlan.workingColors = stockResult.nextColors;
+
+    movementPlans.push({
+      bikeId: bikePlan.bike.id,
+      bikeBrand: item.bikeBrand || bikePlan.bike.brand,
+      bikeName: item.bikeName || bikePlan.bike.name,
+      bikeColorName: item.bikeColorName,
+      quantity,
+      quantityBefore: itemStockBefore,
+      quantityAfter: stockResult.nextStockQty
+    });
+  }
+
+  const stockUpdates = Array.from(bikePlans.values()).map((plan) => ({
+    bike: plan.bike,
+    originalColors: plan.originalColors,
+    nextColors: plan.workingColors,
+    stockBefore: plan.stockBefore,
+    stockAfter: getColorStockTotal(plan.workingColors)
+  }));
+
+  return {
+    stockUpdates,
+    movementPlans
+  };
+}
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -878,85 +959,109 @@ export async function onRequestPatch(context) {
     }
 
     if (!env.BIKE_DB) {
-      return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
+      return jsonResponse(
+        { error: "D1 binding BIKE_DB is missing" },
+        500
+      );
     }
 
     const payload = await request.json().catch(() => null);
 
     if (!payload) {
-      return jsonResponse({ error: "Invalid void request" }, 400);
+      return jsonResponse(
+        { error: "Invalid void request" },
+        400
+      );
     }
 
     const invoiceId = String(payload.id || "").trim();
     const reason = String(payload.reason || "").trim();
 
     if (!invoiceId) {
-      return jsonResponse({ error: "Invoice ID wajib diisi." }, 400);
-    }
-
-    if (!reason) {
-      return jsonResponse({ error: "Alasan pembatalan wajib diisi." }, 400);
-    }
-
-    const invoiceRow = await env.BIKE_DB
-      .prepare("SELECT * FROM invoices WHERE id = ? LIMIT 1")
-      .bind(invoiceId)
-      .first();
-
-    if (!invoiceRow) {
-      return jsonResponse({ error: "Invoice tidak ditemukan." }, 404);
-    }
-
-    const invoice = rowToInvoice(invoiceRow);
-
-    if (invoice.status === "voided") {
-      return jsonResponse({ error: "Invoice sudah dibatalkan." }, 400);
-    }
-
-    const bike = await getBikeById(env.BIKE_DB, invoice.bikeId);
-
-    if (!bike) {
-      return jsonResponse({ error: "Sepeda pada invoice tidak ditemukan." }, 404);
-    }
-
-    const colors = normalizeBikeColors(bike.colors);
-    const currentStock = getColorStockTotal(colors);
-
-    const stockResult = restoreColorStock(
-      colors,
-      invoice.bikeColorName,
-      invoice.quantity
-    );
-
-    if (!stockResult.foundColor) {
       return jsonResponse(
-        { error: "Warna sepeda pada invoice tidak ditemukan di data stok." },
+        { error: "Invoice ID wajib diisi." },
         400
       );
     }
 
-    const nextColors = stockResult.nextColors;
-    const nextStock = stockResult.nextStockQty;
-
-    const stockUpdated = await updateBikeStockOptimistically(
-      env.BIKE_DB,
-      bike,
-      colors,
-      nextColors,
-      nextStock
-    );
-
-    if (!stockUpdated) {
+    if (!reason) {
       return jsonResponse(
-        {
-          error: "Stok baru saja berubah. Refresh invoice dan coba lagi."
-        },
-        409
+        { error: "Alasan pembatalan wajib diisi." },
+        400
       );
     }
 
+    const invoice = await getInvoiceById(env.BIKE_DB, invoiceId);
+
+    if (!invoice) {
+      return jsonResponse(
+        { error: "Invoice tidak ditemukan." },
+        404
+      );
+    }
+
+    if (invoice.status === "voided") {
+      return jsonResponse(
+        { error: "Invoice sudah dibatalkan." },
+        400
+      );
+    }
+
+    let voidPlan;
+
     try {
-      await env.BIKE_DB
+      voidPlan = await prepareInvoiceVoidStockUpdates(
+        env.BIKE_DB,
+        invoice
+      );
+    } catch (error) {
+      return jsonResponse(
+        {
+          error: error.message ||
+            "Data stok untuk invoice tidak dapat dipulihkan."
+        },
+        400
+      );
+    }
+
+    const appliedStockUpdates = [];
+
+    for (const stockUpdate of voidPlan.stockUpdates) {
+      const stockUpdated = await updateBikeStockOptimistically(
+        env.BIKE_DB,
+        stockUpdate.bike,
+        stockUpdate.originalColors,
+        stockUpdate.nextColors,
+        stockUpdate.stockAfter
+      );
+
+      if (!stockUpdated) {
+        for (const appliedUpdate of appliedStockUpdates.reverse()) {
+          await restoreBikeStockAfterInvoiceFailure(
+            env.BIKE_DB,
+            appliedUpdate.bike,
+            appliedUpdate.originalColors,
+            appliedUpdate.nextColors,
+            appliedUpdate.stockAfter
+          );
+        }
+
+        return jsonResponse(
+          {
+            error:
+              "Stok baru saja berubah. Refresh invoice dan coba lagi."
+          },
+          409
+        );
+      }
+
+      appliedStockUpdates.push(stockUpdate);
+    }
+
+    let invoiceUpdateResult;
+
+    try {
+      invoiceUpdateResult = await env.BIKE_DB
         .prepare(`
           UPDATE invoices
           SET
@@ -978,70 +1083,109 @@ export async function onRequestPatch(context) {
         )
         .run();
     } catch (error) {
-      await restoreBikeStockAfterInvoiceFailure(
-        env.BIKE_DB,
-        bike,
-        colors,
-        nextColors,
-        nextStock
-      );
+      for (const appliedUpdate of appliedStockUpdates.reverse()) {
+        await restoreBikeStockAfterInvoiceFailure(
+          env.BIKE_DB,
+          appliedUpdate.bike,
+          appliedUpdate.originalColors,
+          appliedUpdate.nextColors,
+          appliedUpdate.stockAfter
+        );
+      }
 
       throw error;
     }
 
-   try {
-  await writeStockMovement(env, auth.user, {
-    bikeId: bike.id,
-    bikeBrand: bike.brand,
-    bikeName: bike.name,
-    bikeColorName: invoice.bikeColorName,
-    movementType: "adjustment",
-    quantityChange: invoice.quantity,
-    quantityBefore: currentStock,
-    quantityAfter: nextStock,
-    note: `Void invoice ${invoice.invoiceNumber} - ${reason}`
-  });
-} catch (error) {
-  console.error("Failed to write invoice void stock movement:", error);
-}
+    if (getD1ChangeCount(invoiceUpdateResult) <= 0) {
+      for (const appliedUpdate of appliedStockUpdates.reverse()) {
+        await restoreBikeStockAfterInvoiceFailure(
+          env.BIKE_DB,
+          appliedUpdate.bike,
+          appliedUpdate.originalColors,
+          appliedUpdate.nextColors,
+          appliedUpdate.stockAfter
+        );
+      }
 
-const updatedInvoice = await getInvoiceById(env.BIKE_DB, invoice.id);
-
-try {
-  await writeAuditLog(env, auth.user, {
-    action: "invoice_void",
-    targetType: "invoice",
-    targetId: updatedInvoice.id,
-    targetLabel: updatedInvoice.invoiceNumber,
-    details: {
-      reason,
-      customerName: updatedInvoice.customerName,
-      bikeName: `${updatedInvoice.bikeBrand} ${updatedInvoice.bikeName}`,
-      bikeColorName: updatedInvoice.bikeColorName,
-      quantity: updatedInvoice.quantity,
-      stockBefore: currentStock,
-      stockAfter: nextStock
+      return jsonResponse(
+        {
+          error:
+            "Invoice sudah berubah atau telah dibatalkan. Refresh dan coba lagi."
+        },
+        409
+      );
     }
-  });
-} catch (error) {
-  console.error("Failed to write invoice void audit log:", error);
-}
+
+    for (const movement of voidPlan.movementPlans) {
+      try {
+        await writeStockMovement(env, auth.user, {
+          bikeId: movement.bikeId,
+          bikeBrand: movement.bikeBrand,
+          bikeName: movement.bikeName,
+          bikeColorName: movement.bikeColorName,
+          movementType: "adjustment",
+          quantityChange: movement.quantity,
+          quantityBefore: movement.quantityBefore,
+          quantityAfter: movement.quantityAfter,
+          note:
+            `Void invoice ${invoice.invoiceNumber} - ${reason}`
+        });
+      } catch (error) {
+        console.error(
+          "Failed to write invoice void stock movement:",
+          error
+        );
+      }
+    }
+
+    const updatedInvoice = await getInvoiceById(
+      env.BIKE_DB,
+      invoice.id
+    );
+
+    try {
+      await writeAuditLog(env, auth.user, {
+        action: "invoice_void",
+        targetType: "invoice",
+        targetId: updatedInvoice.id,
+        targetLabel: updatedInvoice.invoiceNumber,
+        details: {
+          reason,
+          customerName: updatedInvoice.customerName,
+          itemCount: voidPlan.movementPlans.length,
+          items: voidPlan.movementPlans.map((movement) => ({
+            bikeName:
+              `${movement.bikeBrand} ${movement.bikeName}`.trim(),
+            bikeColorName: movement.bikeColorName,
+            quantity: movement.quantity,
+            stockBefore: movement.quantityBefore,
+            stockAfter: movement.quantityAfter
+          }))
+        }
+      });
+    } catch (error) {
+      console.error(
+        "Failed to write invoice void audit log:",
+        error
+      );
+    }
 
     return jsonResponse({
       success: true,
       invoice: updatedInvoice,
-      stock: {
-        bikeId: bike.id,
-        colorName: invoice.bikeColorName,
-        before: currentStock,
-        after: nextStock
-      }
+      stock: voidPlan.stockUpdates.map((update) => ({
+        bikeId: update.bike.id,
+        before: update.stockBefore,
+        after: update.stockAfter
+      }))
     });
   } catch (error) {
     console.error("Invoices PATCH error:", error);
 
     return jsonResponse(
-      { error: "Failed to void invoice" },
+      {
+        error: error.message || "Failed to void invoice"
+      },
       500
     );
   }

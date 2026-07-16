@@ -1,30 +1,14 @@
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-}
+import {
+  jsonResponse
+} from "../_shared/auth.js";
 
-function rowToBike(row) {
-  return {
-    ...row,
-    price: Number(row.price || 0),
-    featured: Boolean(row.featured),
-    inStock: Boolean(row.inStock),
-    stockQty: Number(row.stockQty || 0)
-  };
-}
+import {
+  rowToBasicBike
+} from "../_shared/bike-utils.js";
+import {
+  getOpenAiOutputText
+} from "../_shared/openai-utils.js";
 
-function getOutputText(openAiData) {
-  return (
-    openAiData.output_text ||
-    openAiData.output?.[0]?.content?.[0]?.text ||
-    openAiData.output?.[1]?.content?.[0]?.text ||
-    ""
-  );
-}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -60,7 +44,9 @@ export async function onRequestPost(context) {
       `)
       .all();
 
-    const bikes = (result.results || []).map(rowToBike);
+    const bikes = (result.results || []).map(
+  rowToBasicBike
+);
 
     if (!bikes.length) {
       return jsonResponse({ error: "No bikes available in catalogue" }, 404);
@@ -129,7 +115,9 @@ Aturan:
     }
 
     const openAiData = await openAiResponse.json();
-    const text = getOutputText(openAiData).trim();
+    const text = getOpenAiOutputText(
+  openAiData
+).trim();
 
     if (!text) {
       return jsonResponse({ error: "AI returned empty response" }, 500);

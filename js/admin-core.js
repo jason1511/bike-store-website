@@ -57,7 +57,42 @@ function createSlugFromName(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+function readFileAsDataUrl(file) {
+  if (!file || !(file instanceof File)) {
+    return Promise.reject(
+      new Error("File tidak ditemukan.")
+    );
+  }
 
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(
+          new Error("Hasil pembacaan file tidak valid.")
+        );
+        return;
+      }
+
+      resolve(reader.result);
+    };
+
+    reader.onerror = () => {
+      reject(
+        new Error("Gagal membaca file.")
+      );
+    };
+
+    reader.onabort = () => {
+      reject(
+        new Error("Pembacaan file dibatalkan.")
+      );
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
 function normalizeSearchText(value) {
   return String(value || "").toLowerCase().trim();
 }
@@ -298,11 +333,17 @@ function setupAdminLogout() {
 
   logoutButton.dataset.adminLogoutBound = "true";
 
-  logoutButton.addEventListener("click", () => {
-    clearStoredAdminSession();
+logoutButton.addEventListener("click", () => {
+  clearStoredAdminSession();
 
-    adminBikesCache = [];
-    adminServicesCache = [];
+  if (
+    typeof resetAdminProtectedModules === "function"
+  ) {
+    resetAdminProtectedModules();
+  }
+
+  adminBikesCache = [];
+  adminServicesCache = [];
 
     if (typeof hideBikeEditor === "function") {
       hideBikeEditor();
