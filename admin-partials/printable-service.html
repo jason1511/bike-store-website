@@ -1,152 +1,141 @@
-<section class="print-template is-hidden" id="printableServiceTemplate">
-  <div class="print-page" id="printableServicePage">
-    <header class="print-header">
-      <div>
-        <h1>CV Niaga Bersama Abadi</h1>
-        <p>Showroom Sepeda Listrik</p>
-        <p>Lumajang, Jawa Timur</p>
-      </div>
+  <div
+    class="admin-service-modal is-hidden"
+    id="adminServiceModal"
+    aria-hidden="true"
+  >
+    <div
+      class="admin-service-modal-overlay"
+      id="adminServiceModalOverlay"
+    ></div>
 
-      <div class="print-logo">
-        <img
-          src="images/logo.jpeg"
-          alt="CV Niaga Bersama Abadi"
+    <div class="admin-service-modal-content">
+      <div class="admin-service-modal-actions no-print">
+        <button
+          type="button"
+          class="btn-secondary"
+          id="closeServiceModalBtn"
         >
-      </div>
-    </header>
+          Tutup
+        </button>
 
-    <section class="print-title-section">
-      <div>
-        <p class="print-eyebrow">Invoice Service</p>
-        <h2 id="printServiceNumber">SRV-0000</h2>
-      </div>
-
-      <div class="print-date-box">
-        <span>Tanggal</span>
-        <strong id="printServiceDate">-</strong>
-      </div>
-    </section>
-
-    <section class="print-info-grid">
-      <div class="print-info-card">
-        <h3>Customer</h3>
-
-        <p>
-          <span>Nama</span>
-          <strong id="printServiceCustomerName">-</strong>
-        </p>
-
-        <p>
-          <span>WhatsApp</span>
-          <strong id="printServiceCustomerPhone">-</strong>
-        </p>
-
-        <p>
-          <span>Alamat</span>
-          <strong id="printServiceCustomerAddress">-</strong>
-        </p>
+        <button
+          type="button"
+          class="btn-primary"
+          id="printServiceBtn"
+        >
+          Cetak Service
+        </button>
       </div>
 
-      <div class="print-info-card">
-        <h3>Unit Sepeda</h3>
+      <article class="printable-service">
+        <header class="printable-service-header">
+          <div class="printable-service-brand">
+            <img
+              src="images/logo.jpeg"
+              alt="CV Niaga Bersama Abadi"
+            >
 
-        <p>
-          <span>Brand</span>
-          <strong id="printServiceBikeBrand">-</strong>
-        </p>
+            <div>
+              <h1>CV Niaga Bersama Abadi</h1>
+              <p>Showroom Sepeda Listrik</p>
+              <p>Lumajang, Jawa Timur</p>
+            </div>
+          </div>
 
-        <p>
-          <span>Model</span>
-          <strong id="printServiceBikeModel">-</strong>
-        </p>
+          <div class="printable-service-title">
+            <p>Invoice Service</p>
+            <h2 id="printServiceNumber">SRV-0000</h2>
+          </div>
+        </header>
 
-        <p>
-          <span>Warna</span>
-          <strong id="printServiceBikeColor">-</strong>
-        </p>
+        <section class="printable-service-meta">
+          <div>
+            <span>Tanggal</span>
+            <strong id="printServiceDate">-</strong>
+          </div>
 
-        <p>
-          <span>No. Rangka / Catatan Unit</span>
-          <strong id="printServicePlateNumber">-</strong>
-        </p>
-      </div>
-    </section>
+          <div>
+            <span>Admin</span>
+            <strong id="printServiceCreatedBy">-</strong>
+          </div>
 
-    <section class="print-info-grid">
-      <div class="print-info-card">
-        <h3>Keluhan</h3>
-        <p id="printServiceComplaint">-</p>
-      </div>
+          <div>
+            <span>Status</span>
+            <strong id="printServiceStatus">-</strong>
+          </div>
+        </section>
 
-      <div class="print-info-card">
-        <h3>Pembayaran</h3>
+        <section class="printable-service-section">
+          <h3>Customer</h3>
 
-        <p>
-          <span>Metode</span>
-          <strong id="printServicePaymentMethod">-</strong>
-        </p>
+          <div class="printable-service-customer">
+            <div>
+              <span>Nama</span>
+              <strong id="printServiceCustomerName">-</strong>
+            </div>
 
-        <p>
-          <span>Status</span>
-          <strong id="printServicePaymentStatus">-</strong>
-        </p>
+            <div>
+              <span>WhatsApp</span>
+              <strong id="printServiceCustomerPhone">-</strong>
+            </div>
 
-        <p>
-          <span>Admin</span>
-          <strong id="printServiceCreatedBy">-</strong>
-        </p>
-      </div>
-    </section>
+            <div class="printable-service-wide">
+              <span>Alamat</span>
+              <strong id="printServiceCustomerAddress">-</strong>
+            </div>
+          </div>
+        </section>
 
-    <section class="print-table-section">
-      <table class="print-table">
-        <thead>
-          <tr>
-            <th>Pekerjaan Service</th>
-            <th class="is-right">Biaya</th>
-          </tr>
-        </thead>
+        <section class="printable-service-section">
+          <h3>Detail Service</h3>
 
-        <tbody id="printServiceItems">
-          <tr>
-            <td>Data service belum dimuat.</td>
-            <td class="is-right">Rp 0</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+          <div class="printable-service-table-wrap">
+            <table class="printable-service-table">
+              <thead>
+                <tr>
+                  <th>Unit</th>
+                  <th>Jenis Service</th>
+                  <th>Biaya</th>
+                </tr>
+              </thead>
 
-    <section class="print-total-section">
-      <div class="print-notes">
-        <h3>Catatan</h3>
-        <p id="printServiceNotes">-</p>
-      </div>
+              <tbody>
+                <tr>
+                  <td id="printServiceBikeLabel">-</td>
+                  <td id="printServiceType">-</td>
+                  <td id="printServiceCost">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-      <div class="print-total-box">
-        <p class="print-grand-total">
-          <span>Total Service</span>
-          <strong id="printServiceGrandTotal">Rp 0</strong>
-        </p>
-      </div>
-    </section>
+          <div class="printable-service-total-box">
+            <span>Total Service</span>
+            <strong id="printServiceTotal">Rp 0</strong>
+          </div>
+        </section>
 
-    <section class="print-signature-section">
-      <div>
-        <p>Customer</p>
-        <div class="print-signature-line"></div>
-      </div>
+        <section
+          class="printable-service-section"
+          id="printServiceNotesSection"
+        >
+          <h3>Catatan</h3>
+          <p id="printServiceNotes">-</p>
+        </section>
 
-      <div>
-        <p>Admin / Teknisi</p>
-        <div class="print-signature-line"></div>
-      </div>
-    </section>
+        <footer class="printable-service-footer">
+          <div>
+            <p>Customer</p>
+            <span></span>
+            <strong id="printServiceCustomerSignature">-</strong>
+          </div>
 
-    <footer class="print-footer">
-      <p>
-        Terima kasih telah mempercayakan service sepeda listrik Anda kepada
-        CV Niaga Bersama Abadi.
-      </p>
-    </footer>
+          <div>
+            <p>Admin / Teknisi</p>
+            <span></span>
+            <strong id="printServiceStaffSignature">-</strong>
+          </div>
+        </footer>
+      </article>
+    </div>
   </div>
-</section>

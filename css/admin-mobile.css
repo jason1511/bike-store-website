@@ -427,33 +427,6 @@
     grid-template-columns: 1fr;
   }
 
-  .printable-invoice {
-    padding: 18px;
-    border-radius: 16px;
-  }
-
-  .printable-invoice-header,
-  .printable-invoice-brand {
-    flex-direction: column;
-  }
-
-  .printable-invoice-title {
-    text-align: left;
-  }
-
-  .printable-invoice-meta,
-  .printable-invoice-customer,
-  .printable-invoice-footer {
-    grid-template-columns: 1fr;
-  }
-
-  .printable-invoice-table-wrap {
-    overflow-x: auto;
-  }
-
-  .printable-invoice-table {
-    min-width: 620px;
-  }
 }
 
 /* =========================
@@ -484,19 +457,6 @@
   .admin-service-modal-actions {
     display: grid;
     grid-template-columns: 1fr;
-  }
-
-  .printable-service {
-    padding: 18px;
-    border-radius: 16px;
-  }
-
-  .printable-service-table-wrap {
-    overflow-x: auto;
-  }
-
-  .printable-service-table {
-    min-width: 560px;
   }
 }
 
