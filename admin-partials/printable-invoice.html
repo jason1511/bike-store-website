@@ -1,98 +1,73 @@
-
-  <!-- =========================
-       PRINTABLE INVOICE MODAL
-  ========================== -->
+<!-- =========================
+     PRINTABLE INVOICE MODAL
+========================== -->
+<div
+  class="admin-invoice-modal is-hidden"
+  id="adminInvoiceModal"
+  aria-hidden="true"
+>
   <div
-    class="admin-invoice-modal is-hidden"
-    id="adminInvoiceModal"
-    aria-hidden="true"
-  >
-    <div
-      class="admin-invoice-modal-overlay"
-      id="adminInvoiceModalOverlay"
-    ></div>
+    class="admin-invoice-modal-overlay"
+    id="adminInvoiceModalOverlay"
+  ></div>
 
-    <div class="admin-invoice-modal-content">
-      <div class="admin-invoice-modal-actions no-print">
-        <button
-          type="button"
-          class="btn-secondary"
-          id="closeInvoiceModalBtn"
-        >
-          Tutup
-        </button>
+  <div class="admin-invoice-modal-content">
+    <div class="admin-invoice-modal-actions no-print">
+      <button type="button" class="btn-secondary" id="closeInvoiceModalBtn">
+        Tutup
+      </button>
+      <button type="button" class="btn-primary" id="printInvoiceBtn">
+        Cetak Invoice
+      </button>
+    </div>
 
-        <button
-          type="button"
-          class="btn-primary"
-          id="printInvoiceBtn"
-        >
-          Cetak Invoice
-        </button>
-      </div>
-
-      <article class="printable-invoice">
+    <article class="printable-invoice">
+      <div class="printable-invoice-page">
         <header class="printable-invoice-header">
-          <div class="printable-invoice-brand">
-            <img
-              src="images/logo.jpeg"
-              alt="CV Niaga Bersama Abadi"
-            >
+          <div class="printable-invoice-heading">
+            <p>Invoice Penjualan</p>
+            <h1>INVOICE</h1>
+          </div>
 
+          <div class="printable-invoice-brand">
             <div>
-              <h1>CV Niaga Bersama Abadi</h1>
+              <h2>CV Niaga Bersama Abadi</h2>
               <p>Panglima Sudirman No.90, Tompokersan</p>
               <p>Lumajang, Jawa Timur 67311</p>
             </div>
-          </div>
-
-          <div class="printable-invoice-title">
-            <p>Invoice Penjualan</p>
-            <h2 id="printInvoiceNumber">INV-0000</h2>
+            <img src="images/logo.jpeg" alt="CV Niaga Bersama Abadi">
           </div>
         </header>
 
-        <section class="printable-invoice-meta">
+        <section class="printable-invoice-reference" aria-label="Informasi invoice">
+          <div>
+            <span>Nomor Invoice</span>
+            <strong id="printInvoiceNumber">INV-0000</strong>
+          </div>
           <div>
             <span>Tanggal</span>
             <strong id="printInvoiceDate">-</strong>
           </div>
+        </section>
 
-          <div>
-            <span>Admin</span>
-            <strong id="printInvoiceCreatedBy">-</strong>
+        <section class="printable-invoice-parties">
+          <div class="printable-invoice-party">
+            <h3>Tagihan Kepada</h3>
+            <strong id="printCustomerName">-</strong>
+            <p><span>WhatsApp</span><b id="printCustomerPhone">-</b></p>
+            <p><span>Alamat</span><b id="printCustomerAddress">-</b></p>
           </div>
 
-          <div>
-            <span>Pembayaran</span>
-            <strong id="printInvoicePaymentMethod">-</strong>
+          <div class="printable-invoice-party printable-invoice-payment">
+            <h3>Detail Pembayaran</h3>
+            <p><span>Metode</span><b id="printInvoicePaymentMethod">-</b></p>
+            <p><span>Status</span><b class="printable-invoice-status">Lunas</b></p>
+            <p><span>Admin</span><b id="printInvoiceCreatedBy">-</b></p>
           </div>
         </section>
 
-        <section class="printable-invoice-section">
-          <h3>Customer</h3>
-
-          <div class="printable-invoice-customer">
-            <div>
-              <span>Nama</span>
-              <strong id="printCustomerName">-</strong>
-            </div>
-
-            <div>
-              <span>WhatsApp</span>
-              <strong id="printCustomerPhone">-</strong>
-            </div>
-
-            <div class="printable-invoice-wide">
-              <span>Alamat</span>
-              <strong id="printCustomerAddress">-</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="printable-invoice-section">
+        <section class="printable-invoice-products">
           <h3>Detail Produk</h3>
-
           <div class="printable-invoice-table-wrap">
             <table class="printable-invoice-table">
               <thead>
@@ -104,7 +79,6 @@
                   <th class="is-right">Total</th>
                 </tr>
               </thead>
-
               <tbody id="printInvoiceItems">
                 <tr>
                   <td colspan="5">Data invoice belum dimuat.</td>
@@ -112,34 +86,40 @@
               </tbody>
             </table>
           </div>
+        </section>
+
+        <section class="printable-invoice-summary">
+          <div class="printable-invoice-notes" id="printInvoiceNotesSection">
+            <h3>Catatan</h3>
+            <p id="printInvoiceNotes">-</p>
+          </div>
 
           <div class="printable-invoice-total-box">
-            <span>Total</span>
+            <span>Total Pembayaran</span>
             <strong id="printInvoiceGrandTotal">Rp 0</strong>
           </div>
         </section>
 
-        <section
-          class="printable-invoice-section"
-          id="printInvoiceNotesSection"
-        >
-          <h3>Catatan</h3>
-          <p id="printInvoiceNotes">-</p>
-        </section>
-
         <footer class="printable-invoice-footer">
-          <div>
-            <p>Customer</p>
-            <span></span>
-            <strong id="printInvoiceCustomerSignature">-</strong>
+          <div class="printable-invoice-signatures">
+            <div>
+              <p>Customer</p>
+              <span></span>
+              <strong id="printInvoiceCustomerSignature">-</strong>
+            </div>
+            <div>
+              <p>Admin</p>
+              <span></span>
+              <strong id="printInvoiceStaffSignature">-</strong>
+            </div>
           </div>
 
-          <div>
-            <p>Admin</p>
-            <span></span>
-            <strong id="printInvoiceStaffSignature">-</strong>
+          <div class="printable-invoice-thanks">
+            <strong>Terima kasih atas kepercayaan Anda.</strong>
+            <p>CV Niaga Bersama Abadi · Lumajang, Jawa Timur</p>
           </div>
         </footer>
-      </article>
-    </div>
+      </div>
+    </article>
   </div>
+</div>
