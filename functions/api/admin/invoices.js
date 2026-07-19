@@ -264,6 +264,7 @@ function rowToInvoice(row) {
     totalPrice: Number(row.total_price || 0),
 
     paymentMethod: row.payment_method,
+    paymentBank: row.payment_bank || "",
     notes: row.notes,
 
     createdById: row.created_by_id,
@@ -327,6 +328,7 @@ function normalizeInvoicePayload(payload) {
     customerAddress: String(payload.customerAddress || "").trim(),
 
     paymentMethod: String(payload.paymentMethod || "").trim(),
+    paymentBank: String(payload.paymentBank || "").trim(),
     notes: String(payload.notes || "").trim(),
 
     items: rawItems.map(normalizeInvoiceItemPayload)
@@ -356,6 +358,24 @@ function validateInvoice(invoice) {
 
   if (!invoice.items.length) {
     errors.push("Minimal 1 item invoice wajib diisi.");
+  }
+
+  const allowedPaymentMethods = ["Cash", "Bank Transfer"];
+  const allowedPaymentBanks = ["BRI", "BNI", "BCA", "Bank Lainnya"];
+
+  if (!allowedPaymentMethods.includes(invoice.paymentMethod)) {
+    errors.push("Metode pembayaran harus Cash atau Bank Transfer.");
+  }
+
+  if (
+    invoice.paymentMethod === "Bank Transfer" &&
+    !allowedPaymentBanks.includes(invoice.paymentBank)
+  ) {
+    errors.push("Bank tujuan wajib dipilih untuk pembayaran bank transfer.");
+  }
+
+  if (invoice.paymentMethod === "Cash") {
+    invoice.paymentBank = "";
   }
 
   invoice.items.forEach((item, index) => {
@@ -812,13 +832,14 @@ export async function onRequestPost(context) {
             total_price,
 
             payment_method,
+            payment_bank,
             notes,
 
             created_by_id,
             created_by_username,
             created_by_role
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
         .bind(
           invoiceId,
@@ -840,6 +861,7 @@ export async function onRequestPost(context) {
           totalPrice,
 
           invoice.paymentMethod,
+          invoice.paymentBank,
           invoice.notes,
 
           auth.user.id || "",

@@ -198,9 +198,19 @@ function openInvoiceModal(invoice) {
   setPrintText("printInvoiceCustomerAddress", invoice.customerAddress || "-");
 
   setPrintText("printInvoicePaymentMethod", invoice.paymentMethod || "-");
+  setPrintText("printInvoicePaymentBank", invoice.paymentBank || "-");
   setPrintText("printInvoicePaymentStatus", isVoided ? "Dibatalkan" : "Lunas");
   setPrintText("printInvoiceSubtotal", formatRupiah(subtotal));
   setPrintText("printInvoiceGrandTotal", formatRupiah(totalPrice));
+
+  const paymentBankRow = document.getElementById("printInvoicePaymentBankRow");
+
+  if (paymentBankRow) {
+    paymentBankRow.classList.toggle(
+      "is-hidden",
+      invoice.paymentMethod !== "Bank Transfer" || !invoice.paymentBank
+    );
+  }
 
   renderPrintableInvoiceItems(invoice);
 

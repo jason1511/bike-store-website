@@ -166,46 +166,156 @@
         <div>
           <h2>Generate Laporan</h2>
           <p>
-            Area untuk export laporan penjualan, stok, service, PDF, dan CSV.
+            Preview, cetak, atau simpan laporan penjualan dan
+  pergerakan stok sebagai PDF.
           </p>
         </div>
       </div>
 
       <div class="admin-report-filter-grid">
         <div class="admin-form-group">
-          <label for="reportDateFromInput">Dari Tanggal</label>
-          <input type="date" id="reportDateFromInput">
+          <label for="reportPeriodInput">Periode</label>
+          <select id="reportPeriodInput">
+            <option value="daily">Harian</option>
+            <option value="weekly">Mingguan</option>
+            <option value="monthly" selected>Bulanan</option>
+            <option value="custom">Tanggal Custom</option>
+          </select>
         </div>
 
-        <div class="admin-form-group">
-          <label for="reportDateToInput">Sampai Tanggal</label>
-          <input type="date" id="reportDateToInput">
-        </div>
+        <!-- Daily -->
+<div
+  class="admin-form-group is-hidden"
+  id="reportDailyGroup"
+>
+  <label for="reportDailyInput">
+    Pilih Tanggal
+  </label>
+
+  <input
+    type="date"
+    id="reportDailyInput"
+  >
+</div>
+
+<!-- Weekly -->
+<div
+  class="admin-form-group is-hidden"
+  id="reportWeeklyGroup"
+>
+  <label for="reportWeeklyInput">
+    Mulai Minggu
+  </label>
+
+  <input
+    type="date"
+    id="reportWeeklyInput"
+  >
+
+  <p
+    class="admin-form-note"
+    id="reportWeeklyRangeNote"
+  >
+    -
+  </p>
+</div>
+
+<!-- Monthly -->
+<div
+  class="admin-form-group"
+  id="reportMonthlyGroup"
+>
+  <label for="reportMonthlyInput">
+    Pilih Bulan
+  </label>
+
+  <select id="reportMonthlyInput">
+  </select>
+</div>
+
+<!-- Custom start -->
+<div
+  class="admin-form-group is-hidden"
+  id="reportCustomFromGroup"
+>
+  <label for="reportCustomFromInput">
+    Dari Tanggal
+  </label>
+
+  <input
+    type="date"
+    id="reportCustomFromInput"
+  >
+</div>
+
+<!-- Custom end -->
+<div
+  class="admin-form-group is-hidden"
+  id="reportCustomToGroup"
+>
+  <label for="reportCustomToInput">
+    Sampai Tanggal
+  </label>
+
+  <input
+    type="date"
+    id="reportCustomToInput"
+  >
+</div>
 
         <div class="admin-form-group">
           <label for="reportTypeInput">Jenis Laporan</label>
           <select id="reportTypeInput">
             <option value="sales">Penjualan</option>
-            <option value="stock">Stok</option>
-            <option value="service">Service</option>
-            <option value="full">Gabungan</option>
+            <option value="stock">Pergerakan Stok</option>
           </select>
         </div>
       </div>
 
       <div class="admin-report-actions">
-        <button type="button" class="btn-secondary" id="previewReportBtn" disabled>
-          Preview Report Coming Soon
-        </button>
+  <button
+    type="button"
+    class="btn-secondary"
+    id="previewReportBtn"
+  >
+    Preview Laporan
+  </button>
 
-        <button type="button" class="btn-secondary" id="exportReportPdfBtn" disabled>
-          Export PDF Coming Soon
-        </button>
+  <button
+    type="button"
+    class="btn-secondary"
+    id="printReportButton"
+    disabled
+  >
+    Cetak / Simpan PDF
+  </button>
+</div>
 
-        <button type="button" class="btn-secondary" id="exportReportCsvBtn" disabled>
-          Export CSV Coming Soon
-        </button>
+      <p class="admin-form-note" id="reportGenerationNote">
+        Pilih periode dan jenis laporan, lalu klik Preview Laporan.
+      </p>
+
+      <div class="admin-report-preview is-hidden" id="reportPreview">
+        <div class="admin-report-preview-header">
+          <div>
+            <p class="admin-eyebrow" id="reportPreviewType">Laporan</p>
+            <h3 id="reportPreviewTitle">Preview Laporan</h3>
+            <p id="reportPreviewPeriod">-</p>
+          </div>
+          <strong id="reportPreviewSummary">0 data</strong>
+        </div>
+
+        <div class="admin-report-table-wrap">
+          <table class="admin-report-table">
+            <thead id="reportPreviewHead"></thead>
+            <tbody id="reportPreviewBody"></tbody>
+          </table>
+        </div>
       </div>
+      <div
+  id="printableReportHost"
+  aria-hidden="true"
+></div>
     </section>
   </div>
 </section>

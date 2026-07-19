@@ -52,6 +52,16 @@ function getInvoiceStatusLabel(invoice) {
 function getInvoiceStatusClass(invoice) {
   return isInvoiceVoided(invoice) ? "is-voided" : "is-active";
 }
+
+function getInvoicePaymentLabel(invoice) {
+  const method = invoice?.paymentMethod || "-";
+
+  if (method === "Bank Transfer" && invoice?.paymentBank) {
+    return `${method} — ${invoice.paymentBank}`;
+  }
+
+  return method;
+}
 function getFilteredInvoices() {
   const searchInput = document.getElementById("invoiceSearchInput");
   const paymentFilter = document.getElementById("invoicePaymentFilter");
@@ -63,7 +73,10 @@ function getFilteredInvoices() {
     if (paymentValue !== "all") {
       const invoicePayment = invoice.paymentMethod || "";
 
-      if (invoicePayment !== paymentValue) {
+      const matchesLegacyTransfer =
+        paymentValue === "Bank Transfer" && invoicePayment === "Transfer";
+
+      if (invoicePayment !== paymentValue && !matchesLegacyTransfer) {
         return false;
       }
     }
@@ -81,6 +94,7 @@ function getFilteredInvoices() {
       invoice.bikeName,
       invoice.bikeColorName,
       invoice.paymentMethod,
+      invoice.paymentBank,
       invoice.createdByUsername,
       invoice.createdByRole,
       invoice.notes
@@ -176,7 +190,7 @@ ${escapeHtml(itemSummary)}
 
             <span>
               <strong>Pembayaran:</strong>
-              ${escapeHtml(invoice.paymentMethod || "-")}
+              ${escapeHtml(getInvoicePaymentLabel(invoice))}
             </span>
 
             <span>
@@ -270,4 +284,3 @@ async function loadInvoicePage() {
   updateInvoicePreview();
   loadInvoices();
 }
-

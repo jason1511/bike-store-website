@@ -85,9 +85,18 @@
           <label for="invoicePaymentMethodInput">Metode Pembayaran</label>
           <select id="invoicePaymentMethodInput">
             <option value="Cash">Cash</option>
-            <option value="Transfer">Transfer</option>
-            <option value="QRIS">QRIS</option>
-            <option value="Kredit">Kredit</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group is-hidden" id="invoicePaymentBankGroup">
+          <label for="invoicePaymentBankInput">Bank Tujuan</label>
+          <select id="invoicePaymentBankInput">
+            <option value="">Pilih bank</option>
+            <option value="BRI">BRI</option>
+            <option value="BNI">BNI</option>
+            <option value="BCA">BCA</option>
+            <option value="Bank Lainnya">Bank Lainnya</option>
           </select>
         </div>
 
@@ -148,9 +157,7 @@
           <select id="invoicePaymentFilter">
             <option value="all">Semua</option>
             <option value="Cash">Cash</option>
-            <option value="Transfer">Transfer</option>
-            <option value="QRIS">QRIS</option>
-            <option value="Kredit">Kredit</option>
+            <option value="Bank Transfer">Bank Transfer</option>
           </select>
         </div>
       </div>

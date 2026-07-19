@@ -1,0 +1,2 @@
+ALTER TABLE invoices
+ADD COLUMN payment_bank TEXT NOT NULL DEFAULT '';

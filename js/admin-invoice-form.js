@@ -362,6 +362,23 @@ function updateInvoicePreview() {
   }
 }
 
+function updateInvoicePaymentBankVisibility() {
+  const methodInput = document.getElementById("invoicePaymentMethodInput");
+  const bankGroup = document.getElementById("invoicePaymentBankGroup");
+  const bankInput = document.getElementById("invoicePaymentBankInput");
+  const isBankTransfer = methodInput?.value === "Bank Transfer";
+
+  bankGroup?.classList.toggle("is-hidden", !isBankTransfer);
+
+  if (bankInput) {
+    bankInput.required = isBankTransfer;
+
+    if (!isBankTransfer) {
+      bankInput.value = "";
+    }
+  }
+}
+
 function resetInvoiceForm() {
   const form = document.getElementById("adminInvoiceForm");
   const quantityInput = document.getElementById("invoiceQuantityInput");
@@ -374,6 +391,7 @@ function resetInvoiceForm() {
     quantityInput.value = "1";
   }
   populateInvoiceColorOptions();
+  updateInvoicePaymentBankVisibility();
 
   updateInvoicePreview();
 }
@@ -384,6 +402,7 @@ function getInvoiceFormData() {
     customerAddress: document.getElementById("invoiceCustomerAddressInput")?.value.trim() || "",
 
     paymentMethod: document.getElementById("invoicePaymentMethodInput")?.value || "",
+    paymentBank: document.getElementById("invoicePaymentBankInput")?.value || "",
     notes: document.getElementById("invoiceNotesInput")?.value.trim() || "",
 
     items: pendingInvoiceItems.map((item) => ({
@@ -403,6 +422,10 @@ function validateInvoiceFormData(invoice) {
 
   if (!Array.isArray(invoice.items) || !invoice.items.length) {
     errors.push("Tambahkan minimal 1 item ke invoice terlebih dahulu.");
+  }
+
+  if (invoice.paymentMethod === "Bank Transfer" && !invoice.paymentBank) {
+    errors.push("Bank tujuan wajib dipilih untuk pembayaran bank transfer.");
   }
 
   invoice.items?.forEach((item, index) => {
@@ -460,10 +483,17 @@ function setupInvoiceForm() {
   const createButton = document.getElementById("createInvoiceBtn");
   const searchInput = document.getElementById("invoiceSearchInput");
   const paymentFilter = document.getElementById("invoicePaymentFilter");
+  const paymentMethodInput = document.getElementById("invoicePaymentMethodInput");
 
   if (openItemModalButton && !openItemModalButton.dataset.invoiceItemBound) {
     openItemModalButton.dataset.invoiceItemBound = "true";
     openItemModalButton.addEventListener("click", openInvoiceItemModal);
+  }
+
+  if (paymentMethodInput && !paymentMethodInput.dataset.paymentBankBound) {
+    paymentMethodInput.dataset.paymentBankBound = "true";
+    paymentMethodInput.addEventListener("change", updateInvoicePaymentBankVisibility);
+    updateInvoicePaymentBankVisibility();
   }
 
   if (closeItemModalButton && !closeItemModalButton.dataset.invoiceItemBound) {
