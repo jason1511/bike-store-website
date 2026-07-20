@@ -775,6 +775,370 @@ async function prepareInvoiceVoidStockUpdates(db, invoice) {
     movementPlans
   };
 }
+function normalizeInvoiceEditPayload(
+  payload
+) {
+  return {
+    customerName:
+      String(
+        payload.customerName || ""
+      ).trim(),
+
+    customerPhone:
+      String(
+        payload.customerPhone || ""
+      ).trim(),
+
+    customerAddress:
+      String(
+        payload.customerAddress || ""
+      ).trim(),
+
+    paymentMethod:
+      String(
+        payload.paymentMethod || ""
+      ).trim(),
+
+    paymentBank:
+      String(
+        payload.paymentBank || ""
+      ).trim(),
+
+    notes:
+      String(
+        payload.notes || ""
+      ).trim(),
+
+    items:
+      Array.isArray(payload.items)
+        ? payload.items.map(
+            normalizeInvoiceItemPayload
+          )
+        : []
+  };
+}
+
+function validateInvoiceEdit(
+  invoice
+) {
+  const errors = [];
+
+  const allowedPaymentMethods = [
+    "Cash",
+    "Bank Transfer"
+  ];
+
+  const allowedPaymentBanks = [
+    "BRI",
+    "BNI",
+    "BCA",
+    "Bank Lainnya"
+  ];
+
+  if (!invoice.customerName) {
+    errors.push(
+      "Nama customer wajib diisi."
+    );
+  }
+
+  if (
+    !allowedPaymentMethods.includes(
+      invoice.paymentMethod
+    )
+  ) {
+    errors.push(
+      "Metode pembayaran harus Cash atau Bank Transfer."
+    );
+  }
+
+  if (
+    invoice.paymentMethod ===
+      "Bank Transfer" &&
+    !allowedPaymentBanks.includes(
+      invoice.paymentBank
+    )
+  ) {
+    errors.push(
+      "Bank tujuan wajib dipilih untuk pembayaran bank transfer."
+    );
+  }
+
+  if (
+    invoice.paymentMethod === "Cash"
+  ) {
+    invoice.paymentBank = "";
+  }
+
+  invoice.items.forEach(
+    (item, index) => {
+      const itemNumber = index + 1;
+
+      if (!item.bikeId) {
+        errors.push(
+          `Item ${itemNumber}: sepeda wajib dipilih.`
+        );
+      }
+
+      if (!item.bikeColorName) {
+        errors.push(
+          `Item ${itemNumber}: warna sepeda wajib dipilih.`
+        );
+      }
+
+      if (
+        !Number.isInteger(
+          item.quantity
+        ) ||
+        item.quantity < 1
+      ) {
+        errors.push(
+          `Item ${itemNumber}: jumlah unit minimal 1.`
+        );
+      }
+
+      if (
+        !Number.isFinite(
+          item.unitPrice
+        ) ||
+        item.unitPrice < 0
+      ) {
+        errors.push(
+          `Item ${itemNumber}: harga tidak boleh negatif.`
+        );
+      }
+    }
+  );
+
+  return errors;
+}
+async function prepareInvoiceEditPlan(
+  db,
+  originalInvoice,
+  editedInvoice
+) {
+  const bikePlans = new Map();
+  const preparedItems = [];
+
+  async function getBikePlan(bikeId) {
+    if (bikePlans.has(bikeId)) {
+      return bikePlans.get(bikeId);
+    }
+
+    const bike =
+      await getBikeById(db, bikeId);
+
+    if (!bike) {
+      throw new Error(
+        "Sepeda tidak ditemukan."
+      );
+    }
+
+    const originalColors =
+      normalizeBikeColors(bike.colors);
+
+    const plan = {
+      bike,
+      originalColors,
+      workingColors:
+        originalColors.map(
+          (color) => ({ ...color })
+        )
+    };
+
+    bikePlans.set(bikeId, plan);
+
+    return plan;
+  }
+
+  const originalItems =
+    Array.isArray(originalInvoice.items)
+      ? originalInvoice.items
+      : [];
+
+  const originalIsVoided =
+    originalInvoice.status === "voided";
+
+  /*
+   * Restore the original active invoice
+   * in memory first. Incomplete legacy
+   * rows are skipped because they cannot
+   * be reconciled reliably.
+   */
+  if (!originalIsVoided) {
+    for (
+      const item of originalItems
+    ) {
+      const quantity =
+        Number(item.quantity || 0);
+
+      if (
+        !item.bikeId ||
+        !item.bikeColorName ||
+        quantity <= 0
+      ) {
+        continue;
+      }
+
+      const plan =
+        await getBikePlan(
+          item.bikeId
+        );
+
+      const result =
+        restoreColorStock(
+          plan.workingColors,
+          item.bikeColorName,
+          quantity
+        );
+
+      if (!result.foundColor) {
+        throw new Error(
+          `Warna ${item.bikeColorName} pada invoice lama tidak ditemukan.`
+        );
+      }
+
+      plan.workingColors =
+        result.nextColors;
+    }
+  }
+
+  /*
+   * Validate and apply the complete
+   * edited invoice in memory.
+   */
+  for (
+    const item of editedInvoice.items
+  ) {
+    const plan =
+      await getBikePlan(item.bikeId);
+
+    const selectedColor =
+      findBikeColor(
+        plan.workingColors,
+        item.bikeColorName
+      );
+
+    if (!selectedColor) {
+      throw new Error(
+        `Warna ${item.bikeColorName} tidak ditemukan.`
+      );
+    }
+
+    /*
+     * A voided invoice is historical.
+     * Editing it must not deduct stock.
+     */
+    if (!originalIsVoided) {
+      const availableStock =
+        Number(
+          selectedColor.stockQty || 0
+        );
+
+      if (
+        availableStock <
+        item.quantity
+      ) {
+        throw new Error(
+          `Stok warna ${selectedColor.name} tidak cukup. Stok tersedia setelah rekonsiliasi: ${availableStock}.`
+        );
+      }
+
+      const deduction =
+        deductColorStock(
+          plan.workingColors,
+          item.bikeColorName,
+          item.quantity
+        );
+
+      plan.workingColors =
+        deduction.nextColors;
+    }
+
+    preparedItems.push({
+      bikeId:
+        plan.bike.id,
+
+      bikeBrand:
+        plan.bike.brand,
+
+      bikeName:
+        plan.bike.name,
+
+      bikeColorName:
+        selectedColor.name,
+
+      bikeColorHex:
+        selectedColor.hex || "",
+
+      bikeColorImage:
+        selectedColor.image || "",
+
+      quantity:
+        item.quantity,
+
+      unitPrice:
+        item.unitPrice,
+
+      lineTotal:
+        item.quantity *
+        item.unitPrice
+    });
+  }
+
+  const stockUpdates =
+    originalIsVoided
+      ? []
+      : Array.from(
+          bikePlans.values()
+        )
+          .map((plan) => ({
+            bike:
+              plan.bike,
+
+            originalColors:
+              plan.originalColors,
+
+            nextColors:
+              plan.workingColors,
+
+            stockBefore:
+              getColorStockTotal(
+                plan.originalColors
+              ),
+
+            stockAfter:
+              getColorStockTotal(
+                plan.workingColors
+              )
+          }))
+          .filter((update) => {
+            return (
+              JSON.stringify(
+                update.originalColors
+              ) !==
+              JSON.stringify(
+                update.nextColors
+              )
+            );
+          });
+
+  return {
+    preparedItems,
+
+    stockUpdates,
+
+    totalPrice:
+      preparedItems.reduce(
+        (total, item) => {
+          return (
+            total +
+            item.lineTotal
+          );
+        },
+        0
+      )
+  };
+}
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -1218,16 +1582,495 @@ export async function onRequestPatch(context) {
     );
   }
 }
+export async function onRequestPut(
+  context
+) {
+  const { request, env } = context;
+
+  try {
+    const auth = await requireRole(
+      request,
+      env,
+      ["admin"]
+    );
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.BIKE_DB) {
+      return jsonResponse(
+        {
+          error:
+            "D1 binding BIKE_DB is missing"
+        },
+        500
+      );
+    }
+
+    const payload =
+      await request.json().catch(
+        () => null
+      );
+
+    if (!payload) {
+      return jsonResponse(
+        {
+          error:
+            "Data edit invoice tidak valid."
+        },
+        400
+      );
+    }
+
+    const invoiceId =
+      String(payload.id || "").trim();
+
+    const reason =
+      String(
+        payload.reason || ""
+      ).trim();
+
+    if (!invoiceId) {
+      return jsonResponse(
+        {
+          error: "ID invoice wajib diisi."
+        },
+        400
+      );
+    }
+
+    if (reason.length < 5) {
+      return jsonResponse(
+        {
+          error:
+            "Alasan perubahan minimal 5 karakter."
+        },
+        400
+      );
+    }
+
+    const originalInvoice =
+      await getInvoiceById(
+        env.BIKE_DB,
+        invoiceId
+      );
+
+    if (!originalInvoice) {
+      return jsonResponse(
+        {
+          error: "Invoice tidak ditemukan."
+        },
+        404
+      );
+    }
+
+    const editedInvoice =
+      normalizeInvoiceEditPayload(
+        payload
+      );
+
+    const errors =
+      validateInvoiceEdit(
+        editedInvoice
+      );
+
+    if (errors.length) {
+      return jsonResponse(
+        {
+          error:
+            "Data edit invoice tidak valid.",
+          errors
+        },
+        400
+      );
+    }
+
+    const originalItems =
+      Array.isArray(
+        originalInvoice.items
+      )
+        ? originalInvoice.items
+        : [];
+
+    /*
+     * A modern invoice cannot be reduced
+     * to zero items. Empty items are only
+     * permitted for incomplete legacy
+     * records that were already empty.
+     */
+    if (
+      originalItems.length > 0 &&
+      editedInvoice.items.length === 0
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "Invoice modern harus memiliki minimal satu item. Gunakan Hapus jika invoice harus dihapus sepenuhnya."
+        },
+        400
+      );
+    }
+
+    const editPlan =
+      await prepareInvoiceEditPlan(
+        env.BIKE_DB,
+        originalInvoice,
+        editedInvoice
+      );
+
+    const preparedItems =
+      editPlan.preparedItems;
+
+    const firstItem =
+      preparedItems[0] || null;
+
+    const nextTotalPrice =
+      firstItem
+        ? editPlan.totalPrice
+        : Number(
+            originalInvoice.totalPrice ||
+            0
+          );
+
+    const appliedStockUpdates = [];
+
+    /*
+     * Apply the calculated inventory
+     * changes using optimistic checks.
+     */
+    for (
+      const stockUpdate of
+      editPlan.stockUpdates
+    ) {
+      const updated =
+        await updateBikeStockOptimistically(
+          env.BIKE_DB,
+          stockUpdate.bike,
+          stockUpdate.originalColors,
+          stockUpdate.nextColors,
+          stockUpdate.stockAfter
+        );
+
+      if (!updated) {
+        for (
+          const appliedUpdate of
+          appliedStockUpdates.reverse()
+        ) {
+          await restoreBikeStockAfterInvoiceFailure(
+            env.BIKE_DB,
+            appliedUpdate.bike,
+            appliedUpdate.originalColors,
+            appliedUpdate.nextColors,
+            appliedUpdate.stockAfter
+          );
+        }
+
+        return jsonResponse(
+          {
+            error:
+              "Stok telah berubah. Refresh halaman dan coba lagi."
+          },
+          409
+        );
+      }
+
+      appliedStockUpdates.push(
+        stockUpdate
+      );
+    }
+
+    try {
+      const statements = [];
+
+      statements.push(
+        env.BIKE_DB
+          .prepare(`
+            UPDATE invoices
+            SET
+              customer_name = ?,
+              customer_phone = ?,
+              customer_address = ?,
+
+              bike_id = ?,
+              bike_brand = ?,
+              bike_name = ?,
+              bike_color_name = ?,
+              bike_color_hex = ?,
+              bike_color_image = ?,
+
+              quantity = ?,
+              unit_price = ?,
+              total_price = ?,
+
+              payment_method = ?,
+              payment_bank = ?,
+              notes = ?
+            WHERE id = ?
+          `)
+          .bind(
+            editedInvoice.customerName,
+            editedInvoice.customerPhone,
+            editedInvoice.customerAddress,
+
+            firstItem
+              ? firstItem.bikeId
+              : originalInvoice.bikeId,
+
+            firstItem
+              ? firstItem.bikeBrand
+              : originalInvoice.bikeBrand,
+
+            firstItem
+              ? firstItem.bikeName
+              : originalInvoice.bikeName,
+
+            firstItem
+              ? firstItem.bikeColorName
+              : originalInvoice.bikeColorName,
+
+            firstItem
+              ? firstItem.bikeColorHex
+              : originalInvoice.bikeColorHex,
+
+            firstItem
+              ? firstItem.bikeColorImage
+              : originalInvoice.bikeColorImage,
+
+            firstItem
+              ? firstItem.quantity
+              : originalInvoice.quantity,
+
+            firstItem
+              ? firstItem.unitPrice
+              : originalInvoice.unitPrice,
+
+            nextTotalPrice,
+
+            editedInvoice.paymentMethod,
+            editedInvoice.paymentBank,
+            editedInvoice.notes,
+
+            originalInvoice.id
+          )
+      );
+
+      /*
+       * Only replace item records when
+       * the edited invoice contains items.
+       * An empty legacy invoice remains
+       * an empty legacy invoice.
+       */
+      if (
+        preparedItems.length > 0
+      ) {
+        statements.push(
+          env.BIKE_DB
+            .prepare(`
+              DELETE FROM invoice_items
+              WHERE invoice_id = ?
+            `)
+            .bind(originalInvoice.id)
+        );
+
+        for (
+          const item of preparedItems
+        ) {
+          statements.push(
+            env.BIKE_DB
+              .prepare(`
+                INSERT INTO invoice_items (
+                  id,
+                  invoice_id,
+
+                  bike_id,
+                  bike_brand,
+                  bike_name,
+                  bike_color_name,
+                  bike_color_hex,
+                  bike_color_image,
+
+                  quantity,
+                  unit_price,
+                  line_total
+                )
+                VALUES (
+                  ?, ?, ?, ?, ?, ?,
+                  ?, ?, ?, ?, ?
+                )
+              `)
+              .bind(
+                createInvoiceItemId(),
+                originalInvoice.id,
+
+                item.bikeId,
+                item.bikeBrand,
+                item.bikeName,
+                item.bikeColorName,
+                item.bikeColorHex,
+                item.bikeColorImage,
+
+                item.quantity,
+                item.unitPrice,
+                item.lineTotal
+              )
+          );
+        }
+      }
+
+      await env.BIKE_DB.batch(
+        statements
+      );
+    } catch (error) {
+      /*
+       * Return inventory to its original
+       * state if the invoice update fails.
+       */
+      for (
+        const appliedUpdate of
+        appliedStockUpdates.reverse()
+      ) {
+        await restoreBikeStockAfterInvoiceFailure(
+          env.BIKE_DB,
+          appliedUpdate.bike,
+          appliedUpdate.originalColors,
+          appliedUpdate.nextColors,
+          appliedUpdate.stockAfter
+        );
+      }
+
+      throw error;
+    }
+
+    /*
+     * Record aggregate inventory changes.
+     */
+    for (
+      const stockUpdate of
+      editPlan.stockUpdates
+    ) {
+      const quantityChange =
+        stockUpdate.stockAfter -
+        stockUpdate.stockBefore;
+
+      if (quantityChange === 0) {
+        continue;
+      }
+
+      try {
+        await writeStockMovement(
+          env,
+          auth.user,
+          {
+            bikeId:
+              stockUpdate.bike.id,
+
+            bikeBrand:
+              stockUpdate.bike.brand,
+
+            bikeName:
+              stockUpdate.bike.name,
+
+            bikeColorName: "",
+
+            movementType:
+              "adjustment",
+
+            quantityChange,
+
+            quantityBefore:
+              stockUpdate.stockBefore,
+
+            quantityAfter:
+              stockUpdate.stockAfter,
+
+            note:
+              `Edit invoice ${originalInvoice.invoiceNumber} - ${reason}`
+          }
+        );
+      } catch (error) {
+        console.error(
+          "Failed to write invoice edit stock movement:",
+          error
+        );
+      }
+    }
+
+    const updatedInvoice =
+      await getInvoiceById(
+        env.BIKE_DB,
+        originalInvoice.id
+      );
+
+    await writeAuditLog(
+      env,
+      auth.user,
+      {
+        action: "invoice_edit",
+
+        targetType: "invoice",
+
+        targetId:
+          originalInvoice.id,
+
+        targetLabel:
+          originalInvoice.invoiceNumber,
+
+        details: {
+          reason,
+
+          before:
+            originalInvoice,
+
+          after:
+            updatedInvoice,
+
+          stockChanges:
+            editPlan.stockUpdates.map(
+              (update) => ({
+                bikeId:
+                  update.bike.id,
+
+                bikeName:
+                  `${update.bike.brand} ${update.bike.name}`.trim(),
+
+                stockBefore:
+                  update.stockBefore,
+
+                stockAfter:
+                  update.stockAfter
+              })
+            )
+        }
+      }
+    );
+
+    return jsonResponse({
+      success: true,
+      invoice: updatedInvoice
+    });
+  } catch (error) {
+    console.error(
+      "Invoices PUT error:",
+      error
+    );
+
+    return jsonResponse(
+      {
+        error:
+          error.message ||
+          "Gagal mengubah invoice."
+      },
+      500
+    );
+  }
+}
 export async function onRequestDelete(
   context
 ) {
   const { request, env } = context;
 
   try {
-    /*
-     * Admin only. Staff receives an
-     * unauthorized response.
-     */
     const auth = await requireRole(
       request,
       env,
@@ -1298,36 +2141,47 @@ export async function onRequestDelete(
         ? invoice.items
         : [];
 
-    const containsRealSale =
-      Number(invoice.totalPrice || 0) > 0 ||
-      items.some((item) => {
+    /*
+     * An incomplete legacy invoice may
+     * not contain enough information to
+     * restore stock safely.
+     */
+    const hasCompleteItems =
+      items.length > 0 &&
+      items.every((item) => {
         return (
-          Number(item.quantity || 0) > 0 ||
-          Number(item.lineTotal || 0) > 0
+          item.bikeId &&
+          item.bikeColorName &&
+          Number(item.quantity || 0) > 0
         );
       });
 
-    /*
-     * Real sales must use Void so stock
-     * remains consistent.
-     */
-    if (containsRealSale) {
-      return jsonResponse(
-        {
-          error:
-            "Invoice ini memiliki transaksi penjualan. Gunakan Batalkan Invoice agar stok dikembalikan dengan benar."
-        },
-        409
-      );
-    }
+    const isVoided =
+      invoice.status === "voided";
 
-    const auditSnapshot = {
+    const shouldRestoreStock =
+      !isVoided &&
+      hasCompleteItems;
+
+    const isLegacyIncomplete =
+      !hasCompleteItems;
+
+    const snapshot = {
       reason,
-      deletedAt:
-        new Date().toISOString(),
+
+      deletionType:
+        isLegacyIncomplete
+          ? "legacy_incomplete"
+          : isVoided
+            ? "voided_invoice"
+            : "active_invoice",
+
+      stockRestorationRequired:
+        shouldRestoreStock,
 
       invoice: {
         id: invoice.id,
+
         invoiceNumber:
           invoice.invoiceNumber,
 
@@ -1365,22 +2219,38 @@ export async function onRequestDelete(
           invoice.createdByUsername,
 
         createdByRole:
-          invoice.createdByRole
+          invoice.createdByRole,
+
+        voidReason:
+          invoice.voidReason,
+
+        voidedAt:
+          invoice.voidedAt,
+
+        voidedById:
+          invoice.voidedById,
+
+        voidedByUsername:
+          invoice.voidedByUsername,
+
+        voidedByRole:
+          invoice.voidedByRole
       },
 
       items
     };
 
     /*
-     * Store the complete snapshot before
-     * deleting the original records.
+     * Record the authorised deletion
+     * before changing inventory or
+     * removing database records.
      */
     await writeAuditLog(
       env,
       auth.user,
       {
         action:
-          "invoice_legacy_delete",
+          "invoice_delete_authorized",
 
         targetType: "invoice",
 
@@ -1391,40 +2261,198 @@ export async function onRequestDelete(
           invoice.invoiceNumber,
 
         details:
-          auditSnapshot
+          snapshot
       }
     );
 
-    await env.BIKE_DB.batch([
-      env.BIKE_DB
-        .prepare(`
-          DELETE FROM invoice_items
-          WHERE invoice_id = ?
-        `)
-        .bind(invoice.id),
+    let stockPlan = null;
+    const appliedStockUpdates = [];
 
-      env.BIKE_DB
-        .prepare(`
-          DELETE FROM invoices
-          WHERE id = ?
-            AND COALESCE(total_price, 0) = 0
-        `)
-        .bind(invoice.id)
-    ]);
+    if (shouldRestoreStock) {
+      stockPlan =
+        await prepareInvoiceVoidStockUpdates(
+          env.BIKE_DB,
+          invoice
+        );
 
-    const remainingInvoice =
-      await getInvoiceById(
-        env.BIKE_DB,
-        invoice.id
-      );
+      for (
+        const stockUpdate of
+        stockPlan.stockUpdates
+      ) {
+        const updated =
+          await updateBikeStockOptimistically(
+            env.BIKE_DB,
+            stockUpdate.bike,
+            stockUpdate.originalColors,
+            stockUpdate.nextColors,
+            stockUpdate.stockAfter
+          );
 
-    if (remainingInvoice) {
-      return jsonResponse(
+        if (!updated) {
+          for (
+            const appliedUpdate of
+            appliedStockUpdates.reverse()
+          ) {
+            await restoreBikeStockAfterInvoiceFailure(
+              env.BIKE_DB,
+              appliedUpdate.bike,
+              appliedUpdate.originalColors,
+              appliedUpdate.nextColors,
+              appliedUpdate.stockAfter
+            );
+          }
+
+          return jsonResponse(
+            {
+              error:
+                "Stok telah berubah. Refresh halaman dan coba lagi."
+            },
+            409
+          );
+        }
+
+        appliedStockUpdates.push(
+          stockUpdate
+        );
+      }
+    }
+
+    try {
+      await env.BIKE_DB.batch([
+        env.BIKE_DB
+          .prepare(`
+            DELETE FROM invoice_items
+            WHERE invoice_id = ?
+          `)
+          .bind(invoice.id),
+
+        env.BIKE_DB
+          .prepare(`
+            DELETE FROM invoices
+            WHERE id = ?
+          `)
+          .bind(invoice.id)
+      ]);
+
+      const remainingInvoice =
+        await getInvoiceById(
+          env.BIKE_DB,
+          invoice.id
+        );
+
+      if (remainingInvoice) {
+        throw new Error(
+          "Invoice masih tersimpan setelah penghapusan."
+        );
+      }
+    } catch (error) {
+      /*
+       * If deletion fails after stock was
+       * restored, return stock to its
+       * previous state.
+       */
+      for (
+        const appliedUpdate of
+        appliedStockUpdates.reverse()
+      ) {
+        await restoreBikeStockAfterInvoiceFailure(
+          env.BIKE_DB,
+          appliedUpdate.bike,
+          appliedUpdate.originalColors,
+          appliedUpdate.nextColors,
+          appliedUpdate.stockAfter
+        );
+      }
+
+      throw error;
+    }
+
+    /*
+     * Record stock restoration only for
+     * complete active invoices.
+     */
+    if (stockPlan) {
+      for (
+        const movement of
+        stockPlan.movementPlans
+      ) {
+        try {
+          await writeStockMovement(
+            env,
+            auth.user,
+            {
+              bikeId:
+                movement.bikeId,
+
+              bikeBrand:
+                movement.bikeBrand,
+
+              bikeName:
+                movement.bikeName,
+
+              bikeColorName:
+                movement.bikeColorName,
+
+              movementType:
+                "adjustment",
+
+              quantityChange:
+                movement.quantity,
+
+              quantityBefore:
+                movement.quantityBefore,
+
+              quantityAfter:
+                movement.quantityAfter,
+
+              note:
+                `Hapus invoice ${invoice.invoiceNumber} - ${reason}`
+            }
+          );
+        } catch (error) {
+          console.error(
+            "Failed to write deleted invoice stock movement:",
+            error
+          );
+        }
+      }
+    }
+
+    try {
+      await writeAuditLog(
+        env,
+        auth.user,
         {
-          error:
-            "Invoice tidak dapat dihapus karena datanya telah berubah."
-        },
-        409
+          action:
+            "invoice_delete",
+
+          targetType: "invoice",
+
+          targetId:
+            invoice.id,
+
+          targetLabel:
+            invoice.invoiceNumber,
+
+          details: {
+            ...snapshot,
+
+            deletedAt:
+              new Date().toISOString(),
+
+            stockRestored:
+              Boolean(stockPlan)
+          }
+        }
+      );
+    } catch (error) {
+      /*
+       * The authorised snapshot was
+       * already recorded before deletion.
+       */
+      console.error(
+        "Failed to write completed invoice deletion audit:",
+        error
       );
     }
 
@@ -1433,8 +2461,15 @@ export async function onRequestDelete(
 
       deletedInvoice: {
         id: invoice.id,
+
         invoiceNumber:
-          invoice.invoiceNumber
+          invoice.invoiceNumber,
+
+        wasLegacy:
+          isLegacyIncomplete,
+
+        stockRestored:
+          Boolean(stockPlan)
       }
     });
   } catch (error) {

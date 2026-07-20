@@ -4,6 +4,9 @@
 let adminInvoicesCache = [];
 let canMaintainInvoices = false;
 let pendingDeleteInvoiceId = "";
+let pendingEditInvoiceId = "";
+let editingInvoiceItemIndex = -1;
+let pendingEditInvoiceItems = [];
 
 async function fetchInvoices() {
   const data = await fetchAdminJson(
@@ -237,7 +240,21 @@ ${escapeHtml(itemSummary)}
 >
   ${voided ? "Lihat" : "Lihat / Print"}
 </button>
-
+${
+  canMaintainInvoices
+    ? `
+        <button
+          type="button"
+          class="admin-action-btn"
+          data-edit-invoice="${escapeHtml(
+            invoice.id
+          )}"
+        >
+          Edit
+        </button>
+      `
+    : ""
+}
             ${
               voided
                 ? ""
@@ -261,7 +278,7 @@ ${escapeHtml(itemSummary)}
             invoice.id
           )}"
         >
-          Hapus Legacy
+          Hapus
         </button>
       `
     : ""
@@ -505,6 +522,292 @@ async function confirmDeleteLegacyInvoice() {
     updateDeleteInvoiceConfirmation();
   }
 }
+function getPendingEditInvoice() {
+  return adminInvoicesCache.find(
+    (invoice) =>
+      invoice.id ===
+      pendingEditInvoiceId
+  ) || null;
+}
+
+function updateEditInvoicePaymentBank() {
+  const methodInput =
+    document.getElementById(
+      "editInvoicePaymentMethodInput"
+    );
+
+  const bankGroup =
+    document.getElementById(
+      "editInvoicePaymentBankGroup"
+    );
+
+  const bankInput =
+    document.getElementById(
+      "editInvoicePaymentBankInput"
+    );
+
+  const isTransfer =
+    methodInput?.value ===
+    "Bank Transfer";
+
+  bankGroup?.classList.toggle(
+    "is-hidden",
+    !isTransfer
+  );
+
+  if (
+    !isTransfer &&
+    bankInput
+  ) {
+    bankInput.value = "";
+  }
+}
+
+function getPendingEditInvoiceTotal() {
+  return pendingEditInvoiceItems.reduce(
+    (total, item) => {
+      return (
+        total +
+        Number(item.quantity || 0) *
+        Number(item.unitPrice || 0)
+      );
+    },
+    0
+  );
+}
+
+function renderPendingEditInvoiceItems() {
+  const list =
+    document.getElementById(
+      "editInvoiceItemsList"
+    );
+
+  const total =
+    document.getElementById(
+      "editInvoiceTotal"
+    );
+
+  if (total) {
+    total.textContent =
+      formatRupiah(
+        getPendingEditInvoiceTotal()
+      );
+  }
+
+  if (!list) {
+    return;
+  }
+
+  if (
+    !pendingEditInvoiceItems.length
+  ) {
+    list.innerHTML = `
+      <div class="admin-empty-state">
+        Invoice ini belum memiliki item.
+        Ini mungkin merupakan data legacy.
+      </div>
+    `;
+
+    return;
+  }
+
+  list.innerHTML =
+    pendingEditInvoiceItems
+      .map((item, index) => {
+        const lineTotal =
+          Number(item.quantity || 0) *
+          Number(item.unitPrice || 0);
+
+        return `
+          <article
+            class="pending-invoice-item"
+          >
+            <div>
+              <strong>
+                ${escapeHtml(
+                  `${item.bikeBrand || ""} ${item.bikeName || ""}`.trim() ||
+                  "Sepeda"
+                )}
+              </strong>
+
+              <span>
+                ${escapeHtml(
+                  item.bikeColorName || "-"
+                )}
+                ·
+                ${Number(
+                  item.quantity || 0
+                )}
+                unit
+                ·
+                ${escapeHtml(
+                  formatRupiah(
+                    Number(
+                      item.unitPrice || 0
+                    )
+                  )
+                )}
+              </span>
+            </div>
+
+            <strong>
+              ${escapeHtml(
+                formatRupiah(lineTotal)
+              )}
+            </strong>
+
+            <div
+              class="admin-card-actions"
+            >
+              <button
+                type="button"
+                class="admin-action-btn"
+                data-edit-invoice-item="${index}"
+              >
+                Edit Item
+              </button>
+
+              <button
+                type="button"
+                class="admin-action-btn admin-action-btn-danger"
+                data-remove-edit-invoice-item="${index}"
+              >
+                Hapus Item
+              </button>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+}
+
+function openEditInvoiceModal(
+  invoiceId
+) {
+  const invoice =
+    adminInvoicesCache.find(
+      (entry) =>
+        entry.id === invoiceId
+    );
+
+  const modal =
+    document.getElementById(
+      "editInvoiceModal"
+    );
+
+  if (
+    !invoice ||
+    !modal ||
+    !canMaintainInvoices
+  ) {
+    return;
+  }
+
+  pendingEditInvoiceId =
+    invoice.id;
+
+  editingInvoiceItemIndex = -1;
+
+  pendingEditInvoiceItems =
+    Array.isArray(invoice.items)
+      ? invoice.items.map(
+          (item) => ({ ...item })
+        )
+      : [];
+
+  document.getElementById(
+    "editInvoiceNumber"
+  ).textContent =
+    invoice.invoiceNumber || "-";
+
+  document.getElementById(
+    "editInvoiceCustomerNameInput"
+  ).value =
+    invoice.customerName || "";
+
+  document.getElementById(
+    "editInvoiceCustomerPhoneInput"
+  ).value =
+    invoice.customerPhone || "";
+
+  document.getElementById(
+    "editInvoiceCustomerAddressInput"
+  ).value =
+    invoice.customerAddress || "";
+
+  document.getElementById(
+    "editInvoicePaymentMethodInput"
+  ).value =
+    invoice.paymentMethod ===
+      "Transfer"
+      ? "Bank Transfer"
+      : invoice.paymentMethod ||
+        "Cash";
+
+  document.getElementById(
+    "editInvoicePaymentBankInput"
+  ).value =
+    invoice.paymentBank || "";
+
+  document.getElementById(
+    "editInvoiceNotesInput"
+  ).value =
+    invoice.notes || "";
+
+  document.getElementById(
+    "editInvoiceReasonInput"
+  ).value = "";
+
+  const note =
+    document.getElementById(
+      "editInvoiceNote"
+    );
+
+  if (note) {
+    note.textContent =
+      "Semua perubahan akan dicatat dalam audit log.";
+
+    note.classList.remove(
+      "is-error"
+    );
+  }
+
+  updateEditInvoicePaymentBank();
+  renderPendingEditInvoiceItems();
+
+  modal.classList.remove(
+    "is-hidden"
+  );
+
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.getElementById(
+    "editInvoiceCustomerNameInput"
+  )?.focus();
+}
+
+function closeEditInvoiceModal() {
+  const modal =
+    document.getElementById(
+      "editInvoiceModal"
+    );
+
+  modal?.classList.add(
+    "is-hidden"
+  );
+
+  modal?.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  pendingEditInvoiceId = "";
+  editingInvoiceItemIndex = -1;
+  pendingEditInvoiceItems = [];
+}
 async function loadInvoices() {
   const list = document.getElementById("adminInvoiceList");
 
@@ -528,6 +831,227 @@ async function loadInvoices() {
     }
 
     updateInvoiceResultCount(0, 0);
+  }
+}
+function removePendingEditInvoiceItem(
+  index
+) {
+  const item =
+    pendingEditInvoiceItems[index];
+
+  if (!item) {
+    return;
+  }
+
+  const bikeLabel =
+    `${item.bikeBrand || ""} ${item.bikeName || ""}`
+      .trim() ||
+    "item ini";
+
+  const confirmed =
+    window.confirm(
+      `Hapus ${bikeLabel} dari invoice?`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  pendingEditInvoiceItems.splice(
+    index,
+    1
+  );
+
+  renderPendingEditInvoiceItems();
+}
+
+function setupInvoiceEditControls() {
+  const invoiceList =
+    document.getElementById(
+      "adminInvoiceList"
+    );
+
+  const editItemsList =
+    document.getElementById(
+      "editInvoiceItemsList"
+    );
+
+  const modal =
+    document.getElementById(
+      "editInvoiceModal"
+    );
+
+  const overlay =
+    document.getElementById(
+      "editInvoiceModalOverlay"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "closeEditInvoiceModalBtn"
+    );
+
+  const cancelButton =
+    document.getElementById(
+      "cancelEditInvoiceBtn"
+    );
+
+  const paymentMethodInput =
+    document.getElementById(
+      "editInvoicePaymentMethodInput"
+    );
+
+  if (
+    invoiceList &&
+    !invoiceList.dataset
+      .invoiceEditBound
+  ) {
+    invoiceList.dataset
+      .invoiceEditBound = "true";
+
+    invoiceList.addEventListener(
+      "click",
+      (event) => {
+        const button =
+          event.target.closest(
+            "[data-edit-invoice]"
+          );
+
+        if (
+          !button ||
+          !invoiceList.contains(button)
+        ) {
+          return;
+        }
+
+        openEditInvoiceModal(
+          button.dataset.editInvoice
+        );
+      }
+    );
+  }
+
+  if (
+    editItemsList &&
+    !editItemsList.dataset
+      .invoiceEditItemsBound
+  ) {
+    editItemsList.dataset
+      .invoiceEditItemsBound =
+      "true";
+
+    editItemsList.addEventListener(
+      "click",
+      (event) => {
+        const removeButton =
+          event.target.closest(
+            "[data-remove-edit-invoice-item]"
+          );
+
+        if (
+          removeButton &&
+          editItemsList.contains(
+            removeButton
+          )
+        ) {
+          const index =
+            Number(
+              removeButton.dataset
+                .removeEditInvoiceItem
+            );
+
+          removePendingEditInvoiceItem(
+            index
+          );
+
+          return;
+        }
+
+        const editButton =
+          event.target.closest(
+            "[data-edit-invoice-item]"
+          );
+
+        if (
+          editButton &&
+          editItemsList.contains(
+            editButton
+          )
+        ) {
+          const index =
+            Number(
+              editButton.dataset
+                .editInvoiceItem
+            );
+
+          openEditInvoiceItemModal(
+            index
+          );
+        }
+      }
+    );
+  }
+
+  [
+    closeButton,
+    cancelButton,
+    overlay
+  ].forEach((element) => {
+    if (
+      !element ||
+      element.dataset
+        .invoiceEditCloseBound
+    ) {
+      return;
+    }
+
+    element.dataset
+      .invoiceEditCloseBound =
+      "true";
+
+    element.addEventListener(
+      "click",
+      closeEditInvoiceModal
+    );
+  });
+
+  if (
+    paymentMethodInput &&
+    !paymentMethodInput.dataset
+      .invoiceEditPaymentBound
+  ) {
+    paymentMethodInput.dataset
+      .invoiceEditPaymentBound =
+      "true";
+
+    paymentMethodInput.addEventListener(
+      "change",
+      updateEditInvoicePaymentBank
+    );
+  }
+
+  if (
+    modal &&
+    !modal.dataset
+      .invoiceEditKeyboardBound
+  ) {
+    modal.dataset
+      .invoiceEditKeyboardBound =
+      "true";
+
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key === "Escape" &&
+          !modal.classList.contains(
+            "is-hidden"
+          )
+        ) {
+          closeEditInvoiceModal();
+        }
+      }
+    );
   }
 }
 function setupInvoiceDeleteControls() {
@@ -705,6 +1229,7 @@ function setupInvoiceDeleteControls() {
   }
 }
 async function loadInvoicePage() {
+  setupInvoiceEditControls();
   setupInvoiceDeleteControls();
 
   if (

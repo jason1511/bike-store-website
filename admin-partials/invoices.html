@@ -320,6 +320,208 @@
     </div>
   </div>
   <!-- =========================
+     EDIT INVOICE MODAL
+========================== -->
+<div
+  id="editInvoiceModal"
+  class="admin-modal is-hidden"
+  aria-hidden="true"
+>
+  <div
+    id="editInvoiceModalOverlay"
+    class="admin-modal-overlay"
+  ></div>
+
+  <div
+    class="admin-modal-content admin-invoice-edit-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="editInvoiceModalTitle"
+  >
+    <div class="admin-modal-header">
+      <div>
+        <h2 id="editInvoiceModalTitle">
+          Edit Invoice
+        </h2>
+
+        <p id="editInvoiceNumber">
+          -
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="closeEditInvoiceModalBtn"
+        class="admin-modal-close"
+        aria-label="Tutup"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="admin-modal-body">
+      <div class="admin-form-group">
+        <label for="editInvoiceCustomerNameInput">
+          Nama Customer
+        </label>
+
+        <input
+          type="text"
+          id="editInvoiceCustomerNameInput"
+          required
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="editInvoiceCustomerPhoneInput">
+          Nomor WhatsApp
+        </label>
+
+        <input
+          type="text"
+          id="editInvoiceCustomerPhoneInput"
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="editInvoiceCustomerAddressInput">
+          Alamat
+        </label>
+
+        <textarea
+          id="editInvoiceCustomerAddressInput"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="editInvoicePaymentMethodInput">
+          Metode Pembayaran
+        </label>
+
+        <select id="editInvoicePaymentMethodInput">
+          <option value="Cash">
+            Cash
+          </option>
+
+          <option value="Bank Transfer">
+            Bank Transfer
+          </option>
+        </select>
+      </div>
+
+      <div
+        class="admin-form-group is-hidden"
+        id="editInvoicePaymentBankGroup"
+      >
+        <label for="editInvoicePaymentBankInput">
+          Bank Tujuan
+        </label>
+
+        <select id="editInvoicePaymentBankInput">
+          <option value="">
+            Pilih bank
+          </option>
+
+          <option value="BRI">BRI</option>
+          <option value="BNI">BNI</option>
+          <option value="BCA">BCA</option>
+
+          <option value="Bank Lainnya">
+            Bank Lainnya
+          </option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="editInvoiceNotesInput">
+          Catatan
+        </label>
+
+        <textarea
+          id="editInvoiceNotesInput"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <section class="admin-section-card">
+        <div class="admin-section-card-header">
+          <div>
+            <h3>Item Invoice</h3>
+
+            <p>
+              Perubahan item atau jumlah akan
+              menyesuaikan stok secara otomatis.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            id="openEditInvoiceItemModalBtn"
+            class="admin-action-btn"
+          >
+            Tambah Item
+          </button>
+        </div>
+
+        <div
+          id="editInvoiceItemsList"
+          class="pending-invoice-items-list"
+        >
+          <div class="admin-empty-state">
+            Belum ada item invoice.
+          </div>
+        </div>
+      </section>
+
+      <div class="admin-invoice-preview">
+        <strong>Total Invoice</strong>
+
+        <span id="editInvoiceTotal">
+          Rp 0
+        </span>
+      </div>
+      <div class="admin-form-group">
+  <label for="editInvoiceReasonInput">
+    Alasan Perubahan
+  </label>
+
+  <textarea
+    id="editInvoiceReasonInput"
+    rows="3"
+    minlength="5"
+    placeholder="Contoh: Memperbaiki data customer atau item invoice"
+  ></textarea>
+</div>
+      <p
+        class="admin-form-note"
+        id="editInvoiceNote"
+      >
+        Semua perubahan akan dicatat dalam
+        audit log.
+      </p>
+    </div>
+
+    <div class="admin-modal-actions">
+      <button
+        type="button"
+        id="cancelEditInvoiceBtn"
+        class="admin-action-btn"
+      >
+        Batal
+      </button>
+
+      <button
+        type="button"
+        id="saveEditInvoiceBtn"
+        class="admin-action-btn"
+      >
+        Simpan Perubahan
+      </button>
+    </div>
+  </div>
+</div>
+  <!-- =========================
      DELETE LEGACY INVOICE MODAL
 ========================== -->
 <div
@@ -340,7 +542,7 @@
   >
     <div class="admin-modal-header">
       <h2 id="deleteInvoiceModalTitle">
-        Hapus Invoice Legacy
+        Hapus Invoice Lama
       </h2>
 
       <button
@@ -413,7 +615,7 @@
         id="deleteInvoiceNote"
       >
         Penghapusan hanya tersedia untuk
-        invoice legacy tanpa transaksi nyata.
+        invoice lama tanpa transaksi nyata.
       </p>
     </div>
 
