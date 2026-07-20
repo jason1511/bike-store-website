@@ -375,9 +375,9 @@ function printCurrentInvoice() {
         </style>
       </head>
 
-      <body class="is-printing-invoice">
-        ${invoiceHtml}
-      </body>
+      <body class="standalone-invoice-print">
+  ${invoiceHtml}
+</body>
     </html>
   `);
 
