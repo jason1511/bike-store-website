@@ -319,4 +319,122 @@
       </div>
     </div>
   </div>
+  <!-- =========================
+     DELETE LEGACY INVOICE MODAL
+========================== -->
+<div
+  id="deleteInvoiceModal"
+  class="admin-modal is-hidden"
+  aria-hidden="true"
+>
+  <div
+    id="deleteInvoiceModalOverlay"
+    class="admin-modal-overlay"
+  ></div>
+
+  <div
+    class="admin-modal-content admin-void-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteInvoiceModalTitle"
+  >
+    <div class="admin-modal-header">
+      <h2 id="deleteInvoiceModalTitle">
+        Hapus Invoice Legacy
+      </h2>
+
+      <button
+        type="button"
+        id="closeDeleteInvoiceModalBtn"
+        class="admin-modal-close"
+        aria-label="Tutup"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="admin-modal-body">
+      <div class="invoice-delete-warning">
+        <strong>
+          Tindakan khusus administrator
+        </strong>
+
+        <p>
+          Invoice dan semua itemnya akan
+          dihapus dari daftar. Salinan data
+          lengkap akan tetap disimpan dalam
+          audit log.
+        </p>
+
+        <p>
+          Invoice penjualan yang memiliki
+          jumlah atau nilai transaksi tidak
+          dapat dihapus. Gunakan Batalkan
+          Invoice untuk transaksi tersebut.
+        </p>
+      </div>
+
+      <p>
+        Invoice yang akan dihapus:
+      </p>
+
+      <strong id="deleteInvoiceNumber">
+        -
+      </strong>
+
+      <div class="admin-form-group">
+        <label for="deleteInvoiceReasonInput">
+          Alasan penghapusan
+        </label>
+
+        <textarea
+          id="deleteInvoiceReasonInput"
+          rows="4"
+          minlength="5"
+          placeholder="Contoh: Data legacy kosong atau invoice pengujian lama"
+        ></textarea>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="deleteInvoiceConfirmInput">
+          Ketik HAPUS untuk konfirmasi
+        </label>
+
+        <input
+          type="text"
+          id="deleteInvoiceConfirmInput"
+          autocomplete="off"
+          placeholder="HAPUS"
+        >
+      </div>
+
+      <p
+        class="admin-form-note"
+        id="deleteInvoiceNote"
+      >
+        Penghapusan hanya tersedia untuk
+        invoice legacy tanpa transaksi nyata.
+      </p>
+    </div>
+
+    <div class="admin-modal-actions">
+      <button
+        type="button"
+        id="cancelDeleteInvoiceBtn"
+        class="admin-action-btn"
+      >
+        Batal
+      </button>
+
+      <button
+        type="button"
+        id="confirmDeleteInvoiceBtn"
+        class="admin-action-btn admin-action-btn-danger"
+        disabled
+      >
+        Hapus Permanen
+      </button>
+    </div>
+  </div>
+</div>
 </section>

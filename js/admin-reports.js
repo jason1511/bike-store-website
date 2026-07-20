@@ -1060,7 +1060,11 @@ async function printGeneratedReport() {
       });
     });
 
-    window.print();
+    document.body.classList.add(
+  "is-printing-report"
+);
+
+window.print();
   } catch (error) {
     console.error(
       "Failed to print report:",
@@ -1073,6 +1077,9 @@ async function printGeneratedReport() {
         "Gagal menyiapkan laporan cetak.";
     }
   } finally {
+    document.body.classList.remove(
+  "is-printing-report"
+);
     if (button) {
       button.disabled = false;
       button.textContent =

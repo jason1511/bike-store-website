@@ -191,13 +191,14 @@
     background: #ffffff !important;
   }
 
-  body > *:not(#printableReport) {
-    display: none !important;
-  }
-
+body.is-printing-report
+  > *:not(#printableReport) {
+  display: none !important;
+}
+body.is-printing-report
   #printableReport {
-    position: static;
-    display: block !important;
+  position: static;
+  display: block !important;
     width: 100%;
     margin: 0;
     padding: 0;

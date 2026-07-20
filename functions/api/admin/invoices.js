@@ -596,7 +596,13 @@ const invoicesWithItems = invoices.map((invoice) => ({
 
 return jsonResponse({
   success: true,
-  invoices: invoicesWithItems
+
+  invoices: invoicesWithItems,
+
+  permissions: {
+    canMaintainInvoices:
+      auth.user.role === "admin"
+  }
 });
   } catch (error) {
     console.error("Invoices GET error:", error);
@@ -1207,6 +1213,241 @@ export async function onRequestPatch(context) {
     return jsonResponse(
       {
         error: error.message || "Failed to void invoice"
+      },
+      500
+    );
+  }
+}
+export async function onRequestDelete(
+  context
+) {
+  const { request, env } = context;
+
+  try {
+    /*
+     * Admin only. Staff receives an
+     * unauthorized response.
+     */
+    const auth = await requireRole(
+      request,
+      env,
+      ["admin"]
+    );
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.BIKE_DB) {
+      return jsonResponse(
+        {
+          error:
+            "D1 binding BIKE_DB is missing"
+        },
+        500
+      );
+    }
+
+    const payload =
+      await request.json().catch(
+        () => null
+      );
+
+    const invoiceId =
+      String(payload?.id || "").trim();
+
+    const reason =
+      String(payload?.reason || "").trim();
+
+    if (!invoiceId) {
+      return jsonResponse(
+        {
+          error: "ID invoice wajib diisi."
+        },
+        400
+      );
+    }
+
+    if (reason.length < 5) {
+      return jsonResponse(
+        {
+          error:
+            "Alasan penghapusan minimal 5 karakter."
+        },
+        400
+      );
+    }
+
+    const invoice =
+      await getInvoiceById(
+        env.BIKE_DB,
+        invoiceId
+      );
+
+    if (!invoice) {
+      return jsonResponse(
+        {
+          error: "Invoice tidak ditemukan."
+        },
+        404
+      );
+    }
+
+    const items =
+      Array.isArray(invoice.items)
+        ? invoice.items
+        : [];
+
+    const containsRealSale =
+      Number(invoice.totalPrice || 0) > 0 ||
+      items.some((item) => {
+        return (
+          Number(item.quantity || 0) > 0 ||
+          Number(item.lineTotal || 0) > 0
+        );
+      });
+
+    /*
+     * Real sales must use Void so stock
+     * remains consistent.
+     */
+    if (containsRealSale) {
+      return jsonResponse(
+        {
+          error:
+            "Invoice ini memiliki transaksi penjualan. Gunakan Batalkan Invoice agar stok dikembalikan dengan benar."
+        },
+        409
+      );
+    }
+
+    const auditSnapshot = {
+      reason,
+      deletedAt:
+        new Date().toISOString(),
+
+      invoice: {
+        id: invoice.id,
+        invoiceNumber:
+          invoice.invoiceNumber,
+
+        customerName:
+          invoice.customerName,
+
+        customerPhone:
+          invoice.customerPhone,
+
+        customerAddress:
+          invoice.customerAddress,
+
+        paymentMethod:
+          invoice.paymentMethod,
+
+        paymentBank:
+          invoice.paymentBank,
+
+        notes:
+          invoice.notes,
+
+        status:
+          invoice.status,
+
+        totalPrice:
+          invoice.totalPrice,
+
+        createdAt:
+          invoice.createdAt,
+
+        createdById:
+          invoice.createdById,
+
+        createdByUsername:
+          invoice.createdByUsername,
+
+        createdByRole:
+          invoice.createdByRole
+      },
+
+      items
+    };
+
+    /*
+     * Store the complete snapshot before
+     * deleting the original records.
+     */
+    await writeAuditLog(
+      env,
+      auth.user,
+      {
+        action:
+          "invoice_legacy_delete",
+
+        targetType: "invoice",
+
+        targetId:
+          invoice.id,
+
+        targetLabel:
+          invoice.invoiceNumber,
+
+        details:
+          auditSnapshot
+      }
+    );
+
+    await env.BIKE_DB.batch([
+      env.BIKE_DB
+        .prepare(`
+          DELETE FROM invoice_items
+          WHERE invoice_id = ?
+        `)
+        .bind(invoice.id),
+
+      env.BIKE_DB
+        .prepare(`
+          DELETE FROM invoices
+          WHERE id = ?
+            AND COALESCE(total_price, 0) = 0
+        `)
+        .bind(invoice.id)
+    ]);
+
+    const remainingInvoice =
+      await getInvoiceById(
+        env.BIKE_DB,
+        invoice.id
+      );
+
+    if (remainingInvoice) {
+      return jsonResponse(
+        {
+          error:
+            "Invoice tidak dapat dihapus karena datanya telah berubah."
+        },
+        409
+      );
+    }
+
+    return jsonResponse({
+      success: true,
+
+      deletedInvoice: {
+        id: invoice.id,
+        invoiceNumber:
+          invoice.invoiceNumber
+      }
+    });
+  } catch (error) {
+    console.error(
+      "Invoices DELETE error:",
+      error
+    );
+
+    return jsonResponse(
+      {
+        error:
+          error.message ||
+          "Gagal menghapus invoice."
       },
       500
     );
