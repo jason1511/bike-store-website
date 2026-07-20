@@ -15,8 +15,12 @@ const AUDIT_ACTION_LABELS = {
   brand_activate: "Aktifkan Brand",
   brand_deactivate: "Nonaktifkan Brand",
 
-  invoice_create: "Buat Invoice",
-  invoice_void: "Batalkan Invoice",
+invoice_create: "Buat Invoice",
+invoice_void: "Batalkan Invoice",
+invoice_edit: "Edit Invoice",
+invoice_delete_authorized:
+  "Otorisasi Hapus Invoice",
+invoice_delete: "Hapus Invoice",
 
   service_create: "Buat Service",
   service_update: "Update Service",
@@ -69,7 +73,136 @@ function formatAuditActionLabel(action) {
 
 function createAuditDetailsText(log) {
   const details = log.details || {};
+  const action =
+  normalizeAuditAction(
+    log.action
+  );
 
+if (action === "invoice_edit") {
+  const before =
+    details.before || {};
+
+  const after =
+    details.after || {};
+
+  const changes = [];
+
+  if (
+    before.customerName !==
+    after.customerName
+  ) {
+    changes.push(
+      "nama customer"
+    );
+  }
+
+  if (
+    before.customerPhone !==
+    after.customerPhone
+  ) {
+    changes.push(
+      "nomor WhatsApp"
+    );
+  }
+
+  if (
+    before.customerAddress !==
+    after.customerAddress
+  ) {
+    changes.push("alamat");
+  }
+
+  if (
+    before.paymentMethod !==
+      after.paymentMethod ||
+    before.paymentBank !==
+      after.paymentBank
+  ) {
+    changes.push(
+      "metode pembayaran"
+    );
+  }
+
+  if (
+    before.notes !==
+    after.notes
+  ) {
+    changes.push("catatan");
+  }
+
+  const beforeItems =
+    Array.isArray(before.items)
+      ? before.items
+      : [];
+
+  const afterItems =
+    Array.isArray(after.items)
+      ? after.items
+      : [];
+
+  if (
+    JSON.stringify(beforeItems) !==
+    JSON.stringify(afterItems)
+  ) {
+    changes.push("item invoice");
+  }
+
+  return [
+    details.reason
+      ? `Alasan: ${details.reason}.`
+      : "",
+
+    changes.length
+      ? `Perubahan: ${changes.join(", ")}.`
+      : "Tidak ada perubahan nilai yang terdeteksi."
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+if (
+  action ===
+    "invoice_delete_authorized" ||
+  action === "invoice_delete"
+) {
+  const typeLabels = {
+    legacy_incomplete:
+      "data legacy tidak lengkap",
+
+    active_invoice:
+      "invoice aktif",
+
+    voided_invoice:
+      "invoice yang telah dibatalkan"
+  };
+
+  const deletionType =
+    typeLabels[
+      details.deletionType
+    ] ||
+    details.deletionType ||
+    "invoice";
+
+  const stockText =
+    details.stockRestored === true
+      ? "Stok dikembalikan."
+      : details
+          .stockRestorationRequired ===
+        true
+        ? "Pengembalian stok dijadwalkan."
+        : "Tidak ada pengembalian stok.";
+
+  return [
+    details.reason
+      ? `Alasan: ${details.reason}.`
+      : "",
+
+    `Jenis: ${deletionType}.`,
+    stockText
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
   if (typeof details === "string") {
     return details;
   }

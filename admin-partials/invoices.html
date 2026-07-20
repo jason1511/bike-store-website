@@ -521,6 +521,129 @@
     </div>
   </div>
 </div>
+<!-- =========================
+     EDIT INVOICE ITEM MODAL
+========================== -->
+<div
+  id="editInvoiceItemModal"
+  class="admin-modal is-hidden"
+  aria-hidden="true"
+>
+  <div
+    id="editInvoiceItemModalOverlay"
+    class="admin-modal-overlay"
+  ></div>
+
+  <div
+    class="admin-modal-content admin-void-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="editInvoiceItemModalTitle"
+  >
+    <div class="admin-modal-header">
+      <h2 id="editInvoiceItemModalTitle">
+        Tambah Item Invoice
+      </h2>
+
+      <button
+        type="button"
+        id="closeEditInvoiceItemModalBtn"
+        class="admin-modal-close"
+        aria-label="Tutup"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="admin-modal-body">
+      <div class="admin-form-group">
+        <label for="editInvoiceBikeInput">
+          Sepeda
+        </label>
+
+        <select id="editInvoiceBikeInput">
+          <option value="">
+            Pilih sepeda
+          </option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="editInvoiceBikeColorInput">
+          Warna Unit
+        </label>
+
+        <select id="editInvoiceBikeColorInput">
+          <option value="">
+            Pilih sepeda terlebih dahulu
+          </option>
+        </select>
+
+        <p
+          class="admin-form-note"
+          id="editInvoiceColorStockNote"
+        >
+          Pilih sepeda untuk melihat stok
+          warna yang tersedia.
+        </p>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="editInvoiceQuantityInput">
+          Jumlah
+        </label>
+
+        <input
+          type="number"
+          id="editInvoiceQuantityInput"
+          value="1"
+          min="1"
+          step="1"
+        >
+      </div>
+
+      <div class="admin-form-group">
+        <label for="editInvoiceUnitPriceInput">
+          Harga Satuan
+        </label>
+
+        <input
+          type="number"
+          id="editInvoiceUnitPriceInput"
+          min="0"
+          step="1000"
+          placeholder="Harga jual"
+        >
+      </div>
+
+      <p
+        class="admin-form-note"
+        id="editInvoiceItemNote"
+      >
+        Stok akhir akan diperiksa kembali
+        ketika invoice disimpan.
+      </p>
+    </div>
+
+    <div class="admin-modal-actions">
+      <button
+        type="button"
+        id="cancelEditInvoiceItemBtn"
+        class="admin-action-btn"
+      >
+        Batal
+      </button>
+
+      <button
+        type="button"
+        id="saveEditInvoiceItemBtn"
+        class="admin-action-btn"
+      >
+        Tambahkan Item
+      </button>
+    </div>
+  </div>
+</div>
   <!-- =========================
      DELETE LEGACY INVOICE MODAL
 ========================== -->

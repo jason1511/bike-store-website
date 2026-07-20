@@ -1765,7 +1765,10 @@ function setupInvoiceEditControls() {
     document.getElementById(
       "adminInvoiceList"
     );
-
+const saveButton =
+  document.getElementById(
+    "saveEditInvoiceBtn"
+  );
   const editItemsList =
     document.getElementById(
       "editInvoiceItemsList"
@@ -2108,6 +2111,20 @@ if (
       }
     );
   }
+  if (
+  saveButton &&
+  !saveButton.dataset
+    .invoiceEditSaveBound
+) {
+  saveButton.dataset
+    .invoiceEditSaveBound =
+    "true";
+
+  saveButton.addEventListener(
+    "click",
+    saveEditedInvoice
+  );
+}
 }
 function setupInvoiceDeleteControls() {
   const invoiceList =
@@ -2286,26 +2303,10 @@ function setupInvoiceDeleteControls() {
 async function loadInvoicePage() {
   setupInvoiceEditControls();
   setupInvoiceDeleteControls();
-  const saveButton =
-  document.getElementById(
-    "saveEditInvoiceBtn"
-  );
-  if (
-  saveButton &&
-  !saveButton.dataset
-    .invoiceEditSaveBound
-) {
-  saveButton.dataset
-    .invoiceEditSaveBound =
-    "true";
 
-  saveButton.addEventListener(
-    "click",
-    saveEditedInvoice
-  );
-}
   if (
-    typeof loadAdminBikes === "function"
+    typeof loadAdminBikes ===
+    "function"
   ) {
     await loadAdminBikes();
   }
