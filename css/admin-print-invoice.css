@@ -318,27 +318,29 @@
 /* =========================
    INVOICE PRINT MODE
 ========================= */
-@page {
+@page invoicePage {
   size: A4 portrait;
   margin: 8mm;
 }
 
 @media print {
 
-  html,
-  body {
+body.is-printing-invoice {
     width: auto !important;
     min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
-  }
-
-  body {
-    -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
+  body.is-printing-invoice,
+body.is-printing-invoice
+  .printable-invoice,
+body.is-printing-invoice
+  .printable-invoice * {
+  page: invoicePage;
+}
   body.is-printing-invoice .admin-login-section,
   body.is-printing-invoice .admin-navbar,
   body.is-printing-invoice .admin-dashboard-header,
