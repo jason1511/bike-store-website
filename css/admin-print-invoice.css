@@ -427,10 +427,6 @@ body.is-printing-invoice
     margin-top: 12px;
     padding-top: 8px;
   }
-  body.is-printing-invoice
-  > *:not(.admin-page) {
-  display: none !important;
-}
 
 body.is-printing-invoice
   .printable-invoice-page {
