@@ -223,20 +223,43 @@ function openInvoiceModal(invoice) {
   modal.classList.remove("is-hidden");
   modal.setAttribute("aria-hidden", "false");
 }
-
 function closeInvoiceModal() {
-  const modal = document.getElementById("adminInvoiceModal");
+  const modal =
+    document.getElementById(
+      "adminInvoiceModal"
+    );
+
+  document.body.classList.remove(
+    "is-printing-invoice"
+  );
 
   if (!modal) {
     return;
   }
 
   modal.classList.add("is-hidden");
-  modal.setAttribute("aria-hidden", "true");
+
+  modal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
 }
 
 function printCurrentInvoice() {
-  document.body.classList.add("is-printing-invoice");
+  /*
+   * Ensure only the invoice print mode
+   * is active. Keep it active while the
+   * mobile system creates its preview.
+   */
+  document.body.classList.remove(
+    "is-printing-service",
+    "is-printing-report"
+  );
+
+  document.body.classList.add(
+    "is-printing-invoice"
+  );
+
   window.print();
 }
 function openVoidInvoiceModal(invoice) {
@@ -432,15 +455,6 @@ if (voidModalConfirm && !voidModalConfirm.dataset.voidModalBound) {
     await handleInvoiceListClick(event);
   });
 }
-
-  if (!document.body.dataset.invoiceAfterprintBound) {
-    document.body.dataset.invoiceAfterprintBound = "true";
-
-    window.addEventListener("afterprint", () => {
-      document.body.classList.remove("is-printing-invoice");
-      document.body.classList.remove("is-printing-service");
-    });
-  }
 
   if (!document.body.dataset.invoiceEscapeBound) {
     document.body.dataset.invoiceEscapeBound = "true";
