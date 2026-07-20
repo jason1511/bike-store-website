@@ -246,21 +246,162 @@ function closeInvoiceModal() {
 }
 
 function printCurrentInvoice() {
+  const invoice =
+    document.querySelector(
+      "#adminInvoiceModal .printable-invoice"
+    );
+
+  if (!invoice) {
+    return;
+  }
+
   /*
-   * Ensure only the invoice print mode
-   * is active. Keep it active while the
-   * mobile system creates its preview.
+   * Open immediately from the button
+   * click so mobile browsers do not
+   * block it as a popup.
    */
-  document.body.classList.remove(
-    "is-printing-service",
-    "is-printing-report"
-  );
+  const printWindow =
+    window.open(
+      "",
+      "_blank"
+    );
 
-  document.body.classList.add(
-    "is-printing-invoice"
-  );
+  if (!printWindow) {
+    window.alert(
+      "Browser memblokir halaman cetak. Izinkan pop-up lalu coba lagi."
+    );
 
-  window.print();
+    return;
+  }
+
+  const baseUrl =
+    `${window.location.origin}/`;
+
+  const invoiceHtml =
+    invoice.outerHTML;
+
+  printWindow.document.open();
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        >
+
+        <base href="${baseUrl}">
+
+        <title>Cetak Invoice</title>
+
+        <link
+          rel="stylesheet"
+          href="css/global.css"
+        >
+
+        <link
+          rel="stylesheet"
+          href="css/admin-print-invoice.css"
+        >
+
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 8mm;
+          }
+
+          html,
+          body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+          }
+
+          body {
+            -webkit-print-color-adjust:
+              exact;
+            print-color-adjust: exact;
+          }
+
+          .printable-invoice {
+            width: 194mm;
+            max-width: 194mm;
+            margin: 0 auto;
+            border-radius: 0;
+            box-shadow: none;
+          }
+
+          .printable-invoice-page {
+            box-sizing: border-box;
+            width: 194mm;
+            max-width: 194mm;
+            height: auto;
+            min-height: 0;
+            margin: 0;
+            padding: 4mm 5mm;
+          }
+
+          @media screen {
+            body {
+              padding: 16px 0;
+            }
+          }
+
+          @media print {
+            html,
+            body {
+              width: auto !important;
+              min-height: 0 !important;
+            }
+
+            .printable-invoice {
+              display: block !important;
+              width: 194mm !important;
+              max-width: 194mm !important;
+              margin: 0 auto !important;
+            }
+
+            .printable-invoice-page {
+              width: 194mm !important;
+              max-width: 194mm !important;
+              min-height: 0 !important;
+              padding: 4mm 5mm !important;
+            }
+          }
+        </style>
+      </head>
+
+      <body class="is-printing-invoice">
+        ${invoiceHtml}
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+
+  printWindow.addEventListener(
+    "load",
+    () => {
+      /*
+       * Give the stylesheet and logo time
+       * to finish rendering on mobile.
+       */
+      window.setTimeout(
+        () => {
+          printWindow.focus();
+          printWindow.print();
+        },
+        500
+      );
+    },
+    {
+      once: true
+    }
+  );
 }
 function openVoidInvoiceModal(invoice) {
   const modal = document.getElementById("voidInvoiceModal");

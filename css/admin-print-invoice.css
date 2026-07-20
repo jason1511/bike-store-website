@@ -334,11 +334,9 @@ body.is-printing-invoice {
     print-color-adjust: exact;
   }
 
-  body.is-printing-invoice,
+body.is-printing-invoice,
 body.is-printing-invoice
-  .printable-invoice,
-body.is-printing-invoice
-  .printable-invoice * {
+  .printable-invoice {
   page: invoicePage;
 }
   body.is-printing-invoice .admin-login-section,
