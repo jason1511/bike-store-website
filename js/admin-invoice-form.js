@@ -591,7 +591,7 @@ function setupInvoiceForm() {
 
   if (quantityInput && !quantityInput.dataset.invoiceItemBound) {
     quantityInput.dataset.invoiceItemBound = "true";
-    quantityInput.addEventListener("input", updateInvoiceQuantityLimit);
+    quantityInput.addEventListener("change", updateInvoiceQuantityLimit);
   }
 
   if (addItemButton && !addItemButton.dataset.invoiceItemBound) {
