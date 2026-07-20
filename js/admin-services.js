@@ -548,8 +548,241 @@ function closeServiceModal() {
 }
 
 function printCurrentService() {
-  document.body.classList.add("is-printing-service");
-  window.print();
+  const service =
+    document.querySelector(
+      "#adminServiceModal .printable-service"
+    );
+
+  if (!service) {
+    return;
+  }
+
+  const printWindow =
+    window.open("", "_blank");
+
+  if (!printWindow) {
+    window.alert(
+      "Browser memblokir halaman cetak. Izinkan pop-up lalu coba lagi."
+    );
+    return;
+  }
+
+  const baseUrl =
+    `${window.location.origin}/`;
+
+  printWindow.document.open();
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        >
+        <base href="${baseUrl}">
+        <title>Cetak Service</title>
+
+        <link
+          rel="stylesheet"
+          href="css/global.css"
+        >
+        <link
+          rel="stylesheet"
+          href="css/admin-print-service.css"
+        >
+
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+
+          html,
+          body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+          }
+
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          .printable-service {
+            box-sizing: border-box;
+            width: 190mm;
+            max-width: 190mm;
+            margin: 0 auto;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+          }
+
+          @media screen {
+            body {
+              padding: 16px 0;
+            }
+          }
+
+          @media print {
+            html,
+            body {
+              width: auto !important;
+              min-height: 0 !important;
+            }
+
+            .printable-service {
+              display: block !important;
+              width: 190mm !important;
+              max-width: 190mm !important;
+              margin: 0 auto !important;
+              padding: 0 !important;
+            }
+
+            .printable-service-header {
+              gap: 16px !important;
+              padding-bottom: 10px !important;
+              break-inside: avoid;
+            }
+
+            .printable-service-brand {
+              gap: 10px !important;
+            }
+
+            .printable-service-brand img {
+              width: 46px !important;
+              height: 46px !important;
+              border-radius: 8px !important;
+            }
+
+            .printable-service-brand h1 {
+              margin-bottom: 2px !important;
+              font-size: 1rem !important;
+            }
+
+            .printable-service-brand p {
+              margin: 1px 0 !important;
+              font-size: 0.72rem !important;
+            }
+
+            .printable-service-title p {
+              margin-bottom: 4px !important;
+              font-size: 0.68rem !important;
+            }
+
+            .printable-service-title h2 {
+              font-size: 1.05rem !important;
+            }
+
+            .printable-service-meta,
+            .printable-service-customer {
+              gap: 8px !important;
+              break-inside: avoid;
+            }
+
+            .printable-service-meta {
+              margin-top: 10px !important;
+            }
+
+            .printable-service-meta > div,
+            .printable-service-customer > div {
+              padding: 8px 10px !important;
+              border-radius: 9px !important;
+            }
+
+            .printable-service-meta span,
+            .printable-service-customer span {
+              font-size: 0.62rem !important;
+            }
+
+            .printable-service-meta strong,
+            .printable-service-customer strong {
+              font-size: 0.72rem !important;
+            }
+
+            .printable-service-section {
+              margin-top: 12px !important;
+              break-inside: avoid;
+            }
+
+            .printable-service-section h3 {
+              margin-bottom: 7px !important;
+              font-size: 0.82rem !important;
+            }
+
+            .printable-service-table-wrap {
+              overflow: visible !important;
+            }
+
+            .printable-service-table th,
+            .printable-service-table td {
+              padding: 7px 8px !important;
+              font-size: 0.68rem !important;
+            }
+
+            .printable-service-total-box {
+              width: min(260px, 100%) !important;
+              margin-top: 10px !important;
+              padding: 11px 14px !important;
+              border-radius: 11px !important;
+              break-inside: avoid;
+            }
+
+            .printable-service-total-box span {
+              font-size: 0.62rem !important;
+            }
+
+            .printable-service-total-box strong {
+              font-size: 1.15rem !important;
+            }
+
+            #printServiceNotes {
+              padding: 8px 10px !important;
+              border-radius: 9px !important;
+              font-size: 0.72rem !important;
+            }
+
+            .printable-service-footer {
+              gap: 24px !important;
+              margin-top: 22px !important;
+              break-inside: avoid;
+            }
+
+            .printable-service-footer p,
+            .printable-service-footer strong {
+              font-size: 0.72rem !important;
+            }
+
+            .printable-service-footer span {
+              height: 34px !important;
+            }
+          }
+        </style>
+      </head>
+
+      <body class="standalone-service-print">
+        ${service.outerHTML}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+
+  printWindow.addEventListener(
+    "load",
+    () => {
+      window.setTimeout(
+        () => {
+          printWindow.focus();
+          printWindow.print();
+        },
+        500
+      );
+    },
+    { once: true }
+  );
 }
 
 function setupServiceModal() {
@@ -568,11 +801,6 @@ function setupServiceModal() {
   if (printButton) {
     printButton.addEventListener("click", printCurrentService);
   }
-
-  window.addEventListener("afterprint", () => {
-    document.body.classList.remove("is-printing-service");
-    document.body.classList.remove("is-printing-invoice");
-  });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {

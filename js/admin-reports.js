@@ -1039,6 +1039,41 @@ async function printGeneratedReport() {
     return;
   }
 
+  /*
+   * Open the tab directly from the click.
+   * Mobile browsers may block it if it is
+   * opened after the asynchronous setup.
+   */
+  const printWindow =
+    window.open("", "_blank");
+
+  if (!printWindow) {
+    window.alert(
+      "Browser memblokir halaman cetak. Izinkan pop-up lalu coba lagi."
+    );
+
+    return;
+  }
+
+  printWindow.document.open();
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        >
+        <title>Menyiapkan Laporan</title>
+      </head>
+      <body>
+        <p>Menyiapkan laporan...</p>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+
   if (button) {
     button.disabled = true;
     button.textContent =
@@ -1050,21 +1085,157 @@ async function printGeneratedReport() {
       generatedReport
     );
 
-    /*
-     * Wait until the browser has applied
-     * the printable HTML and styles.
-     */
-    await new Promise((resolve) => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(resolve);
-      });
-    });
+    const report =
+      document.getElementById(
+        "printableReport"
+      );
 
-    document.body.classList.add(
-  "is-printing-report"
-);
+    if (!report) {
+      throw new Error(
+        "Format laporan cetak tidak ditemukan."
+      );
+    }
 
-window.print();
+    const baseUrl =
+      `${window.location.origin}/`;
+
+    const reportTitle =
+      generatedReport.type === "sales"
+        ? "Laporan Penjualan"
+        : "Laporan Pergerakan Stok";
+
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="id">
+        <head>
+          <meta charset="UTF-8">
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+          >
+          <base href="${baseUrl}">
+          <title>${reportTitle}</title>
+
+          <link
+            rel="stylesheet"
+            href="css/global.css"
+          >
+          <link
+            rel="stylesheet"
+            href="css/admin-print-report.css"
+          >
+
+          <style>
+            @page {
+              size: A4 landscape;
+              margin: 12mm;
+            }
+
+            html,
+            body {
+              width: 100%;
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+            }
+
+            body {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            .print-report {
+              box-sizing: border-box;
+              display: block !important;
+              width: 273mm;
+              max-width: 273mm;
+              margin: 0 auto;
+              padding: 0;
+            }
+
+            @media screen {
+              body {
+                padding: 16px 0;
+              }
+            }
+
+            @media print {
+              html,
+              body {
+                width: auto !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+              }
+
+              .print-report {
+                display: block !important;
+                width: 273mm !important;
+                max-width: 273mm !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+              }
+
+              .print-report-header,
+              .print-report-meta,
+              .print-report-summary,
+              .print-report-footer {
+                break-inside: avoid;
+              }
+
+              .print-report-table {
+                width: 100% !important;
+                break-inside: auto;
+              }
+
+              .print-report-table thead {
+                display: table-header-group;
+              }
+
+              .print-report-table tfoot {
+                display: table-row-group;
+              }
+
+              .print-report-table tr {
+                break-inside: avoid;
+                break-after: auto;
+              }
+
+              .print-report-table th,
+              .print-report-table td {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
+          </style>
+        </head>
+
+        <body class="standalone-report-print">
+          ${report.outerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+
+    printWindow.addEventListener(
+      "load",
+      () => {
+        /*
+         * Allow the linked stylesheet to
+         * finish rendering before print.
+         */
+        window.setTimeout(
+          () => {
+            printWindow.focus();
+            printWindow.print();
+          },
+          500
+        );
+      },
+      {
+        once: true
+      }
+    );
   } catch (error) {
     console.error(
       "Failed to print report:",
@@ -1076,10 +1247,11 @@ window.print();
         error.message ||
         "Gagal menyiapkan laporan cetak.";
     }
+
+    if (!printWindow.closed) {
+      printWindow.close();
+    }
   } finally {
-    document.body.classList.remove(
-  "is-printing-report"
-);
     if (button) {
       button.disabled = false;
       button.textContent =
