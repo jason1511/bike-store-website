@@ -318,8 +318,12 @@
 /* =========================
    INVOICE PRINT MODE
 ========================= */
+@page {
+  size: A4 portrait;
+  margin: 8mm;
+}
+
 @media print {
-  @page { size: A4 portrait; margin: 10mm; }
 
   html,
   body {
@@ -379,8 +383,10 @@
 
   body.is-printing-invoice .printable-invoice-page {
     box-sizing: border-box;
-    min-height: 276mm;
-    padding: 5mm 6mm 4mm !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 4mm 5mm !important;
   }
 
   body.is-printing-invoice .printable-invoice-header,
@@ -402,9 +408,25 @@
   body.is-printing-invoice .printable-invoice-table th,
   body.is-printing-invoice .printable-invoice-table td { padding: 8px 9px; font-size: 0.67rem; }
   body.is-printing-invoice .printable-invoice-summary { margin-top: 13px; }
-  body.is-printing-invoice .printable-invoice-footer { min-height: 145px; margin-top: 15px; }
-  body.is-printing-invoice .printable-invoice-signatures span { height: 38px; }
-  body.is-printing-invoice .printable-invoice-thanks { margin-top: 16px; padding-top: 10px; }
+  body.is-printing-invoice .printable-invoice-footer {
+    flex: none !important;
+    min-height: 0 !important;
+    margin-top: 18px;
+  }
+
+  body.is-printing-invoice .printable-invoice-signatures {
+    gap: 60px;
+    padding: 0 24px;
+  }
+
+  body.is-printing-invoice .printable-invoice-signatures span {
+    height: 28px;
+  }
+
+  body.is-printing-invoice .printable-invoice-thanks {
+    margin-top: 12px;
+    padding-top: 8px;
+  }
 }
 
 @media screen and (max-width: 900px) {
