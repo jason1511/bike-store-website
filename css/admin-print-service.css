@@ -1,4 +1,3 @@
-
 /* =========================
    SERVICE DETAIL / PRINT CONTENT
 ========================= */
@@ -217,14 +216,18 @@
 /* =========================
    SERVICE PRINT MODE
 ========================= */
+@page servicePage {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
 @media print {
-  @page {
-    size: A4 portrait;
-    margin: 10mm;
+  body.is-printing-service,
+  body.is-printing-service .printable-service {
+    page: servicePage;
   }
 
-  html,
-  body {
+  body.is-printing-service {
     width: 210mm;
     min-height: 297mm;
     margin: 0 !important;
@@ -232,7 +235,7 @@
     background: #ffffff !important;
   }
 
-  body {
+  body.is-printing-service {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
