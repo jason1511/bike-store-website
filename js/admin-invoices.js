@@ -22,7 +22,25 @@ async function fetchInvoices() {
 
   return data.invoices || [];
 }
+async function updateInvoice(
+  invoice
+) {
+  const data =
+    await fetchAdminJson(
+      "/api/admin/invoices",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+        body:
+          JSON.stringify(invoice)
+      }
+    );
 
+  return data.invoice;
+}
 async function createInvoice(invoice) {
   try {
     const data = await fetchAdminJson("/api/admin/invoices", {
@@ -864,7 +882,884 @@ function removePendingEditInvoiceItem(
 
   renderPendingEditInvoiceItems();
 }
+function setEditInvoiceItemNote(
+  message,
+  type = ""
+) {
+  const note =
+    document.getElementById(
+      "editInvoiceItemNote"
+    );
 
+  if (!note) {
+    return;
+  }
+
+  note.textContent = message;
+
+  note.classList.remove(
+    "is-error",
+    "is-success"
+  );
+
+  if (type) {
+    note.classList.add(type);
+  }
+}
+
+function openEditInvoiceItemModal(
+  index = -1
+) {
+  const modal =
+    document.getElementById(
+      "editInvoiceItemModal"
+    );
+
+  const title =
+    document.getElementById(
+      "editInvoiceItemModalTitle"
+    );
+
+  const bikeInput =
+    document.getElementById(
+      "editInvoiceBikeInput"
+    );
+
+  const quantityInput =
+    document.getElementById(
+      "editInvoiceQuantityInput"
+    );
+
+  const unitPriceInput =
+    document.getElementById(
+      "editInvoiceUnitPriceInput"
+    );
+
+  const saveButton =
+    document.getElementById(
+      "saveEditInvoiceItemBtn"
+    );
+
+  if (!modal || !bikeInput) {
+    return;
+  }
+
+  editingInvoiceItemIndex =
+    Number.isInteger(index)
+      ? index
+      : -1;
+
+  const item =
+    editingInvoiceItemIndex >= 0
+      ? pendingEditInvoiceItems[
+          editingInvoiceItemIndex
+        ]
+      : null;
+
+  populateEditInvoiceBikeOptions();
+
+  bikeInput.value =
+    item?.bikeId || "";
+
+  populateEditInvoiceColorOptions(
+    item?.bikeColorName || ""
+  );
+
+  if (quantityInput) {
+    quantityInput.value =
+      String(item?.quantity || 1);
+  }
+
+  if (unitPriceInput) {
+    unitPriceInput.value =
+      item
+        ? String(
+            item.unitPrice || 0
+          )
+        : "";
+  }
+
+  if (title) {
+    title.textContent =
+      item
+        ? "Edit Item Invoice"
+        : "Tambah Item Invoice";
+  }
+
+  if (saveButton) {
+    saveButton.textContent =
+      item
+        ? "Simpan Item"
+        : "Tambahkan Item";
+  }
+
+  setEditInvoiceItemNote(
+    "Stok akhir akan diperiksa kembali ketika invoice disimpan."
+  );
+
+  updateEditInvoiceStockNote();
+
+  modal.classList.remove(
+    "is-hidden"
+  );
+
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  bikeInput.focus();
+}
+
+function closeEditInvoiceItemModal() {
+  const modal =
+    document.getElementById(
+      "editInvoiceItemModal"
+    );
+
+  modal?.classList.add(
+    "is-hidden"
+  );
+
+  modal?.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  editingInvoiceItemIndex = -1;
+}
+
+function savePendingEditInvoiceItem() {
+  const bike =
+    getSelectedEditInvoiceBike();
+
+  const colorName =
+    document.getElementById(
+      "editInvoiceBikeColorInput"
+    )?.value || "";
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "editInvoiceQuantityInput"
+      )?.value || 0
+    );
+
+  const unitPrice =
+    Number(
+      document.getElementById(
+        "editInvoiceUnitPriceInput"
+      )?.value || 0
+    );
+
+  if (!bike) {
+    setEditInvoiceItemNote(
+      "Sepeda wajib dipilih.",
+      "is-error"
+    );
+
+    return;
+  }
+
+  const color =
+    getBikeColors(bike).find(
+      (entry) =>
+        entry.name === colorName
+    );
+
+  if (!color) {
+    setEditInvoiceItemNote(
+      "Warna unit wajib dipilih.",
+      "is-error"
+    );
+
+    return;
+  }
+
+  if (
+    !Number.isInteger(quantity) ||
+    quantity < 1
+  ) {
+    setEditInvoiceItemNote(
+      "Jumlah unit minimal 1.",
+      "is-error"
+    );
+
+    return;
+  }
+
+  if (
+    !Number.isFinite(unitPrice) ||
+    unitPrice < 0
+  ) {
+    setEditInvoiceItemNote(
+      "Harga jual tidak boleh negatif.",
+      "is-error"
+    );
+
+    return;
+  }
+
+  const available =
+    getEditInvoiceAvailableStock(
+      bike,
+      color,
+      editingInvoiceItemIndex
+    );
+
+  if (quantity > available) {
+    setEditInvoiceItemNote(
+      `Stok tidak cukup. Tersedia ${available} unit setelah rekonsiliasi.`,
+      "is-error"
+    );
+
+    return;
+  }
+
+  const duplicateIndex =
+    pendingEditInvoiceItems
+      .findIndex(
+        (item, index) => {
+          return (
+            index !==
+              editingInvoiceItemIndex &&
+            item.bikeId === bike.id &&
+            item.bikeColorName ===
+              color.name
+          );
+        }
+      );
+
+  if (duplicateIndex >= 0) {
+    setEditInvoiceItemNote(
+      "Sepeda dan warna ini sudah ada dalam invoice.",
+      "is-error"
+    );
+
+    return;
+  }
+
+  const existingItem =
+    editingInvoiceItemIndex >= 0
+      ? pendingEditInvoiceItems[
+          editingInvoiceItemIndex
+        ]
+      : null;
+
+  const nextItem = {
+    id:
+      existingItem?.id ||
+      `pending_edit_${Date.now()}_${crypto.randomUUID()}`,
+
+    bikeId:
+      bike.id,
+
+    bikeBrand:
+      bike.brand,
+
+    bikeName:
+      bike.name,
+
+    bikeColorName:
+      color.name,
+
+    quantity,
+
+    unitPrice,
+
+    lineTotal:
+      quantity * unitPrice
+  };
+
+  if (
+    editingInvoiceItemIndex >= 0
+  ) {
+    pendingEditInvoiceItems[
+      editingInvoiceItemIndex
+    ] = nextItem;
+  } else {
+    pendingEditInvoiceItems.push(
+      nextItem
+    );
+  }
+
+  renderPendingEditInvoiceItems();
+  closeEditInvoiceItemModal();
+}
+function getSelectedEditInvoiceBike() {
+  const bikeId =
+    document.getElementById(
+      "editInvoiceBikeInput"
+    )?.value || "";
+
+  return adminBikesCache.find(
+    (bike) => bike.id === bikeId
+  ) || null;
+}
+
+function getEditInvoiceOriginalQuantity(
+  bikeId,
+  colorName
+) {
+  const invoice =
+    getPendingEditInvoice();
+
+  if (
+    !invoice ||
+    invoice.status === "voided"
+  ) {
+    return 0;
+  }
+
+  return (
+    Array.isArray(invoice.items)
+      ? invoice.items
+      : []
+  ).reduce((total, item) => {
+    const matches =
+      item.bikeId === bikeId &&
+      item.bikeColorName === colorName;
+
+    return matches
+      ? total +
+          Number(item.quantity || 0)
+      : total;
+  }, 0);
+}
+
+function getEditInvoiceAssignedQuantity(
+  bikeId,
+  colorName,
+  excludedIndex = -1
+) {
+  return pendingEditInvoiceItems.reduce(
+    (total, item, index) => {
+      if (index === excludedIndex) {
+        return total;
+      }
+
+      const matches =
+        item.bikeId === bikeId &&
+        item.bikeColorName === colorName;
+
+      return matches
+        ? total +
+            Number(item.quantity || 0)
+        : total;
+    },
+    0
+  );
+}
+
+function getEditInvoiceAvailableStock(
+  bike,
+  color,
+  excludedIndex = -1
+) {
+  const liveStock =
+    Number(color?.stockQty || 0);
+
+  const restoredOriginalQuantity =
+    getEditInvoiceOriginalQuantity(
+      bike.id,
+      color.name
+    );
+
+  const alreadyAssignedQuantity =
+    getEditInvoiceAssignedQuantity(
+      bike.id,
+      color.name,
+      excludedIndex
+    );
+
+  return Math.max(
+    0,
+    liveStock +
+      restoredOriginalQuantity -
+      alreadyAssignedQuantity
+  );
+}
+
+function populateEditInvoiceBikeOptions() {
+  const select =
+    document.getElementById(
+      "editInvoiceBikeInput"
+    );
+
+  if (!select) {
+    return;
+  }
+
+  const currentValue =
+    select.value;
+
+  const currentItem =
+    pendingEditInvoiceItems[
+      editingInvoiceItemIndex
+    ];
+
+  const bikes =
+    adminBikesCache
+      .filter((bike) => {
+        return (
+          Boolean(bike.inStock) ||
+          bike.id ===
+            currentItem?.bikeId
+        );
+      })
+      .sort((a, b) => {
+        const brandResult =
+          String(a.brand || "")
+            .localeCompare(
+              String(b.brand || "")
+            );
+
+        return (
+          brandResult ||
+          String(a.name || "")
+            .localeCompare(
+              String(b.name || "")
+            )
+        );
+      });
+
+  select.innerHTML = `
+    <option value="">
+      Pilih sepeda
+    </option>
+
+    ${bikes
+      .map((bike) => {
+        return `
+          <option
+            value="${escapeHtml(bike.id)}"
+          >
+            ${escapeHtml(
+              `${bike.brand || ""} ${bike.name || ""}`.trim()
+            )}
+          </option>
+        `;
+      })
+      .join("")}
+  `;
+
+  if (
+    bikes.some(
+      (bike) =>
+        bike.id === currentValue
+    )
+  ) {
+    select.value =
+      currentValue;
+  }
+}
+
+function populateEditInvoiceColorOptions(
+  preferredColor = ""
+) {
+  const select =
+    document.getElementById(
+      "editInvoiceBikeColorInput"
+    );
+
+  const bike =
+    getSelectedEditInvoiceBike();
+
+  if (!select) {
+    return;
+  }
+
+  if (!bike) {
+    select.innerHTML = `
+      <option value="">
+        Pilih sepeda terlebih dahulu
+      </option>
+    `;
+
+    updateEditInvoiceStockNote();
+    return;
+  }
+
+  const colors =
+    getBikeColors(bike);
+
+  select.innerHTML = `
+    <option value="">
+      Pilih warna
+    </option>
+
+    ${colors
+      .map((color) => {
+        const available =
+          getEditInvoiceAvailableStock(
+            bike,
+            color,
+            editingInvoiceItemIndex
+          );
+
+        return `
+          <option
+            value="${escapeHtml(
+              color.name
+            )}"
+            ${
+              available <= 0 &&
+              color.name !== preferredColor
+                ? "disabled"
+                : ""
+            }
+          >
+            ${escapeHtml(color.name)}
+            — Tersedia ${available}
+          </option>
+        `;
+      })
+      .join("")}
+  `;
+
+  if (
+    colors.some(
+      (color) =>
+        color.name ===
+        preferredColor
+    )
+  ) {
+    select.value =
+      preferredColor;
+  }
+
+  updateEditInvoiceStockNote();
+}
+
+function updateEditInvoiceStockNote() {
+  const note =
+    document.getElementById(
+      "editInvoiceColorStockNote"
+    );
+
+  const quantityInput =
+    document.getElementById(
+      "editInvoiceQuantityInput"
+    );
+
+  const colorName =
+    document.getElementById(
+      "editInvoiceBikeColorInput"
+    )?.value || "";
+
+  const bike =
+    getSelectedEditInvoiceBike();
+
+  const color =
+    bike
+      ? getBikeColors(bike).find(
+          (entry) =>
+            entry.name === colorName
+        )
+      : null;
+
+  if (!note || !quantityInput) {
+    return;
+  }
+
+  note.classList.remove(
+    "is-error",
+    "is-success"
+  );
+
+  if (!bike || !color) {
+    note.textContent =
+      "Pilih sepeda dan warna untuk melihat stok.";
+
+    quantityInput.removeAttribute(
+      "max"
+    );
+
+    return;
+  }
+
+  const available =
+    getEditInvoiceAvailableStock(
+      bike,
+      color,
+      editingInvoiceItemIndex
+    );
+
+  quantityInput.max =
+    String(Math.max(1, available));
+
+  note.textContent =
+    `Stok tersedia setelah rekonsiliasi: ${available} unit.`;
+
+  note.classList.add(
+    available > 0
+      ? "is-success"
+      : "is-error"
+  );
+}
+function getEditInvoiceFormData() {
+  return {
+    id:
+      pendingEditInvoiceId,
+
+    customerName:
+      document.getElementById(
+        "editInvoiceCustomerNameInput"
+      )?.value.trim() || "",
+
+    customerPhone:
+      document.getElementById(
+        "editInvoiceCustomerPhoneInput"
+      )?.value.trim() || "",
+
+    customerAddress:
+      document.getElementById(
+        "editInvoiceCustomerAddressInput"
+      )?.value.trim() || "",
+
+    paymentMethod:
+      document.getElementById(
+        "editInvoicePaymentMethodInput"
+      )?.value || "",
+
+    paymentBank:
+      document.getElementById(
+        "editInvoicePaymentBankInput"
+      )?.value || "",
+
+    notes:
+      document.getElementById(
+        "editInvoiceNotesInput"
+      )?.value.trim() || "",
+
+    reason:
+      document.getElementById(
+        "editInvoiceReasonInput"
+      )?.value.trim() || "",
+
+    items:
+      pendingEditInvoiceItems.map(
+        (item) => ({
+          bikeId:
+            item.bikeId,
+
+          bikeColorName:
+            item.bikeColorName,
+
+          quantity:
+            Number(item.quantity || 0),
+
+          unitPrice:
+            Number(item.unitPrice || 0)
+        })
+      )
+  };
+}
+
+function validateEditInvoiceForm(
+  invoice
+) {
+  const errors = [];
+
+  const originalInvoice =
+    getPendingEditInvoice();
+
+  if (!invoice.customerName) {
+    errors.push(
+      "Nama customer wajib diisi."
+    );
+  }
+
+  if (
+    invoice.paymentMethod ===
+      "Bank Transfer" &&
+    !invoice.paymentBank
+  ) {
+    errors.push(
+      "Bank tujuan wajib dipilih."
+    );
+  }
+
+  if (invoice.reason.length < 5) {
+    errors.push(
+      "Alasan perubahan minimal 5 karakter."
+    );
+  }
+
+  const originalItems =
+    Array.isArray(
+      originalInvoice?.items
+    )
+      ? originalInvoice.items
+      : [];
+
+  if (
+    originalItems.length > 0 &&
+    invoice.items.length === 0
+  ) {
+    errors.push(
+      "Invoice modern harus memiliki minimal satu item. Gunakan Hapus untuk menghapus invoice sepenuhnya."
+    );
+  }
+
+  invoice.items.forEach(
+    (item, index) => {
+      const number = index + 1;
+
+      if (!item.bikeId) {
+        errors.push(
+          `Item ${number}: sepeda wajib dipilih.`
+        );
+      }
+
+      if (!item.bikeColorName) {
+        errors.push(
+          `Item ${number}: warna wajib dipilih.`
+        );
+      }
+
+      if (
+        !Number.isInteger(
+          item.quantity
+        ) ||
+        item.quantity < 1
+      ) {
+        errors.push(
+          `Item ${number}: jumlah minimal 1.`
+        );
+      }
+
+      if (
+        !Number.isFinite(
+          item.unitPrice
+        ) ||
+        item.unitPrice < 0
+      ) {
+        errors.push(
+          `Item ${number}: harga tidak valid.`
+        );
+      }
+    }
+  );
+
+  return errors;
+}
+
+async function saveEditedInvoice() {
+  const saveButton =
+    document.getElementById(
+      "saveEditInvoiceBtn"
+    );
+
+  const note =
+    document.getElementById(
+      "editInvoiceNote"
+    );
+
+  if (
+    !pendingEditInvoiceId ||
+    !canMaintainInvoices
+  ) {
+    return;
+  }
+
+  const invoice =
+    getEditInvoiceFormData();
+
+  const errors =
+    validateEditInvoiceForm(
+      invoice
+    );
+
+  if (errors.length) {
+    if (note) {
+      note.textContent =
+        errors.join(" ");
+
+      note.classList.add(
+        "is-error"
+      );
+
+      note.classList.remove(
+        "is-success"
+      );
+    }
+
+    return;
+  }
+
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent =
+      "Menyimpan...";
+  }
+
+  if (note) {
+    note.textContent =
+      "Menyimpan perubahan dan menyesuaikan stok...";
+
+    note.classList.remove(
+      "is-error",
+      "is-success"
+    );
+  }
+
+  try {
+    await updateInvoice(invoice);
+
+    if (note) {
+      note.textContent =
+        "Invoice berhasil diperbarui.";
+
+      note.classList.add(
+        "is-success"
+      );
+    }
+
+    closeEditInvoiceModal();
+
+    if (
+      typeof loadAdminBikes ===
+      "function"
+    ) {
+      await loadAdminBikes();
+    }
+
+    populateInvoiceBikeOptions();
+    await loadInvoices();
+
+    if (
+      typeof loadAuditLogs ===
+      "function"
+    ) {
+      loadAuditLogs();
+    }
+  } catch (error) {
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    if (note) {
+      note.textContent =
+        error.message ||
+        "Gagal mengubah invoice.";
+
+      note.classList.add(
+        "is-error"
+      );
+
+      note.classList.remove(
+        "is-success"
+      );
+    }
+  } finally {
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.textContent =
+        "Simpan Perubahan";
+    }
+  }
+}
 function setupInvoiceEditControls() {
   const invoiceList =
     document.getElementById(
@@ -900,7 +1795,55 @@ function setupInvoiceEditControls() {
     document.getElementById(
       "editInvoicePaymentMethodInput"
     );
+  const openItemButton =
+  document.getElementById(
+    "openEditInvoiceItemModalBtn"
+  );
 
+const itemModal =
+  document.getElementById(
+    "editInvoiceItemModal"
+  );
+
+const itemModalOverlay =
+  document.getElementById(
+    "editInvoiceItemModalOverlay"
+  );
+
+const closeItemButton =
+  document.getElementById(
+    "closeEditInvoiceItemModalBtn"
+  );
+
+const cancelItemButton =
+  document.getElementById(
+    "cancelEditInvoiceItemBtn"
+  );
+
+const saveItemButton =
+  document.getElementById(
+    "saveEditInvoiceItemBtn"
+  );
+
+const bikeInput =
+  document.getElementById(
+    "editInvoiceBikeInput"
+  );
+
+const colorInput =
+  document.getElementById(
+    "editInvoiceBikeColorInput"
+  );
+
+const quantityInput =
+  document.getElementById(
+    "editInvoiceQuantityInput"
+  );
+
+const unitPriceInput =
+  document.getElementById(
+    "editInvoiceUnitPriceInput"
+  );
   if (
     invoiceList &&
     !invoiceList.dataset
@@ -1029,7 +1972,119 @@ function setupInvoiceEditControls() {
       updateEditInvoicePaymentBank
     );
   }
+if (
+  openItemButton &&
+  !openItemButton.dataset
+    .invoiceEditItemBound
+) {
+  openItemButton.dataset
+    .invoiceEditItemBound = "true";
 
+  openItemButton.addEventListener(
+    "click",
+    () => {
+      openEditInvoiceItemModal(-1);
+    }
+  );
+}
+
+[
+  closeItemButton,
+  cancelItemButton,
+  itemModalOverlay
+].forEach((element) => {
+  if (
+    !element ||
+    element.dataset
+      .invoiceEditItemCloseBound
+  ) {
+    return;
+  }
+
+  element.dataset
+    .invoiceEditItemCloseBound =
+    "true";
+
+  element.addEventListener(
+    "click",
+    closeEditInvoiceItemModal
+  );
+});
+
+if (
+  bikeInput &&
+  !bikeInput.dataset
+    .invoiceEditItemBikeBound
+) {
+  bikeInput.dataset
+    .invoiceEditItemBikeBound =
+    "true";
+
+  bikeInput.addEventListener(
+    "change",
+    () => {
+      const bike =
+        getSelectedEditInvoiceBike();
+
+      if (
+        bike &&
+        unitPriceInput
+      ) {
+        unitPriceInput.value =
+          String(
+            Number(bike.price || 0)
+          );
+      }
+
+      populateEditInvoiceColorOptions();
+    }
+  );
+}
+
+if (
+  colorInput &&
+  !colorInput.dataset
+    .invoiceEditItemColorBound
+) {
+  colorInput.dataset
+    .invoiceEditItemColorBound =
+    "true";
+
+  colorInput.addEventListener(
+    "change",
+    updateEditInvoiceStockNote
+  );
+}
+
+if (
+  quantityInput &&
+  !quantityInput.dataset
+    .invoiceEditItemQuantityBound
+) {
+  quantityInput.dataset
+    .invoiceEditItemQuantityBound =
+    "true";
+
+  quantityInput.addEventListener(
+    "input",
+    updateEditInvoiceStockNote
+  );
+}
+
+if (
+  saveItemButton &&
+  !saveItemButton.dataset
+    .invoiceEditItemSaveBound
+) {
+  saveItemButton.dataset
+    .invoiceEditItemSaveBound =
+    "true";
+
+  saveItemButton.addEventListener(
+    "click",
+    savePendingEditInvoiceItem
+  );
+}
   if (
     modal &&
     !modal.dataset
@@ -1231,7 +2286,24 @@ function setupInvoiceDeleteControls() {
 async function loadInvoicePage() {
   setupInvoiceEditControls();
   setupInvoiceDeleteControls();
+  const saveButton =
+  document.getElementById(
+    "saveEditInvoiceBtn"
+  );
+  if (
+  saveButton &&
+  !saveButton.dataset
+    .invoiceEditSaveBound
+) {
+  saveButton.dataset
+    .invoiceEditSaveBound =
+    "true";
 
+  saveButton.addEventListener(
+    "click",
+    saveEditedInvoice
+  );
+}
   if (
     typeof loadAdminBikes === "function"
   ) {
