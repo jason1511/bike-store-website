@@ -156,6 +156,199 @@ function getChangedBikeFields(beforeBike, afterBike) {
   });
 }
 
+function createStockMovementId() {
+  return `stock_${Date.now()}_${crypto.randomUUID()}`;
+}
+
+function getBikeStockEntries(bike) {
+  const colors = normalizeBikeColors(
+    bike?.colors
+  );
+
+  const colorStockTotal =
+    getColorStockTotal(colors);
+
+  const stockQty = Math.max(
+    0,
+    Number(bike?.stockQty || 0)
+  );
+
+  if (
+    colors.length &&
+    colorStockTotal === stockQty
+  ) {
+    return colors.map((color) => ({
+      colorName: color.name || "",
+      quantity: Math.max(
+        0,
+        Number(color.stockQty || 0)
+      )
+    }));
+  }
+
+  return [
+    {
+      colorName:
+        String(
+          bike?.colorName || ""
+        ).trim(),
+      quantity: stockQty
+    }
+  ];
+}
+
+function getStockEntryKey(colorName) {
+  return String(colorName || "")
+    .trim()
+    .toLocaleLowerCase("id-ID");
+}
+
+function createInitialStockMovements(bike) {
+  return getBikeStockEntries(bike)
+    .filter((entry) => entry.quantity > 0)
+    .map((entry) => ({
+      bikeId: bike.id,
+      bikeBrand: bike.brand,
+      bikeName: bike.name,
+      bikeColorName: entry.colorName,
+      movementType: "stock_in",
+      quantityChange: entry.quantity,
+      quantityBefore: 0,
+      quantityAfter: entry.quantity,
+      note: entry.colorName
+        ? `Stok awal sepeda baru - Warna ${entry.colorName}`
+        : "Stok awal sepeda baru"
+    }));
+}
+
+function createEditedStockMovements(
+  existingBike,
+  nextBike
+) {
+  const beforeEntries =
+    getBikeStockEntries(existingBike);
+
+  const afterEntries =
+    getBikeStockEntries(nextBike);
+
+  const entriesByColor = new Map();
+
+  beforeEntries.forEach((entry) => {
+    const key =
+      getStockEntryKey(entry.colorName);
+
+    entriesByColor.set(key, {
+      colorName: entry.colorName,
+      quantityBefore: entry.quantity,
+      quantityAfter: 0
+    });
+  });
+
+  afterEntries.forEach((entry) => {
+    const key =
+      getStockEntryKey(entry.colorName);
+
+    const existing =
+      entriesByColor.get(key);
+
+    if (existing) {
+      existing.colorName =
+        entry.colorName || existing.colorName;
+
+      existing.quantityAfter =
+        entry.quantity;
+
+      return;
+    }
+
+    entriesByColor.set(key, {
+      colorName: entry.colorName,
+      quantityBefore: 0,
+      quantityAfter: entry.quantity
+    });
+  });
+
+  return Array.from(
+    entriesByColor.values()
+  )
+    .map((entry) => {
+      const quantityChange =
+        entry.quantityAfter -
+        entry.quantityBefore;
+
+      if (quantityChange === 0) {
+        return null;
+      }
+
+      const isStockIncrease =
+        quantityChange > 0;
+
+      const actionLabel = isStockIncrease
+        ? "Penambahan stok manual"
+        : "Pengurangan stok manual";
+
+      return {
+        bikeId: nextBike.id,
+        bikeBrand: nextBike.brand,
+        bikeName: nextBike.name,
+        bikeColorName: entry.colorName,
+        movementType: isStockIncrease
+          ? "stock_in"
+          : "adjustment",
+        quantityChange,
+        quantityBefore:
+          entry.quantityBefore,
+        quantityAfter:
+          entry.quantityAfter,
+        note: entry.colorName
+          ? `${actionLabel} - Warna ${entry.colorName}`
+          : actionLabel
+      };
+    })
+    .filter(Boolean);
+}
+
+function createStockMovementStatement(
+  db,
+  user,
+  movement
+) {
+  return db
+    .prepare(`
+      INSERT INTO stock_movements (
+        id,
+        bike_id,
+        bike_brand,
+        bike_name,
+        bike_color_name,
+        movement_type,
+        quantity_change,
+        quantity_before,
+        quantity_after,
+        note,
+        created_by_id,
+        created_by_username,
+        created_by_role
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    .bind(
+      createStockMovementId(),
+      movement.bikeId,
+      movement.bikeBrand,
+      movement.bikeName,
+      movement.bikeColorName || "",
+      movement.movementType,
+      movement.quantityChange,
+      movement.quantityBefore,
+      movement.quantityAfter,
+      movement.note || "",
+      user.id || "",
+      user.username,
+      user.role
+    );
+}
+
 async function getBikeById(db, id) {
   const row = await db
     .prepare(`
@@ -355,8 +548,8 @@ const errors = validateBike(bike);
       return jsonResponse({ error: "Bike ID already exists" }, 409);
     }
 
-    await env.BIKE_DB
-      .prepare(`
+    const createBikeStatement =
+      env.BIKE_DB.prepare(`
         INSERT INTO bikes (
           id,
           brand_id,
@@ -380,8 +573,7 @@ const errors = validateBike(bike);
           stockQty
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
-      .bind(
+      `).bind(
         bike.id,
         bike.brandId,
         bike.brand,
@@ -402,8 +594,22 @@ const errors = validateBike(bike);
         bike.featured,
         bike.inStock,
         bike.stockQty
+      );
+
+    const initialStockMovements =
+      createInitialStockMovements(bike);
+
+    await env.BIKE_DB.batch([
+      createBikeStatement,
+      ...initialStockMovements.map(
+        (movement) =>
+          createStockMovementStatement(
+            env.BIKE_DB,
+            auth.user,
+            movement
+          )
       )
-      .run();
+    ]);
 
     const createdBike = await getBikeById(env.BIKE_DB, bike.id);
 
@@ -477,8 +683,8 @@ const errors = validateBike(bike);
       return stockPermissionError;
     }
 
-    await env.BIKE_DB
-      .prepare(`
+    const updateBikeStatement =
+      env.BIKE_DB.prepare(`
         UPDATE bikes
         SET
           brand_id = ?,
@@ -502,8 +708,7 @@ const errors = validateBike(bike);
           stockQty = ?,
           updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?
-      `)
-      .bind(
+      `).bind(
   bike.brandId,
   bike.brand,
   bike.name,
@@ -524,8 +729,25 @@ const errors = validateBike(bike);
   bike.inStock,
   bike.stockQty,
   bike.id
-)
-      .run();
+);
+
+    const editedStockMovements =
+      createEditedStockMovements(
+        existingBike,
+        bike
+      );
+
+    await env.BIKE_DB.batch([
+      updateBikeStatement,
+      ...editedStockMovements.map(
+        (movement) =>
+          createStockMovementStatement(
+            env.BIKE_DB,
+            auth.user,
+            movement
+          )
+      )
+    ]);
 
     const updatedBike = await getBikeById(env.BIKE_DB, bike.id);
     const changedFields = getChangedBikeFields(existingBike, updatedBike);
