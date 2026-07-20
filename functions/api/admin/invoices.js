@@ -18,6 +18,30 @@ function createStockMovementId() {
 function createInvoiceItemId() {
   return `invoice_item_${Date.now()}_${crypto.randomUUID()}`;
 }
+function normalizeFrameNumbers(value) {
+  let values = value;
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      values = Array.isArray(parsed)
+        ? parsed
+        : value.split(/\r?\n/);
+    } catch (error) {
+      values = value.split(/\r?\n/);
+    }
+  }
+
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  return values
+    .map((frameNumber) =>
+      String(frameNumber || "").trim()
+    )
+    .filter(Boolean);
+}
 function rowToInvoiceItem(row) {
   return {
     id: row.id,
@@ -29,6 +53,9 @@ function rowToInvoiceItem(row) {
     bikeColorName: row.bike_color_name,
     bikeColorHex: row.bike_color_hex,
     bikeColorImage: row.bike_color_image,
+    frameNumbers: normalizeFrameNumbers(
+      row.frame_numbers
+    ),
 
     quantity: Number(row.quantity || 0),
     unitPrice: Number(row.unit_price || 0),
@@ -53,11 +80,13 @@ async function insertInvoiceItem(db, invoiceId, item) {
         bike_color_hex,
         bike_color_image,
 
+        frame_numbers,
+
         quantity,
         unit_price,
         line_total
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     .bind(
       itemId,
@@ -69,6 +98,10 @@ async function insertInvoiceItem(db, invoiceId, item) {
       item.bikeColorName,
       item.bikeColorHex || "",
       item.bikeColorImage || "",
+
+      JSON.stringify(
+        item.frameNumbers || []
+      ),
 
       item.quantity,
       item.unitPrice,
@@ -312,6 +345,9 @@ function normalizeInvoiceItemPayload(item) {
   return {
     bikeId: String(item.bikeId || "").trim(),
     bikeColorName: String(item.bikeColorName || "").trim(),
+    frameNumbers: normalizeFrameNumbers(
+      item.frameNumbers
+    ),
     quantity: quantity > 0 ? quantity : 1,
     unitPrice: unitPrice >= 0 ? unitPrice : 0
   };
@@ -378,6 +414,8 @@ function validateInvoice(invoice) {
     invoice.paymentBank = "";
   }
 
+  const usedFrameNumbers = new Set();
+
   invoice.items.forEach((item, index) => {
     const itemNumber = index + 1;
 
@@ -396,6 +434,32 @@ function validateInvoice(invoice) {
     if (item.unitPrice < 0) {
       errors.push(`Item ${itemNumber}: harga tidak boleh negatif.`);
     }
+
+    if (
+      item.frameNumbers.length !==
+      item.quantity
+    ) {
+      errors.push(
+        `Item ${itemNumber}: isi ${item.quantity} nomor rangka, satu untuk setiap unit.`
+      );
+    }
+
+    item.frameNumbers.forEach(
+      (frameNumber) => {
+        const key =
+          frameNumber.toLocaleLowerCase(
+            "id-ID"
+          );
+
+        if (usedFrameNumbers.has(key)) {
+          errors.push(
+            `Nomor rangka ${frameNumber} digunakan lebih dari sekali.`
+          );
+        }
+
+        usedFrameNumbers.add(key);
+      }
+    );
   });
 
   return errors;
@@ -672,6 +736,7 @@ async function prepareInvoiceItemsAndStockUpdates(db, invoice) {
       bikeColorName: selectedColor.name,
       bikeColorHex: selectedColor.hex || "",
       bikeColorImage: selectedColor.image || "",
+      frameNumbers: item.frameNumbers,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
       lineTotal: item.quantity * item.unitPrice
@@ -869,6 +934,8 @@ function validateInvoiceEdit(
     invoice.paymentBank = "";
   }
 
+  const usedFrameNumbers = new Set();
+
   invoice.items.forEach(
     (item, index) => {
       const itemNumber = index + 1;
@@ -906,6 +973,32 @@ function validateInvoiceEdit(
           `Item ${itemNumber}: harga tidak boleh negatif.`
         );
       }
+
+      if (
+        item.frameNumbers.length !==
+        item.quantity
+      ) {
+        errors.push(
+          `Item ${itemNumber}: isi ${item.quantity} nomor rangka, satu untuk setiap unit.`
+        );
+      }
+
+      item.frameNumbers.forEach(
+        (frameNumber) => {
+          const key =
+            frameNumber.toLocaleLowerCase(
+              "id-ID"
+            );
+
+          if (usedFrameNumbers.has(key)) {
+            errors.push(
+              `Nomor rangka ${frameNumber} digunakan lebih dari sekali.`
+            );
+          }
+
+          usedFrameNumbers.add(key);
+        }
+      );
     }
   );
 
@@ -1072,6 +1165,9 @@ async function prepareInvoiceEditPlan(
 
       bikeColorImage:
         selectedColor.image || "",
+
+      frameNumbers:
+        item.frameNumbers,
 
       quantity:
         item.quantity,
@@ -1315,6 +1411,7 @@ export async function onRequestPost(context) {
         items: invoicePlan.preparedItems.map((item) => ({
           bikeName: `${item.bikeBrand} ${item.bikeName}`,
           bikeColorName: item.bikeColorName,
+          frameNumbers: item.frameNumbers,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           lineTotal: item.lineTotal
@@ -1890,13 +1987,15 @@ export async function onRequestPut(
                   bike_color_hex,
                   bike_color_image,
 
+                  frame_numbers,
+
                   quantity,
                   unit_price,
                   line_total
                 )
                 VALUES (
                   ?, ?, ?, ?, ?, ?,
-                  ?, ?, ?, ?, ?
+                  ?, ?, ?, ?, ?, ?
                 )
               `)
               .bind(
@@ -1909,6 +2008,10 @@ export async function onRequestPut(
                 item.bikeColorName,
                 item.bikeColorHex,
                 item.bikeColorImage,
+
+                JSON.stringify(
+                  item.frameNumbers || []
+                ),
 
                 item.quantity,
                 item.unitPrice,

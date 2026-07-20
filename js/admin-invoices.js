@@ -8,6 +8,33 @@ let pendingEditInvoiceId = "";
 let editingInvoiceItemIndex = -1;
 let pendingEditInvoiceItems = [];
 
+function normalizeInvoiceFrameNumbers(
+  value
+) {
+  const values = Array.isArray(value)
+    ? value
+    : String(value || "").split(/\r?\n/);
+
+  return values
+    .map((frameNumber) =>
+      String(frameNumber || "").trim()
+    )
+    .filter(Boolean);
+}
+
+function getInvoiceFrameNumbersLabel(
+  frameNumbers
+) {
+  const values =
+    normalizeInvoiceFrameNumbers(
+      frameNumbers
+    );
+
+  return values.length
+    ? values.join(", ")
+    : "-";
+}
+
 async function fetchInvoices() {
   const data = await fetchAdminJson(
     "/api/admin/invoices?limit=50",
@@ -666,6 +693,15 @@ function renderPendingEditInvoiceItems() {
                   )
                 )}
               </span>
+
+              <span>
+                Nomor rangka:
+                ${escapeHtml(
+                  getInvoiceFrameNumbersLabel(
+                    item.frameNumbers
+                  )
+                )}
+              </span>
             </div>
 
             <strong>
@@ -935,6 +971,11 @@ function openEditInvoiceItemModal(
       "editInvoiceUnitPriceInput"
     );
 
+  const frameNumbersInput =
+    document.getElementById(
+      "editInvoiceFrameNumbersInput"
+    );
+
   const saveButton =
     document.getElementById(
       "saveEditInvoiceItemBtn"
@@ -977,6 +1018,13 @@ function openEditInvoiceItemModal(
             item.unitPrice || 0
           )
         : "";
+  }
+
+  if (frameNumbersInput) {
+    frameNumbersInput.value =
+      normalizeInvoiceFrameNumbers(
+        item?.frameNumbers
+      ).join("\n");
   }
 
   if (title) {
@@ -1052,6 +1100,13 @@ function savePendingEditInvoiceItem() {
       )?.value || 0
     );
 
+  const frameNumbers =
+    normalizeInvoiceFrameNumbers(
+      document.getElementById(
+        "editInvoiceFrameNumbersInput"
+      )?.value || ""
+    );
+
   if (!bike) {
     setEditInvoiceItemNote(
       "Sepeda wajib dipilih.",
@@ -1094,6 +1149,32 @@ function savePendingEditInvoiceItem() {
   ) {
     setEditInvoiceItemNote(
       "Harga jual tidak boleh negatif.",
+      "is-error"
+    );
+
+    return;
+  }
+
+  if (
+    frameNumbers.length !== quantity
+  ) {
+    setEditInvoiceItemNote(
+      `Isi ${quantity} nomor rangka, satu untuk setiap unit.`,
+      "is-error"
+    );
+
+    return;
+  }
+
+  if (
+    new Set(
+      frameNumbers.map((value) =>
+        value.toLocaleLowerCase("id-ID")
+      )
+    ).size !== frameNumbers.length
+  ) {
+    setEditInvoiceItemNote(
+      "Nomor rangka tidak boleh sama.",
       "is-error"
     );
 
@@ -1162,6 +1243,8 @@ function savePendingEditInvoiceItem() {
 
     bikeColorName:
       color.name,
+
+    frameNumbers,
 
     quantity,
 
@@ -1546,6 +1629,11 @@ function getEditInvoiceFormData() {
           bikeColorName:
             item.bikeColorName,
 
+          frameNumbers:
+            normalizeInvoiceFrameNumbers(
+              item.frameNumbers
+            ),
+
           quantity:
             Number(item.quantity || 0),
 
@@ -1637,6 +1725,15 @@ function validateEditInvoiceForm(
       ) {
         errors.push(
           `Item ${number}: harga tidak valid.`
+        );
+      }
+
+      if (
+        item.frameNumbers.length !==
+        item.quantity
+      ) {
+        errors.push(
+          `Item ${number}: isi ${item.quantity} nomor rangka.`
         );
       }
     }

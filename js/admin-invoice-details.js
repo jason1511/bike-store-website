@@ -27,6 +27,10 @@ function getInvoiceItems(invoice) {
         bikeBrand: item.bikeBrand || invoice.bikeBrand || "",
         bikeName: item.bikeName || invoice.bikeName || "",
         bikeColorName: item.bikeColorName || invoice.bikeColorName || "",
+        frameNumbers:
+          normalizeInvoiceFrameNumbers(
+            item.frameNumbers
+          ),
         quantity,
         unitPrice,
         lineTotal
@@ -43,6 +47,7 @@ function getInvoiceItems(invoice) {
       bikeBrand: invoice.bikeBrand || "",
       bikeName: invoice.bikeName || "",
       bikeColorName: invoice.bikeColorName || "",
+      frameNumbers: [],
       quantity,
       unitPrice,
       lineTotal: totalPrice
@@ -97,7 +102,7 @@ function renderPrintableInvoiceItems(invoice) {
   if (!items.length) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="5">Data invoice belum tersedia.</td>
+        <td colspan="6">Data invoice belum tersedia.</td>
       </tr>
     `;
     return;
@@ -113,6 +118,13 @@ function renderPrintableInvoiceItems(invoice) {
         <tr>
           <td>${escapeHtml(getInvoiceItemLabel(item))}</td>
           <td>${escapeHtml(item.bikeColorName || "-")}</td>
+          <td class="printable-invoice-frame-numbers">
+            ${escapeHtml(
+              getInvoiceFrameNumbersLabel(
+                item.frameNumbers
+              )
+            )}
+          </td>
           <td class="is-center">${quantity}</td>
           <td class="is-right">${formatRupiah(unitPrice)}</td>
           <td class="is-right">${formatRupiah(lineTotal)}</td>

@@ -26,6 +26,7 @@ function createPendingInvoiceItem() {
   const selectedColor = getSelectedInvoiceColor();
   const quantityInput = document.getElementById("invoiceQuantityInput");
   const unitPriceInput = document.getElementById("invoiceUnitPriceInput");
+  const frameNumbersInput = document.getElementById("invoiceFrameNumbersInput");
 
   if (!selectedBike) {
     throw new Error("Sepeda wajib dipilih.");
@@ -38,6 +39,10 @@ function createPendingInvoiceItem() {
   const quantity = Number(quantityInput?.value || 1);
   const unitPrice = Number(unitPriceInput?.value || 0);
   const stockQty = Number(selectedColor.stockQty || 0);
+  const frameNumbers =
+    normalizeInvoiceFrameNumbers(
+      frameNumbersInput?.value || ""
+    );
 
   if (quantity < 1) {
     throw new Error("Jumlah minimal 1.");
@@ -49,6 +54,24 @@ function createPendingInvoiceItem() {
 
   if (unitPrice < 0) {
     throw new Error("Harga jual tidak boleh negatif.");
+  }
+
+  if (frameNumbers.length !== quantity) {
+    throw new Error(
+      `Isi ${quantity} nomor rangka, satu untuk setiap unit.`
+    );
+  }
+
+  if (
+    new Set(
+      frameNumbers.map((value) =>
+        value.toLocaleLowerCase("id-ID")
+      )
+    ).size !== frameNumbers.length
+  ) {
+    throw new Error(
+      "Nomor rangka tidak boleh sama."
+    );
   }
 
   const duplicateItem = pendingInvoiceItems.find((item) => {
@@ -70,6 +93,7 @@ function createPendingInvoiceItem() {
     bikeBrand: selectedBike.brand,
     bikeName: selectedBike.name,
     bikeColorName: selectedColor.name,
+    frameNumbers,
     quantity,
     unitPrice,
     lineTotal: quantity * unitPrice
@@ -109,6 +133,14 @@ function renderPendingInvoiceItems() {
             Warna ${escapeHtml(item.bikeColorName)} ·
             ${Number(item.quantity)} unit × ${formatRupiah(item.unitPrice)}
           </span>
+          <span>
+            Nomor rangka:
+            ${escapeHtml(
+              getInvoiceFrameNumbersLabel(
+                item.frameNumbers
+              )
+            )}
+          </span>
         </div>
 
         <div>
@@ -137,6 +169,7 @@ function resetInvoiceItemModalForm() {
   const colorInput = document.getElementById("invoiceBikeColorInput");
   const quantityInput = document.getElementById("invoiceQuantityInput");
   const unitPriceInput = document.getElementById("invoiceUnitPriceInput");
+  const frameNumbersInput = document.getElementById("invoiceFrameNumbersInput");
 
   if (bikeInput) {
     bikeInput.value = "";
@@ -153,6 +186,10 @@ function resetInvoiceItemModalForm() {
 
   if (unitPriceInput) {
     unitPriceInput.value = "";
+  }
+
+  if (frameNumbersInput) {
+    frameNumbersInput.value = "";
   }
 
   updateInvoiceColorStockNote();
@@ -408,6 +445,10 @@ function getInvoiceFormData() {
     items: pendingInvoiceItems.map((item) => ({
       bikeId: item.bikeId,
       bikeColorName: item.bikeColorName,
+      frameNumbers:
+        normalizeInvoiceFrameNumbers(
+          item.frameNumbers
+        ),
       quantity: item.quantity,
       unitPrice: item.unitPrice
     }))
@@ -445,6 +486,15 @@ function validateInvoiceFormData(invoice) {
 
     if (Number(item.unitPrice || 0) < 0) {
       errors.push(`Item ${itemNumber}: harga tidak boleh negatif.`);
+    }
+
+    if (
+      item.frameNumbers.length !==
+      Number(item.quantity || 0)
+    ) {
+      errors.push(
+        `Item ${itemNumber}: jumlah nomor rangka harus sama dengan jumlah unit.`
+      );
     }
   });
 
