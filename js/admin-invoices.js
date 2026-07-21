@@ -13,7 +13,7 @@ function normalizeInvoiceFrameNumbers(
 ) {
   const values = Array.isArray(value)
     ? value
-    : String(value || "").split(/\r?\n/);
+    : String(value || "").split(/[\r\n,;]+/);
 
   return values
     .map((frameNumber) =>
@@ -1156,6 +1156,7 @@ function savePendingEditInvoiceItem() {
   }
 
   if (
+    frameNumbers.length > 0 &&
     frameNumbers.length !== quantity
   ) {
     setEditInvoiceItemNote(
@@ -1729,6 +1730,7 @@ function validateEditInvoiceForm(
       }
 
       if (
+        item.frameNumbers.length > 0 &&
         item.frameNumbers.length !==
         item.quantity
       ) {

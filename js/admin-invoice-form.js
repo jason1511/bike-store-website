@@ -56,7 +56,10 @@ function createPendingInvoiceItem() {
     throw new Error("Harga jual tidak boleh negatif.");
   }
 
-  if (frameNumbers.length !== quantity) {
+  if (
+    frameNumbers.length > 0 &&
+    frameNumbers.length !== quantity
+  ) {
     throw new Error(
       `Isi ${quantity} nomor rangka, satu untuk setiap unit.`
     );
@@ -489,6 +492,7 @@ function validateInvoiceFormData(invoice) {
     }
 
     if (
+      item.frameNumbers.length > 0 &&
       item.frameNumbers.length !==
       Number(item.quantity || 0)
     ) {

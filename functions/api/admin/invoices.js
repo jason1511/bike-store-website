@@ -26,9 +26,9 @@ function normalizeFrameNumbers(value) {
       const parsed = JSON.parse(value);
       values = Array.isArray(parsed)
         ? parsed
-        : value.split(/\r?\n/);
+        : value.split(/[\r\n,;]+/);
     } catch (error) {
-      values = value.split(/\r?\n/);
+      values = value.split(/[\r\n,;]+/);
     }
   }
 
@@ -436,6 +436,7 @@ function validateInvoice(invoice) {
     }
 
     if (
+      item.frameNumbers.length > 0 &&
       item.frameNumbers.length !==
       item.quantity
     ) {
@@ -975,6 +976,7 @@ function validateInvoiceEdit(
       }
 
       if (
+        item.frameNumbers.length > 0 &&
         item.frameNumbers.length !==
         item.quantity
       ) {
