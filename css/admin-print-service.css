@@ -15,7 +15,7 @@
   gap: 28px;
   align-items: flex-start;
   padding-bottom: 22px;
-  border-bottom: 2px solid #e3ecea;
+  border-bottom: 2px solid #314846;
 }
 
 .printable-service-brand {
@@ -81,8 +81,8 @@
   gap: 5px;
   padding: 13px 14px;
   border-radius: 14px;
-  background-color: #f4f8f7;
-  border: 1px solid #e3ecea;
+  background-color: #ffffff;
+  border: 1px solid #aebfbc;
 }
 
 .printable-service-meta span,
@@ -117,7 +117,7 @@
 .printable-service-table-wrap {
   overflow-x: auto;
   border-radius: 16px;
-  border: 1px solid #e3ecea;
+  border: 2px solid #314846;
 }
 
 .printable-service-table {
@@ -134,8 +134,8 @@
 }
 
 .printable-service-table th {
-  color: #52615f;
-  background-color: #f4f8f7;
+  color: #182322;
+  background-color: #ffffff;
   font-size: 0.78rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -159,8 +159,9 @@
   gap: 8px;
   padding: 18px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #25d366, #159b79);
-  color: #071312;
+  background: #ffffff;
+  color: #087455;
+  border: 2px solid #159b79;
 }
 
 .printable-service-total-box span {
@@ -180,8 +181,8 @@
   padding: 14px;
   border-radius: 14px;
   color: #52615f;
-  background-color: #f4f8f7;
-  border: 1px solid #e3ecea;
+  background-color: #ffffff;
+  border: 1px solid #aebfbc;
   line-height: 1.55;
 }
 
@@ -236,8 +237,8 @@
   }
 
   body.is-printing-service {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    -webkit-print-color-adjust: economy;
+    print-color-adjust: economy;
   }
 
   body.is-printing-service .admin-login-section,

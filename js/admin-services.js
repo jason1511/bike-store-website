@@ -607,8 +607,8 @@ function printCurrentService() {
           }
 
           body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: economy;
+            print-color-adjust: economy;
           }
 
           .printable-service {

@@ -1141,8 +1141,8 @@ async function printGeneratedReport() {
             }
 
             body {
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
+              -webkit-print-color-adjust: economy;
+              print-color-adjust: economy;
             }
 
             .print-report {
@@ -1203,8 +1203,8 @@ async function printGeneratedReport() {
 
               .print-report-table th,
               .print-report-table td {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                -webkit-print-color-adjust: economy;
+                print-color-adjust: economy;
               }
             }
           </style>

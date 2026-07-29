@@ -24,6 +24,7 @@ function getInvoiceItems(invoice) {
       const lineTotal = Number(item.lineTotal || quantity * unitPrice);
 
       return {
+        bikeId: item.bikeId || "",
         bikeBrand: item.bikeBrand || invoice.bikeBrand || "",
         bikeName: item.bikeName || invoice.bikeName || "",
         bikeColorName: item.bikeColorName || invoice.bikeColorName || "",
@@ -44,6 +45,7 @@ function getInvoiceItems(invoice) {
 
   return [
     {
+      bikeId: invoice.bikeId || "",
       bikeBrand: invoice.bikeBrand || "",
       bikeName: invoice.bikeName || "",
       bikeColorName: invoice.bikeColorName || "",
@@ -57,6 +59,28 @@ function getInvoiceItems(invoice) {
 
 function getInvoiceItemLabel(item) {
   return `${item.bikeBrand || ""} ${item.bikeName || ""}`.trim() || "-";
+}
+
+function groupInvoiceItemsByProduct(items) {
+  const groups = new Map();
+
+  items.forEach((item) => {
+    const label = getInvoiceItemLabel(item);
+    const key = item.bikeId
+      ? `bike:${item.bikeId}`
+      : `label:${label.toLocaleLowerCase("id-ID")}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        label,
+        items: []
+      });
+    }
+
+    groups.get(key).items.push(item);
+  });
+
+  return Array.from(groups.values());
 }
 
 function getInvoiceSubtotal(invoice) {
@@ -108,28 +132,52 @@ function renderPrintableInvoiceItems(invoice) {
     return;
   }
 
-  tableBody.innerHTML = items
-    .map((item) => {
-      const quantity = Number(item.quantity || 1);
-      const unitPrice = Number(item.unitPrice || 0);
-      const lineTotal = Number(item.lineTotal || quantity * unitPrice);
+  const productGroups =
+    groupInvoiceItemsByProduct(items);
 
-      return `
-        <tr>
-          <td>${escapeHtml(getInvoiceItemLabel(item))}</td>
-          <td>${escapeHtml(item.bikeColorName || "-")}</td>
-          <td class="printable-invoice-frame-numbers">
-            ${escapeHtml(
-              getInvoiceFrameNumbersLabel(
-                item.frameNumbers
-              )
-            )}
-          </td>
-          <td class="is-center">${quantity}</td>
-          <td class="is-right">${formatRupiah(unitPrice)}</td>
-          <td class="is-right">${formatRupiah(lineTotal)}</td>
-        </tr>
-      `;
+  tableBody.innerHTML = productGroups
+    .flatMap((group) => {
+      return group.items.map((item, variantIndex) => {
+        const quantity = Number(item.quantity || 1);
+        const unitPrice = Number(item.unitPrice || 0);
+        const lineTotal = Number(item.lineTotal || quantity * unitPrice);
+        const productCell = variantIndex === 0
+          ? `
+              <td
+                class="printable-invoice-product-cell"
+                rowspan="${group.items.length}"
+              >
+                ${escapeHtml(group.label)}
+                ${
+                  group.items.length > 1
+                    ? `
+                        <small>
+                          ${group.items.length} varian warna
+                        </small>
+                      `
+                    : ""
+                }
+              </td>
+            `
+          : "";
+
+        return `
+          <tr class="${variantIndex > 0 ? "is-product-continuation" : ""}">
+            ${productCell}
+            <td>${escapeHtml(item.bikeColorName || "-")}</td>
+            <td class="printable-invoice-frame-numbers">
+              ${escapeHtml(
+                getInvoiceFrameNumbersLabel(
+                  item.frameNumbers
+                )
+              )}
+            </td>
+            <td class="is-center">${quantity}</td>
+            <td class="is-right">${formatRupiah(unitPrice)}</td>
+            <td class="is-right">${formatRupiah(lineTotal)}</td>
+          </tr>
+        `;
+      });
     })
     .join("");
 }
@@ -201,8 +249,13 @@ function openInvoiceModal(invoice) {
   setPrintText("printInvoiceTotal", formatRupiah(totalPrice));
   setPrintText("printInvoiceNotes", notesText);
 
-  setPrintText("printInvoiceCustomerSignature", invoice.customerName || "-");
   setPrintText("printInvoiceStaffSignature", invoice.createdByUsername || "-");
+  setPrintText(
+    "printInvoiceTechnicianSignature",
+    invoice.technicianName ||
+      invoice.technician ||
+      "-"
+  );
 
   // Newer template IDs, if they exist
   setPrintText("printInvoiceCustomerName", invoice.customerName);
@@ -335,8 +388,8 @@ function printCurrentInvoice() {
 
           body {
             -webkit-print-color-adjust:
-              exact;
-            print-color-adjust: exact;
+              economy;
+            print-color-adjust: economy;
           }
 
           .printable-invoice {
