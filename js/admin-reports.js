@@ -1154,13 +1154,54 @@ async function printGeneratedReport() {
               padding: 0;
             }
 
+            .standalone-print-actions {
+              position: sticky;
+              top: 0;
+              z-index: 20;
+              display: flex;
+              justify-content: center;
+              gap: 10px;
+              margin-bottom: 16px;
+              padding: 12px;
+              border-bottom: 1px solid #d7e0de;
+              background: rgba(255, 255, 255, 0.96);
+              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            }
+
+            .standalone-print-actions button {
+              min-width: 120px;
+              padding: 10px 16px;
+              border: 1px solid #159b79;
+              border-radius: 999px;
+              font: inherit;
+              font-weight: 800;
+              cursor: pointer;
+            }
+
+            .standalone-print-actions
+              .standalone-print-again {
+              color: #ffffff;
+              background: #159b79;
+            }
+
+            .standalone-print-actions
+              .standalone-print-close {
+              color: #182322;
+              border-color: #aebfbc;
+              background: #ffffff;
+            }
+
             @media screen {
               body {
-                padding: 16px 0;
+                padding: 0 0 16px;
               }
             }
 
             @media print {
+              .standalone-print-actions {
+                display: none !important;
+              }
+
               html,
               body {
                 width: auto !important;
@@ -1211,11 +1252,56 @@ async function printGeneratedReport() {
         </head>
 
         <body class="standalone-report-print">
+          <div
+            class="standalone-print-actions"
+            role="toolbar"
+            aria-label="Kontrol cetak laporan"
+          >
+            <button
+              id="standaloneReportPrintAgain"
+              class="standalone-print-again"
+              type="button"
+            >
+              Cetak Lagi
+            </button>
+
+            <button
+              id="standaloneReportClose"
+              class="standalone-print-close"
+              type="button"
+            >
+              Tutup Tab
+            </button>
+          </div>
+
           ${report.outerHTML}
         </body>
       </html>
     `);
     printWindow.document.close();
+
+    printWindow.document
+      .getElementById(
+        "standaloneReportPrintAgain"
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+          printWindow.focus();
+          printWindow.print();
+        }
+      );
+
+    printWindow.document
+      .getElementById(
+        "standaloneReportClose"
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+          printWindow.close();
+        }
+      );
 
     printWindow.addEventListener(
       "load",
