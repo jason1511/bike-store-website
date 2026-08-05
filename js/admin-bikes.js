@@ -63,6 +63,50 @@ async function loadAdminBrands() {
   adminBrandOptions = await fetchAdminBrands();
   populateBikeBrandSelect();
 }
+
+function getSafeStockSwatch(color) {
+  const swatch = String(color || "").trim();
+
+  return /^#[0-9a-f]{3,8}$/i.test(swatch)
+    ? swatch
+    : "#cccccc";
+}
+
+function getAdminBikeStockColors(bike) {
+  const colors = normalizeBikeColors(bike.colors);
+
+  if (colors.length) {
+    return colors;
+  }
+
+  return [{
+    name: String(bike.colorName || "Warna tidak dicatat").trim(),
+    hex: "#cccccc",
+    stockQty: Math.max(0, Number(bike.stockQty || 0))
+  }];
+}
+
+function renderAdminBikeColorStock(bike) {
+  return getAdminBikeStockColors(bike)
+    .map((color) => {
+      const quantity = Math.max(0, Number(color.stockQty || 0));
+      const stockClass = quantity <= 0
+        ? "is-empty"
+        : quantity <= 3
+          ? "is-low"
+          : "is-ready";
+
+      return `
+        <div class="admin-stock-color-chip ${stockClass}">
+          <i style="--stock-swatch: ${getSafeStockSwatch(color.hex)}"></i>
+          <em>${escapeHtml(color.name || "Tanpa warna")}</em>
+          <b>${quantity}</b>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 function renderAdminBikes(bikes) {
   const bikeList = document.getElementById("adminBikeList");
 
@@ -82,44 +126,21 @@ function renderAdminBikes(bikes) {
   bikeList.innerHTML = bikes
     .map((bike) => {
       const isActive = Boolean(bike.inStock);
-      const stockQty = Number(bike.stockQty || 0);
-      const isAvailable = isActive && stockQty > 0;
-      const colorCount = normalizeBikeColors(bike.colors).length;
 
       return `
         <article class="admin-bike-list-card">
           <div class="admin-bike-list-main">
-            <div>
-              <p class="admin-bike-brand">${escapeHtml(bike.brand)}</p>
+            <div class="admin-bike-list-info">
+              <p class="admin-bike-brand">${escapeHtml(bike.brand || "-")}</p>
               <h3>${escapeHtml(bike.name)}</h3>
+              <p class="admin-bike-list-price">
+                ${escapeHtml(formatRupiah(Number(bike.price || 0)))}
+              </p>
             </div>
 
-            <span class="admin-stock-pill ${isAvailable ? "is-in" : "is-out"}">
-              ${
-                !isActive
-                  ? "Nonaktif"
-                  : isAvailable
-                    ? `Stok ${stockQty}`
-                    : "Stok Habis"
-              }
-            </span>
-          </div>
-
-          <div class="admin-bike-meta">
-            <span>
-              <strong>Baterai</strong>
-              ${escapeHtml(bike.battery || "-")}
-            </span>
-
-            <span>
-              <strong>Motor</strong>
-              ${escapeHtml(bike.motor || "-")}
-            </span>
-
-            <span>
-              <strong>Warna</strong>
-              ${colorCount ? `${colorCount} pilihan` : escapeHtml(bike.colorName || "-")}
-            </span>
+            <div class="admin-bike-color-stock-list">
+              ${renderAdminBikeColorStock(bike)}
+            </div>
           </div>
 
           <div class="admin-card-actions">
@@ -205,6 +226,9 @@ function getFilteredAdminBikes() {
 
   return adminBikesCache.filter((bike) => {
     const isActive = Boolean(bike.inStock);
+    const colorNames = normalizeBikeColors(bike.colors)
+      .map((color) => color.name)
+      .join(" ");
 
     if (statusValue === "active" && !isActive) {
       return false;
@@ -225,12 +249,8 @@ function getFilteredAdminBikes() {
     const searchableText = normalizeSearchText([
       bike.brand,
       bike.name,
-      bike.battery,
-      bike.motor,
-      bike.range,
-      bike.maxWeight,
       bike.colorName,
-      bike.description
+      colorNames
     ].join(" "));
 
     return searchableText.includes(searchTerm);

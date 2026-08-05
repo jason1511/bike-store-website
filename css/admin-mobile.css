@@ -309,7 +309,8 @@
     grid-template-columns: 1fr;
   }
 
-  .admin-bike-meta span {
+  .admin-bike-meta > span,
+  .admin-bike-meta > .admin-bike-color-stock {
     padding: 10px;
   }
 
