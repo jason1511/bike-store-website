@@ -81,6 +81,40 @@
   white-space: nowrap;
 }
 
+.invoice-item-subtotal-card {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid rgba(37, 211, 102, 0.24);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top right, rgba(37, 211, 102, 0.12), transparent 44%),
+    rgba(7, 18, 18, 0.66);
+}
+
+.invoice-item-subtotal-card span,
+.invoice-item-subtotal-card small {
+  color: #9fb8b6;
+}
+
+.invoice-item-subtotal-card span {
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.invoice-item-subtotal-card output {
+  color: #8fffc0;
+  font-size: 1.35rem;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.invoice-item-subtotal-card small {
+  font-size: 0.78rem;
+}
+
 .pending-invoice-items-list {
   display: grid;
   gap: 12px;

@@ -197,6 +197,7 @@ function resetInvoiceItemModalForm() {
 
   updateInvoiceColorStockNote();
   updateInvoiceQuantityLimit();
+  updateInvoiceItemSubtotal();
 }
 
 function openInvoiceItemModal() {
@@ -276,6 +277,24 @@ function updateInvoiceQuantityLimit() {
 
   quantityInput.max = "1";
   quantityInput.value = "1";
+}
+
+function updateInvoiceItemSubtotal() {
+  const quantityInput = document.getElementById("invoiceQuantityInput");
+  const unitPriceInput = document.getElementById("invoiceUnitPriceInput");
+  const subtotalOutput = document.getElementById("invoiceItemSubtotalOutput");
+
+  if (!subtotalOutput) {
+    return;
+  }
+
+  const quantity = Math.max(0, Number(quantityInput?.value || 0));
+  const unitPrice = Math.max(0, Number(unitPriceInput?.value || 0));
+  const subtotal = quantity * unitPrice;
+
+  subtotalOutput.textContent = formatRupiah(
+    Number.isFinite(subtotal) ? subtotal : 0
+  );
 }
 
 function populateInvoiceColorOptions() {
@@ -574,13 +593,16 @@ function setupInvoiceForm() {
     bikeInput.addEventListener("change", () => {
       const selectedBike = getSelectedInvoiceBike();
 
-      if (selectedBike && unitPriceInput) {
-        unitPriceInput.value = Number(selectedBike.price || 0);
+      if (unitPriceInput) {
+        unitPriceInput.value = selectedBike
+          ? Number(selectedBike.price || 0)
+          : "";
       }
 
       populateInvoiceColorOptions();
       updateInvoiceColorStockNote();
       updateInvoiceQuantityLimit();
+      updateInvoiceItemSubtotal();
     });
   }
 
@@ -590,12 +612,21 @@ function setupInvoiceForm() {
     colorInput.addEventListener("change", () => {
       updateInvoiceColorStockNote();
       updateInvoiceQuantityLimit();
+      updateInvoiceItemSubtotal();
     });
   }
 
   if (quantityInput && !quantityInput.dataset.invoiceItemBound) {
     quantityInput.dataset.invoiceItemBound = "true";
     quantityInput.addEventListener("change", updateInvoiceQuantityLimit);
+    quantityInput.addEventListener("input", updateInvoiceItemSubtotal);
+    quantityInput.addEventListener("change", updateInvoiceItemSubtotal);
+  }
+
+  if (unitPriceInput && !unitPriceInput.dataset.invoiceSubtotalBound) {
+    unitPriceInput.dataset.invoiceSubtotalBound = "true";
+    unitPriceInput.addEventListener("input", updateInvoiceItemSubtotal);
+    unitPriceInput.addEventListener("change", updateInvoiceItemSubtotal);
   }
 
   if (addItemButton && !addItemButton.dataset.invoiceItemBound) {
