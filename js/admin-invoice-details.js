@@ -126,7 +126,7 @@ function renderPrintableInvoiceItems(invoice) {
   if (!items.length) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="6">Data invoice belum tersedia.</td>
+        <td colspan="5">Data invoice belum tersedia.</td>
       </tr>
     `;
     return;
@@ -135,51 +135,117 @@ function renderPrintableInvoiceItems(invoice) {
   const productGroups =
     groupInvoiceItemsByProduct(items);
 
-  tableBody.innerHTML = productGroups
-    .flatMap((group) => {
-      return group.items.map((item, variantIndex) => {
-        const quantity = Number(item.quantity || 1);
-        const unitPrice = Number(item.unitPrice || 0);
-        const lineTotal = Number(item.lineTotal || quantity * unitPrice);
-        const productCell = variantIndex === 0
-          ? `
-              <td
-                class="printable-invoice-product-cell"
-                rowspan="${group.items.length}"
-              >
-                ${escapeHtml(group.label)}
-                ${
-                  group.items.length > 1
-                    ? `
-                        <small>
-                          ${group.items.length} varian warna
-                        </small>
-                      `
-                    : ""
-                }
-              </td>
-            `
-          : "";
+  const rows = productGroups.map((group) => {
+    const quantity = group.items.reduce(
+      (total, item) =>
+        total + Number(item.quantity || 0),
+      0
+    );
 
-        return `
-          <tr class="${variantIndex > 0 ? "is-product-continuation" : ""}">
-            ${productCell}
-            <td>${escapeHtml(item.bikeColorName || "-")}</td>
-            <td class="printable-invoice-frame-numbers">
-              ${escapeHtml(
-                getInvoiceFrameNumbersLabel(
-                  item.frameNumbers
-                )
-              )}
-            </td>
-            <td class="is-center">${quantity}</td>
-            <td class="is-right">${formatRupiah(unitPrice)}</td>
-            <td class="is-right">${formatRupiah(lineTotal)}</td>
-          </tr>
-        `;
-      });
-    })
-    .join("");
+    const lineTotal = group.items.reduce(
+      (total, item) => {
+        const itemQuantity =
+          Number(item.quantity || 1);
+
+        return (
+          total +
+          Number(
+            item.lineTotal ||
+            itemQuantity *
+              Number(item.unitPrice || 0)
+          )
+        );
+      },
+      0
+    );
+
+    const variantDetails = group.items
+      .map((item) => {
+        const color =
+          item.bikeColorName || "-";
+
+        const itemQuantity =
+          Number(item.quantity || 1);
+
+        return `${color} (${itemQuantity} unit)`;
+      })
+      .join(" · ");
+
+    const frameNumbers = group.items
+      .flatMap((item) =>
+        normalizeInvoiceFrameNumbers(
+          item.frameNumbers
+        )
+      );
+
+    const unitPrices = Array.from(
+      new Set(
+        group.items.map((item) =>
+          Number(item.unitPrice || 0)
+        )
+      )
+    );
+
+    const unitPriceLabel =
+      unitPrices.length === 1
+        ? formatRupiah(unitPrices[0])
+        : unitPrices
+            .map((price) =>
+              formatRupiah(price)
+            )
+            .join(" / ");
+
+    return `
+      <tr>
+        <td class="is-center">
+          ${quantity}
+          <small>unit</small>
+        </td>
+
+        <td class="printable-invoice-product-cell">
+          <strong>${escapeHtml(group.label)}</strong>
+          <small>${escapeHtml(variantDetails)}</small>
+        </td>
+
+        <td class="printable-invoice-frame-numbers">
+          ${escapeHtml(
+            frameNumbers.length
+              ? frameNumbers.join(", ")
+              : "-"
+          )}
+        </td>
+
+        <td class="is-right">
+          ${escapeHtml(unitPriceLabel)}
+        </td>
+
+        <td class="is-right">
+          ${escapeHtml(formatRupiah(lineTotal))}
+        </td>
+      </tr>
+    `;
+  });
+
+  const emptyRowCount =
+    Math.max(0, 5 - rows.length);
+
+  for (
+    let index = 0;
+    index < emptyRowCount;
+    index += 1
+  ) {
+    rows.push(`
+      <tr class="is-empty-row" aria-hidden="true">
+        <td>&nbsp;</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    `);
+  }
+
+  tableBody.innerHTML = rows.join("");
 }
 function getInvoiceByIdFromCache(invoiceId) {
   return adminInvoicesCache.find((invoice) => invoice.id === invoiceId) || null;
@@ -360,7 +426,7 @@ function printCurrentInvoice() {
 
         <base href="${baseUrl}">
 
-        <title>Cetak Invoice</title>
+        <title>Cetak Faktur Penjualan</title>
 
         <link
           rel="stylesheet"
@@ -374,8 +440,8 @@ function printCurrentInvoice() {
 
         <style>
           @page {
-            size: A4 portrait;
-            margin: 8mm;
+            size: 210mm 148mm;
+            margin: 5mm;
           }
 
           html,
@@ -388,26 +454,29 @@ function printCurrentInvoice() {
 
           body {
             -webkit-print-color-adjust:
-              economy;
-            print-color-adjust: economy;
+              exact;
+            print-color-adjust: exact;
           }
 
           .printable-invoice {
-            width: 194mm;
-            max-width: 194mm;
+            width: 200mm;
+            max-width: 200mm;
             margin: 0 auto;
             border-radius: 0;
             box-shadow: none;
+            overflow: hidden;
           }
 
           .printable-invoice-page {
             box-sizing: border-box;
-            width: 194mm;
-            max-width: 194mm;
-            height: auto;
-            min-height: 0;
+            width: 200mm;
+            max-width: 200mm;
+            height: 136mm;
+            min-height: 136mm;
+            max-height: 136mm;
             margin: 0;
-            padding: 4mm 5mm;
+            padding: 4mm 5mm 3mm;
+            overflow: hidden;
           }
 
           .standalone-print-actions {
@@ -466,16 +535,22 @@ function printCurrentInvoice() {
 
             .printable-invoice {
               display: block !important;
-              width: 194mm !important;
-              max-width: 194mm !important;
+              width: 200mm !important;
+              max-width: 200mm !important;
               margin: 0 auto !important;
+              overflow: hidden !important;
+              break-after: avoid !important;
+              page-break-after: avoid !important;
             }
 
             .printable-invoice-page {
-              width: 194mm !important;
-              max-width: 194mm !important;
-              min-height: 0 !important;
-              padding: 4mm 5mm !important;
+              width: 200mm !important;
+              max-width: 200mm !important;
+              height: 136mm !important;
+              min-height: 136mm !important;
+              max-height: 136mm !important;
+              padding: 4mm 5mm 3mm !important;
+              overflow: hidden !important;
             }
           }
         </style>
