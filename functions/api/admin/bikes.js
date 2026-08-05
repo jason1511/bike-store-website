@@ -60,8 +60,6 @@ function normalizeBikePayload(payload) {
 function validateBike(bike) {
   const errors = [];
   const colors = parseBikeColors(bike.colors);
-  const hasColorImage = colors.some((color) => Boolean(color.image));
-  const hasFallbackImage = Boolean(bike.image);
 
   if (!bike.id) errors.push("ID sepeda wajib diisi.");
   if (!bike.brandId) errors.push("ID brand wajib diisi.");
@@ -69,12 +67,8 @@ function validateBike(bike) {
   if (bike.price < 0) errors.push("Harga tidak boleh negatif.");
   if (bike.stockQty < 0) errors.push("Jumlah stok tidak boleh negatif.");
 
-  if (!colors.length && !hasFallbackImage) {
+  if (!colors.length) {
     errors.push("Minimal satu warna unit wajib diisi.");
-  }
-
-  if (colors.length && !hasColorImage && !hasFallbackImage) {
-    errors.push("Minimal satu gambar warna wajib diisi.");
   }
 
   colors.forEach((color, index) => {

@@ -43,10 +43,6 @@ function getBikeFormData() {
 
 function validateBikeFormData(bike) {
   const errors = [];
-  const mainImageFile = document.getElementById("bikeMainImageUploadInput")?.files?.[0];
-  const hasPendingMainImage = Boolean(mainImageFile);
-  const hasFallbackImage = Boolean(bike.image || hasPendingMainImage);
-  const hasColorImage = bike.colors.some((color) => Boolean(color.image));
 
  if (!bike.brandId || !bike.brand) {
   errors.push("Brand wajib dipilih.");
@@ -59,10 +55,6 @@ function validateBikeFormData(bike) {
 
   if (!bike.colors.length) {
     errors.push("Tambahkan minimal satu warna unit.");
-  }
-
-  if (!hasColorImage && !hasFallbackImage) {
-    errors.push("Upload minimal satu gambar warna.");
   }
 
   bike.colors.forEach((color, index) => {
