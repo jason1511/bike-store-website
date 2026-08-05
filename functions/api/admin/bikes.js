@@ -225,52 +225,109 @@ function createEditedStockMovements(
   existingBike,
   nextBike
 ) {
-  const beforeEntries =
-    getBikeStockEntries(existingBike);
+  const beforeEntries = getBikeStockEntries(existingBike)
+    .map((entry) => ({
+      ...entry,
+      matched: false
+    }));
 
-  const afterEntries =
-    getBikeStockEntries(nextBike);
+  const afterEntries = getBikeStockEntries(nextBike)
+    .map((entry) => ({
+      ...entry,
+      matched: false
+    }));
 
-  const entriesByColor = new Map();
+  const comparedEntries = [];
 
-  beforeEntries.forEach((entry) => {
-    const key =
-      getStockEntryKey(entry.colorName);
+  /*
+   * Match unchanged color names first. This keeps
+   * normal per-color stock edits tied to the correct
+   * color even if the editor changes their order.
+   */
+  afterEntries.forEach((afterEntry) => {
+    const afterKey = getStockEntryKey(
+      afterEntry.colorName
+    );
 
-    entriesByColor.set(key, {
-      colorName: entry.colorName,
-      quantityBefore: entry.quantity,
-      quantityAfter: 0
+    const beforeEntry = beforeEntries.find((entry) => {
+      return (
+        !entry.matched &&
+        getStockEntryKey(entry.colorName) === afterKey
+      );
     });
-  });
 
-  afterEntries.forEach((entry) => {
-    const key =
-      getStockEntryKey(entry.colorName);
-
-    const existing =
-      entriesByColor.get(key);
-
-    if (existing) {
-      existing.colorName =
-        entry.colorName || existing.colorName;
-
-      existing.quantityAfter =
-        entry.quantity;
-
+    if (!beforeEntry) {
       return;
     }
 
-    entriesByColor.set(key, {
-      colorName: entry.colorName,
-      quantityBefore: 0,
-      quantityAfter: entry.quantity
+    beforeEntry.matched = true;
+    afterEntry.matched = true;
+
+    comparedEntries.push({
+      colorName:
+        afterEntry.colorName ||
+        beforeEntry.colorName,
+      quantityBefore: beforeEntry.quantity,
+      quantityAfter: afterEntry.quantity
     });
   });
 
-  return Array.from(
-    entriesByColor.values()
-  )
+  const unmatchedBefore = beforeEntries.filter(
+    (entry) => !entry.matched
+  );
+
+  const unmatchedAfter = afterEntries.filter(
+    (entry) => !entry.matched
+  );
+
+  /*
+   * Remaining entries in the same position represent
+   * renamed colors. Compare their quantities directly
+   * so changing only "Red" to "Merah" does not create
+   * a false stock-out and stock-in movement.
+   */
+  const renamedCount = Math.min(
+    unmatchedBefore.length,
+    unmatchedAfter.length
+  );
+
+  for (let index = 0; index < renamedCount; index += 1) {
+    const beforeEntry = unmatchedBefore[index];
+    const afterEntry = unmatchedAfter[index];
+
+    beforeEntry.matched = true;
+    afterEntry.matched = true;
+
+    comparedEntries.push({
+      colorName:
+        afterEntry.colorName ||
+        beforeEntry.colorName,
+      quantityBefore: beforeEntry.quantity,
+      quantityAfter: afterEntry.quantity
+    });
+  }
+
+  beforeEntries
+    .filter((entry) => !entry.matched)
+    .forEach((entry) => {
+      comparedEntries.push({
+        colorName: entry.colorName,
+        quantityBefore: entry.quantity,
+        quantityAfter: 0
+      });
+    });
+
+  afterEntries
+    .filter((entry) => !entry.matched)
+    .forEach((entry) => {
+      comparedEntries.push({
+        colorName: entry.colorName,
+        quantityBefore: 0,
+        quantityAfter: entry.quantity
+      });
+    });
+
+  return comparedEntries
     .map((entry) => {
       const quantityChange =
         entry.quantityAfter -
