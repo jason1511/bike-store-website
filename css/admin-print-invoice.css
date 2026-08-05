@@ -160,13 +160,14 @@
 
 .printable-invoice-table-wrap {
   overflow: visible;
-  border: 0.35mm solid var(--faktur-line);
+  border: 0;
 }
 
 .printable-invoice-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  border: 0.4mm solid var(--faktur-line);
   background: #ffffff;
 }
 
@@ -174,21 +175,11 @@
 .printable-invoice-table td {
   box-sizing: border-box;
   padding: 1.2mm 1.6mm;
-  border-right: 0.3mm solid var(--faktur-line);
-  border-bottom: 0.3mm solid var(--faktur-line);
+  border: 0.35mm solid var(--faktur-line);
   color: var(--faktur-ink);
   background: #ffffff;
   vertical-align: middle;
   overflow-wrap: anywhere;
-}
-
-.printable-invoice-table th:last-child,
-.printable-invoice-table td:last-child {
-  border-right: 0;
-}
-
-.printable-invoice-table tbody tr:last-child td {
-  border-bottom: 0;
 }
 
 .printable-invoice-table th {
