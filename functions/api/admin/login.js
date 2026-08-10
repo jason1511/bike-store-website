@@ -34,15 +34,33 @@ async function countRecentFailedLogins(env, username, ipAddress) {
       FROM login_attempts
       WHERE success = 0
         AND created_at >= datetime('now', '-15 minutes')
-        AND (
-          username = ?
-          OR ip_address = ?
-        )
+        AND username = ?
+        AND ip_address = ?
     `)
     .bind(username, ipAddress)
     .first();
 
   return Number(result?.failed_count || 0);
+}
+
+async function clearFailedLoginAttempts(
+  env,
+  username,
+  ipAddress
+) {
+  if (!env.BIKE_DB) {
+    return;
+  }
+
+  await env.BIKE_DB
+    .prepare(`
+      DELETE FROM login_attempts
+      WHERE success = 0
+        AND username = ?
+        AND ip_address = ?
+    `)
+    .bind(username, ipAddress)
+    .run();
 }
 
 async function recordLoginAttempt(env, username, ipAddress, success) {
@@ -194,8 +212,6 @@ export async function onRequestPost(context) {
     }
 
     if (failedLoginCount >= 5) {
-      await recordLoginAttempt(env, username || "unknown", ipAddress, false);
-
       return jsonResponse(
         {
           error: "Terlalu banyak percobaan login. Coba lagi dalam beberapa menit."
@@ -232,6 +248,12 @@ export async function onRequestPost(context) {
     }
 
     const token = await createSessionToken(user, env);
+
+    await clearFailedLoginAttempts(
+      env,
+      username,
+      ipAddress
+    );
 
     await recordLoginAttempt(env, username, ipAddress, true);
 
