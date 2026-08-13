@@ -18,6 +18,10 @@ async function tableHasColumn(db, table, column) {
 async function getSalesReport(db, from, to) {
   const hasPaymentBank = await tableHasColumn(db, "invoices", "payment_bank");
   const bankSelect = hasPaymentBank ? "i.payment_bank" : "''";
+  const hasVoidReason = await tableHasColumn(db, "invoices", "void_reason");
+  const voidReasonSelect = hasVoidReason ? "i.void_reason" : "''";
+  const hasVoidedBy = await tableHasColumn(db, "invoices", "voided_by_username");
+  const voidedBySelect = hasVoidedBy ? "i.voided_by_username" : "''";
   const result = await db.prepare(`
     SELECT
       date(datetime(i.created_at), '+7 hours') AS report_date,
@@ -26,13 +30,15 @@ async function getSalesReport(db, from, to) {
       i.payment_method,
       ${bankSelect} AS payment_bank,
       COALESCE(i.status, 'active') AS status,
+      ${voidReasonSelect} AS void_reason,
+      ${voidedBySelect} AS voided_by_username,
       i.created_by_username,
-      ii.bike_brand,
-      ii.bike_name,
-      ii.bike_color_name,
-      ii.quantity,
-      ii.unit_price,
-      ii.line_total
+      COALESCE(ii.bike_brand, i.bike_brand) AS bike_brand,
+      COALESCE(ii.bike_name, i.bike_name) AS bike_name,
+      COALESCE(ii.bike_color_name, i.bike_color_name) AS bike_color_name,
+      COALESCE(ii.quantity, i.quantity) AS quantity,
+      COALESCE(ii.unit_price, i.unit_price) AS unit_price,
+      COALESCE(ii.line_total, i.total_price) AS line_total
     FROM invoices i
     LEFT JOIN invoice_items ii ON ii.invoice_id = i.id
     WHERE date(datetime(i.created_at), '+7 hours') BETWEEN ? AND ?
@@ -51,6 +57,8 @@ async function getSalesReport(db, from, to) {
     lineTotal: Number(row.line_total || 0),
     payment: [row.payment_method, row.payment_bank].filter(Boolean).join(" — ") || "-",
     statusLabel: row.status === "voided" ? "Dibatalkan" : "Aktif",
+    voidReason: row.void_reason || "-",
+    voidedBy: row.voided_by_username || "-",
     createdBy: row.created_by_username || "-"
   }));
 }

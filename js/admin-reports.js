@@ -631,64 +631,86 @@ function formatPrintableReportPeriod(
   );
 }
 
-function getSalesReportSummary(rows = []) {
-  const invoiceNumbers =
-    new Set();
+function groupSalesReportRows(rows = []) {
+  const groups = new Map();
 
-  const activeInvoiceNumbers =
-    new Set();
-
-  const voidedInvoiceNumbers =
-    new Set();
-
-  let totalUnits = 0;
-  let netRevenue = 0;
-
-  rows.forEach((row) => {
+  rows.forEach((row, index) => {
     const invoiceNumber =
-      row.invoiceNumber || "-";
+      row.invoiceNumber || `invoice-${index}`;
 
-    invoiceNumbers.add(invoiceNumber);
-
-    if (row.statusLabel === "Dibatalkan") {
-      voidedInvoiceNumbers.add(
-        invoiceNumber
-      );
-
-      return;
+    if (!groups.has(invoiceNumber)) {
+      groups.set(invoiceNumber, {
+        invoiceNumber,
+        date: row.date || "-",
+        customerName: row.customerName || "-",
+        payment: row.payment || "-",
+        createdBy: row.createdBy || "-",
+        statusLabel: row.statusLabel || "Aktif",
+        voidReason: row.voidReason || "-",
+        voidedBy: row.voidedBy || "-",
+        items: [],
+        units: 0,
+        total: 0
+      });
     }
 
-    activeInvoiceNumbers.add(
-      invoiceNumber
-    );
+    const group = groups.get(invoiceNumber);
+    const quantity = Number(row.quantity || 0);
+    const lineTotal = Number(row.lineTotal || 0);
 
-    totalUnits +=
-      Number(row.quantity || 0);
-
-    netRevenue +=
-      Number(row.lineTotal || 0);
+    group.items.push(row);
+    group.units += quantity;
+    group.total += lineTotal;
   });
+
+  return Array.from(groups.values());
+}
+
+function getSalesReportSummary(rows = []) {
+  const groups = groupSalesReportRows(rows);
+  const activeGroups = groups.filter(
+    (group) => group.statusLabel !== "Dibatalkan"
+  );
+  const voidedGroups = groups.filter(
+    (group) => group.statusLabel === "Dibatalkan"
+  );
+
+  const netRevenue = activeGroups.reduce(
+    (total, group) => total + group.total,
+    0
+  );
+  const totalUnits = activeGroups.reduce(
+    (total, group) => total + group.units,
+    0
+  );
+  const voidedValue = voidedGroups.reduce(
+    (total, group) => total + group.total,
+    0
+  );
+  const averageInvoice = activeGroups.length
+    ? Math.round(netRevenue / activeGroups.length)
+    : 0;
 
   return [
     {
-      label: "Total Transaksi",
-      value: invoiceNumbers.size
+      label: "Penjualan Bersih",
+      value: formatRupiah(netRevenue)
     },
     {
       label: "Invoice Aktif",
-      value: activeInvoiceNumbers.size
+      value: activeGroups.length
     },
     {
-      label: "Invoice Dibatalkan",
-      value: voidedInvoiceNumbers.size
-    },
-    {
-      label: "Unit Terjual",
+      label: "Unit Terjual Aktif",
       value: totalUnits
     },
     {
-      label: "Omzet Bersih",
-      value: formatRupiah(netRevenue)
+      label: "Rata-rata / Invoice",
+      value: formatRupiah(averageInvoice)
+    },
+    {
+      label: "Pembatalan",
+      value: `${voidedGroups.length} · ${formatRupiah(voidedValue)}`
     }
   ];
 }
@@ -781,6 +803,231 @@ function renderPrintableReportSummary(
       .join("");
 }
 
+function renderPrintableSalesInsights(report) {
+  const container = document.getElementById(
+    "printReportSalesInsights"
+  );
+  const paymentBody = document.getElementById(
+    "printReportPaymentBody"
+  );
+  const productBody = document.getElementById(
+    "printReportTopProductBody"
+  );
+
+  if (!container || !paymentBody || !productBody) {
+    return;
+  }
+
+  if (report.type !== "sales") {
+    container.classList.add("is-hidden");
+    paymentBody.innerHTML = "";
+    productBody.innerHTML = "";
+    return;
+  }
+
+  const activeGroups = groupSalesReportRows(
+    report.rows
+  ).filter(
+    (group) => group.statusLabel !== "Dibatalkan"
+  );
+  const netRevenue = activeGroups.reduce(
+    (total, group) => total + group.total,
+    0
+  );
+  const payments = new Map();
+  const products = new Map();
+
+  activeGroups.forEach((group) => {
+    const paymentKey = group.payment || "-";
+    const payment = payments.get(paymentKey) || {
+      label: paymentKey,
+      invoices: 0,
+      total: 0
+    };
+
+    payment.invoices += 1;
+    payment.total += group.total;
+    payments.set(paymentKey, payment);
+
+    group.items.forEach((item) => {
+      const productKey = `${item.bike || "-"}::${item.color || "-"}`;
+      const product = products.get(productKey) || {
+        bike: item.bike || "-",
+        color: item.color || "-",
+        units: 0,
+        total: 0
+      };
+
+      product.units += Number(item.quantity || 0);
+      product.total += Number(item.lineTotal || 0);
+      products.set(productKey, product);
+    });
+  });
+
+  const paymentRows = Array.from(payments.values())
+    .sort((a, b) => b.total - a.total);
+  const productRows = Array.from(products.values())
+    .sort((a, b) => b.units - a.units || b.total - a.total)
+    .slice(0, 5);
+
+  paymentBody.innerHTML = paymentRows.length
+    ? paymentRows.map((payment) => {
+        const share = netRevenue > 0
+          ? `${((payment.total / netRevenue) * 100).toLocaleString("id-ID", {
+              maximumFractionDigits: 1
+            })}%`
+          : "0%";
+
+        return `
+          <tr>
+            <td>${escapeHtml(payment.label)}</td>
+            <td class="is-number">${payment.invoices}</td>
+            <td class="is-number">${escapeHtml(formatRupiah(payment.total))}</td>
+            <td class="is-number">${escapeHtml(share)}</td>
+          </tr>
+        `;
+      }).join("")
+    : `<tr><td colspan="4" class="print-report-empty">Tidak ada pembayaran aktif.</td></tr>`;
+
+  productBody.innerHTML = productRows.length
+    ? productRows.map((product) => `
+        <tr>
+          <td>${escapeHtml(product.bike)}</td>
+          <td>${escapeHtml(product.color)}</td>
+          <td class="is-number">${product.units}</td>
+          <td class="is-number">${escapeHtml(formatRupiah(product.total))}</td>
+        </tr>
+      `).join("")
+    : `<tr><td colspan="4" class="print-report-empty">Tidak ada produk aktif.</td></tr>`;
+
+  container.classList.remove("is-hidden");
+}
+
+function formatSalesReportDate(value) {
+  const date = parseReportDate(value);
+
+  if (!date) {
+    return value || "-";
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  }).format(date);
+}
+
+function renderPrintableSalesTable(report, head, body, foot) {
+  const groups = groupSalesReportRows(report.rows);
+  const activeGroups = groups.filter(
+    (group) => group.statusLabel !== "Dibatalkan"
+  );
+  const voidedGroups = groups.filter(
+    (group) => group.statusLabel === "Dibatalkan"
+  );
+  const detailTitle = document.getElementById(
+    "printReportDetailTitle"
+  );
+  const detailSection = document.getElementById(
+    "printReportDetailSection"
+  );
+  const cancelledSection = document.getElementById(
+    "printReportCancelledSection"
+  );
+  const cancelledBody = document.getElementById(
+    "printReportCancelledBody"
+  );
+
+  detailTitle?.classList.remove("is-hidden");
+  detailSection?.classList.add("is-sales-detail");
+
+  head.innerHTML = `
+    <tr>
+      <th>Sepeda</th>
+      <th>Warna</th>
+      <th class="is-number">Jumlah</th>
+      <th class="is-number">Harga Satuan</th>
+      <th class="is-number">Total Item</th>
+    </tr>
+  `;
+
+  body.innerHTML = activeGroups.length
+    ? activeGroups.map((group) => `
+        <tr class="print-report-invoice-row">
+          <td colspan="5">
+            <div class="print-report-invoice-heading">
+              <strong>${escapeHtml(group.invoiceNumber)}</strong>
+              <strong>${escapeHtml(formatRupiah(group.total))}</strong>
+            </div>
+            <div class="print-report-invoice-meta-line">
+              <span>${escapeHtml(group.customerName)}</span>
+              <span>${escapeHtml(formatSalesReportDate(group.date))}</span>
+              <span>${escapeHtml(group.payment)}</span>
+              <span>Admin: ${escapeHtml(group.createdBy)}</span>
+            </div>
+          </td>
+        </tr>
+        ${group.items.map((item) => `
+          <tr class="print-report-item-row">
+            <td>${escapeHtml(item.bike || "-")}</td>
+            <td>${escapeHtml(item.color || "-")}</td>
+            <td class="is-number">${Number(item.quantity || 0)}</td>
+            <td class="is-number">${escapeHtml(formatRupiah(item.unitPrice))}</td>
+            <td class="is-number">${escapeHtml(formatRupiah(item.lineTotal))}</td>
+          </tr>
+        `).join("")}
+      `).join("")
+    : `
+        <tr>
+          <td colspan="5" class="print-report-empty">
+            Tidak ada transaksi aktif pada periode ini.
+          </td>
+        </tr>
+      `;
+
+  const netRevenue = activeGroups.reduce(
+    (total, group) => total + group.total,
+    0
+  );
+  const activeUnits = activeGroups.reduce(
+    (total, group) => total + group.units,
+    0
+  );
+
+  foot.innerHTML = `
+    <tr>
+      <td colspan="2">TOTAL PENJUALAN BERSIH</td>
+      <td class="is-number">${activeUnits} unit</td>
+      <td colspan="2" class="is-number">${escapeHtml(formatRupiah(netRevenue))}</td>
+    </tr>
+  `;
+
+  if (!cancelledSection || !cancelledBody) {
+    return;
+  }
+
+  if (!voidedGroups.length) {
+    cancelledSection.classList.add("is-hidden");
+    cancelledBody.innerHTML = "";
+    return;
+  }
+
+  cancelledBody.innerHTML = voidedGroups.map((group) => `
+    <article class="print-report-cancelled-item">
+      <div>
+        <strong>${escapeHtml(group.invoiceNumber)}</strong>
+        <span>${escapeHtml(group.customerName)} · ${escapeHtml(formatSalesReportDate(group.date))}</span>
+      </div>
+      <div>
+        <strong>${group.units} unit · ${escapeHtml(formatRupiah(group.total))}</strong>
+        <span>Alasan: ${escapeHtml(group.voidReason)}</span>
+        <span>Dibatalkan oleh: ${escapeHtml(group.voidedBy)}</span>
+      </div>
+    </article>
+  `).join("");
+  cancelledSection.classList.remove("is-hidden");
+}
+
 function renderPrintableReportTable(
   report
 ) {
@@ -802,6 +1049,21 @@ function renderPrintableReportTable(
   if (!head || !body || !foot) {
     return;
   }
+
+  if (report.type === "sales") {
+    renderPrintableSalesTable(report, head, body, foot);
+    return;
+  }
+
+  document.getElementById(
+    "printReportDetailTitle"
+  )?.classList.add("is-hidden");
+  document.getElementById(
+    "printReportDetailSection"
+  )?.classList.remove("is-sales-detail");
+  document.getElementById(
+    "printReportCancelledSection"
+  )?.classList.add("is-hidden");
 
   const columns =
     getReportColumns(report.type);
@@ -868,51 +1130,14 @@ function renderPrintableReportTable(
           </tr>
         `;
 
-  if (report.type === "sales") {
-    const revenue =
-      report.rows.reduce(
-        (total, row) => {
-          if (
-            row.statusLabel ===
-            "Dibatalkan"
-          ) {
-            return total;
-          }
-
-          return (
-            total +
-            Number(row.lineTotal || 0)
-          );
-        },
-        0
-      );
-
-    foot.innerHTML = `
-      <tr>
-        <td
-          colspan="${columns.length - 1}"
-          class="is-number"
-        >
-          TOTAL OMZET BERSIH
-        </td>
-
-        <td class="is-number">
-          ${escapeHtml(
-            formatRupiah(revenue)
-          )}
-        </td>
-      </tr>
-    `;
-  } else {
-    foot.innerHTML = `
-      <tr>
-        <td colspan="${columns.length}">
-          Total ${report.rows.length}
-          pergerakan stok
-        </td>
-      </tr>
-    `;
-  }
+  foot.innerHTML = `
+    <tr>
+      <td colspan="${columns.length}">
+        Total ${report.rows.length}
+        pergerakan stok
+      </td>
+    </tr>
+  `;
 }
 
 async function preparePrintableReport(
@@ -954,13 +1179,16 @@ async function preparePrintableReport(
 
   document.getElementById(
     "printReportCreatedBy"
-  ).textContent = "Sistem Admin";
+  ).textContent =
+    getStoredAdminUser()?.username ||
+    "Sistem Admin";
 
   document.getElementById(
     "printReportFooterPeriod"
   ).textContent = period;
 
   renderPrintableReportSummary(report);
+  renderPrintableSalesInsights(report);
   renderPrintableReportTable(report);
 }
 function renderGeneratedReport(report) {
@@ -979,7 +1207,27 @@ const printButton =
     report.type === "sales" ? "Laporan Penjualan" : "Laporan Pergerakan Stok";
   document.getElementById("reportPreviewTitle").textContent = report.title;
   document.getElementById("reportPreviewPeriod").textContent = `${report.from} sampai ${report.to}`;
-  document.getElementById("reportPreviewSummary").textContent = `${report.rows.length} data`;
+  const previewSummary = document.getElementById(
+    "reportPreviewSummary"
+  );
+
+  if (previewSummary) {
+    if (report.type === "sales") {
+      const invoiceGroups = groupSalesReportRows(
+        report.rows
+      );
+      const units = invoiceGroups.reduce(
+        (total, group) => total + group.units,
+        0
+      );
+
+      previewSummary.textContent =
+        `${invoiceGroups.length} invoice · ${units} unit`;
+    } else {
+      previewSummary.textContent =
+        `${report.rows.length} pergerakan`;
+    }
+  }
 
   head.innerHTML = `<tr>${columns.map(([, label]) => `<th>${escapeHtml(label)}</th>`).join("")}</tr>`;
   body.innerHTML = report.rows.length

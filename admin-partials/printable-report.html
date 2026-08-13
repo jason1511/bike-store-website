@@ -46,7 +46,58 @@
   >
   </section>
 
-  <section class="print-report-table-section">
+  <section
+    class="print-report-insights is-hidden"
+    id="printReportSalesInsights"
+  >
+    <article class="print-report-insight-card">
+      <h2>Ringkasan Pembayaran</h2>
+
+      <table class="print-report-insight-table">
+        <thead>
+          <tr>
+            <th>Pembayaran</th>
+            <th>Invoice</th>
+            <th>Nilai</th>
+            <th>Porsi</th>
+          </tr>
+        </thead>
+
+        <tbody id="printReportPaymentBody">
+        </tbody>
+      </table>
+    </article>
+
+    <article class="print-report-insight-card">
+      <h2>Produk Terlaris</h2>
+
+      <table class="print-report-insight-table">
+        <thead>
+          <tr>
+            <th>Sepeda</th>
+            <th>Warna</th>
+            <th>Unit</th>
+            <th>Omzet</th>
+          </tr>
+        </thead>
+
+        <tbody id="printReportTopProductBody">
+        </tbody>
+      </table>
+    </article>
+  </section>
+
+  <section
+    class="print-report-table-section"
+    id="printReportDetailSection"
+  >
+    <h2
+      class="print-report-section-title is-hidden"
+      id="printReportDetailTitle"
+    >
+      Rincian Transaksi Aktif
+    </h2>
+
     <table class="print-report-table">
       <thead id="printReportTableHead">
       </thead>
@@ -57,6 +108,18 @@
       <tfoot id="printReportTableFoot">
       </tfoot>
     </table>
+  </section>
+
+  <section
+    class="print-report-cancelled is-hidden"
+    id="printReportCancelledSection"
+  >
+    <h2 class="print-report-section-title">
+      Invoice Dibatalkan
+    </h2>
+
+    <div id="printReportCancelledBody">
+    </div>
   </section>
 
   <footer class="print-report-footer">

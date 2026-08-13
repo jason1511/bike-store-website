@@ -106,8 +106,65 @@
   font-weight: 800;
 }
 
+.print-report .is-hidden {
+  display: none !important;
+}
+
+.print-report-insights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.print-report-insight-card {
+  padding: 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+}
+
+.print-report-insight-card h2,
+.print-report-section-title {
+  margin: 0 0 10px;
+  color: #172033;
+  font-size: 12px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.print-report-insight-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8px;
+}
+
+.print-report-insight-table th,
+.print-report-insight-table td {
+  padding: 5px 4px;
+  border-bottom: 1px solid #e4e7ec;
+  text-align: left;
+  vertical-align: top;
+}
+
+.print-report-insight-table th {
+  color: #667085;
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.print-report-insight-table .is-number {
+  text-align: right;
+  white-space: nowrap;
+}
+
 .print-report-table-section {
   width: 100%;
+}
+
+.print-report-table-section.is-sales-detail {
+  break-before: page;
 }
 
 .print-report-table {
@@ -141,6 +198,42 @@
   background: #ffffff;
 }
 
+.print-report-table .print-report-invoice-row td {
+  padding: 9px 7px 6px;
+  border-top: 2px solid #98a2b3;
+  border-bottom: 1px solid #d0d5dd;
+  background: #f8fafc;
+}
+
+.print-report-invoice-heading,
+.print-report-invoice-meta-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.print-report-invoice-heading {
+  font-size: 9px;
+}
+
+.print-report-invoice-meta-line {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  color: #667085;
+  font-size: 7px;
+}
+
+.print-report-invoice-meta-line span:not(:last-child)::after {
+  margin-left: 12px;
+  content: "•";
+}
+
+.print-report-item-row td:first-child {
+  padding-left: 16px;
+}
+
 .print-report-table .is-number {
   text-align: right;
   white-space: nowrap;
@@ -162,6 +255,37 @@
   padding: 28px 12px !important;
   color: #667085;
   text-align: center !important;
+}
+
+.print-report-cancelled {
+  margin-top: 20px;
+  break-inside: avoid;
+}
+
+.print-report-cancelled-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 18px;
+  padding: 9px 10px;
+  border: 1px solid #f0b4b4;
+  border-left: 4px solid #b42318;
+  background: #fffafa;
+  font-size: 8px;
+}
+
+.print-report-cancelled-item +
+.print-report-cancelled-item {
+  margin-top: 7px;
+}
+
+.print-report-cancelled-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.print-report-cancelled-item span {
+  color: #667085;
 }
 
 .print-report-footer {
@@ -222,6 +346,7 @@ body.is-printing-report
   .print-report-header,
   .print-report-meta,
   .print-report-summary,
+  .print-report-insights,
   .print-report-footer {
     break-inside: avoid;
   }
