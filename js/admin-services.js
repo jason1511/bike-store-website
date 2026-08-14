@@ -519,8 +519,8 @@ function openServiceModal(service) {
   setServicePrintText("printServiceBikeLabel", service.bikeLabel);
   setServicePrintText("printServiceType", service.serviceType);
   setServicePrintText("printServiceStatusTable", getServiceStatusLabel(service.serviceStatus));
-  setServicePrintText("printServiceCostTable", formatRupiah(service.serviceCost));
   setServicePrintText("printServiceCost", formatRupiah(service.serviceCost));
+  setServicePrintText("printServiceTotal", formatRupiah(service.serviceCost));
 
   setServicePrintText("printServiceNotes", service.notes || "-");
   setServicePrintText("printServiceCustomerSignature", service.customerName || "-");
@@ -581,7 +581,7 @@ function printCurrentService() {
           content="width=device-width, initial-scale=1"
         >
         <base href="${baseUrl}">
-        <title>Cetak Service</title>
+        <title>Cetak Faktur Service</title>
 
         <link
           rel="stylesheet"
@@ -594,8 +594,8 @@ function printCurrentService() {
 
         <style>
           @page {
-            size: A4 portrait;
-            margin: 10mm;
+            size: 210mm 148mm;
+            margin: 5mm;
           }
 
           html,
@@ -607,18 +607,30 @@ function printCurrentService() {
           }
 
           body {
-            -webkit-print-color-adjust: economy;
-            print-color-adjust: economy;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
 
           .printable-service {
             box-sizing: border-box;
-            width: 190mm;
-            max-width: 190mm;
+            width: 200mm;
+            max-width: 200mm;
             margin: 0 auto;
-            padding: 0;
             border-radius: 0;
             box-shadow: none;
+            overflow: hidden;
+          }
+
+          .printable-service-page {
+            box-sizing: border-box;
+            width: 200mm;
+            max-width: 200mm;
+            height: 136mm;
+            min-height: 136mm;
+            max-height: 136mm;
+            margin: 0;
+            padding: 4mm 5mm 3mm;
+            overflow: hidden;
           }
 
           .standalone-print-actions {
@@ -677,128 +689,22 @@ function printCurrentService() {
 
             .printable-service {
               display: block !important;
-              width: 190mm !important;
-              max-width: 190mm !important;
+              width: 200mm !important;
+              max-width: 200mm !important;
               margin: 0 auto !important;
-              padding: 0 !important;
+              overflow: hidden !important;
+              break-after: avoid !important;
+              page-break-after: avoid !important;
             }
 
-            .printable-service-header {
-              gap: 16px !important;
-              padding-bottom: 10px !important;
-              break-inside: avoid;
-            }
-
-            .printable-service-brand {
-              gap: 10px !important;
-            }
-
-            .printable-service-brand img {
-              width: 46px !important;
-              height: 46px !important;
-              border-radius: 8px !important;
-            }
-
-            .printable-service-brand h1 {
-              margin-bottom: 2px !important;
-              font-size: 1rem !important;
-            }
-
-            .printable-service-brand p {
-              margin: 1px 0 !important;
-              font-size: 0.72rem !important;
-            }
-
-            .printable-service-title p {
-              margin-bottom: 4px !important;
-              font-size: 0.68rem !important;
-            }
-
-            .printable-service-title h2 {
-              font-size: 1.05rem !important;
-            }
-
-            .printable-service-meta,
-            .printable-service-customer {
-              gap: 8px !important;
-              break-inside: avoid;
-            }
-
-            .printable-service-meta {
-              margin-top: 10px !important;
-            }
-
-            .printable-service-meta > div,
-            .printable-service-customer > div {
-              padding: 8px 10px !important;
-              border-radius: 9px !important;
-            }
-
-            .printable-service-meta span,
-            .printable-service-customer span {
-              font-size: 0.62rem !important;
-            }
-
-            .printable-service-meta strong,
-            .printable-service-customer strong {
-              font-size: 0.72rem !important;
-            }
-
-            .printable-service-section {
-              margin-top: 12px !important;
-              break-inside: avoid;
-            }
-
-            .printable-service-section h3 {
-              margin-bottom: 7px !important;
-              font-size: 0.82rem !important;
-            }
-
-            .printable-service-table-wrap {
-              overflow: visible !important;
-            }
-
-            .printable-service-table th,
-            .printable-service-table td {
-              padding: 7px 8px !important;
-              font-size: 0.68rem !important;
-            }
-
-            .printable-service-total-box {
-              width: min(260px, 100%) !important;
-              margin-top: 10px !important;
-              padding: 11px 14px !important;
-              border-radius: 11px !important;
-              break-inside: avoid;
-            }
-
-            .printable-service-total-box span {
-              font-size: 0.62rem !important;
-            }
-
-            .printable-service-total-box strong {
-              font-size: 1.15rem !important;
-            }
-
-            #printServiceNotes {
-              padding: 8px 10px !important;
-              border-radius: 9px !important;
-              font-size: 0.72rem !important;
-            }
-
-            .printable-service-footer {
-              gap: 24px !important;
-              margin-top: 22px !important;
-              break-inside: avoid;
-            }
-
-            .printable-service-footer p,
-            .printable-service-footer strong {
-              font-size: 0.72rem !important;
-            }
-
-            .printable-service-footer span {
-              height: 34px !important;
+            .printable-service-page {
+              width: 200mm !important;
+              max-width: 200mm !important;
+              height: 136mm !important;
+              min-height: 136mm !important;
+              max-height: 136mm !important;
+              padding: 4mm 5mm 3mm !important;
+              overflow: hidden !important;
             }
           }
         </style>
