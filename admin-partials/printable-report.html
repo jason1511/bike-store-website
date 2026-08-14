@@ -47,19 +47,55 @@
   </section>
 
   <section
+    class="print-report-comparison is-hidden"
+    id="printReportComparison"
+  >
+    <div class="print-report-section-heading">
+      <h2>Perbandingan Periode Sebelumnya</h2>
+      <span id="printReportComparisonPeriod">-</span>
+    </div>
+
+    <div
+      class="print-report-comparison-list"
+      id="printReportComparisonList"
+    >
+    </div>
+  </section>
+
+  <section
+    class="print-report-product-summary is-hidden"
+    id="printReportProductSummary"
+  >
+    <div class="print-report-product-summary-header">
+      <h2>Ringkasan Produk Terjual</h2>
+      <strong id="printReportProductSummaryTotal">
+        0 model · 0 unit
+      </strong>
+    </div>
+
+    <div
+      class="print-report-product-summary-list"
+      id="printReportProductSummaryList"
+    >
+    </div>
+  </section>
+
+  <section
     class="print-report-insights is-hidden"
     id="printReportSalesInsights"
   >
-    <article class="print-report-insight-card">
+    <article
+      class="print-report-insight-card is-payment"
+    >
       <h2>Ringkasan Pembayaran</h2>
 
       <table class="print-report-insight-table">
         <thead>
           <tr>
             <th>Pembayaran</th>
-            <th>Invoice</th>
-            <th>Nilai</th>
-            <th>Porsi</th>
+            <th class="is-number">Invoice</th>
+            <th class="is-number">Nilai</th>
+            <th class="is-number">Porsi</th>
           </tr>
         </thead>
 
@@ -68,7 +104,9 @@
       </table>
     </article>
 
-    <article class="print-report-insight-card">
+    <article
+      class="print-report-insight-card is-product"
+    >
       <h2>Produk Terlaris</h2>
 
       <table class="print-report-insight-table">
@@ -76,8 +114,8 @@
           <tr>
             <th>Sepeda</th>
             <th>Warna</th>
-            <th>Unit</th>
-            <th>Omzet</th>
+            <th class="is-number">Unit</th>
+            <th class="is-number">Omzet</th>
           </tr>
         </thead>
 

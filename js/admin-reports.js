@@ -715,6 +715,163 @@ function getSalesReportSummary(rows = []) {
   ];
 }
 
+function getSalesReportMetrics(rows = []) {
+  const groups = groupSalesReportRows(rows);
+  const activeGroups = groups.filter(
+    (group) => group.statusLabel !== "Dibatalkan"
+  );
+  const netRevenue = activeGroups.reduce(
+    (total, group) => total + group.total,
+    0
+  );
+  const totalUnits = activeGroups.reduce(
+    (total, group) => total + group.units,
+    0
+  );
+
+  return {
+    netRevenue,
+    activeInvoices: activeGroups.length,
+    totalUnits,
+    averageInvoice: activeGroups.length
+      ? Math.round(netRevenue / activeGroups.length)
+      : 0
+  };
+}
+
+function getPreviousReportDateRange(from, to) {
+  const fromDate = parseReportDate(from);
+  const toDate = parseReportDate(to);
+
+  if (!fromDate || !toDate || fromDate > toDate) {
+    return null;
+  }
+
+  const dayMilliseconds = 24 * 60 * 60 * 1000;
+  const inclusiveDays =
+    Math.round((toDate - fromDate) / dayMilliseconds) + 1;
+  const previousTo = new Date(fromDate);
+  const previousFrom = new Date(fromDate);
+
+  previousTo.setDate(previousTo.getDate() - 1);
+  previousFrom.setDate(
+    previousFrom.getDate() - inclusiveDays
+  );
+
+  return {
+    from: toReportDateValue(previousFrom),
+    to: toReportDateValue(previousTo)
+  };
+}
+
+function formatComparisonChange(current, previous) {
+  if (previous === 0) {
+    return {
+      label: current === 0 ? "0%" : "Baru",
+      className: current === 0 ? "" : "is-positive"
+    };
+  }
+
+  const change = ((current - previous) / previous) * 100;
+  const label = `${change > 0 ? "+" : ""}${change.toLocaleString(
+    "id-ID",
+    { maximumFractionDigits: 1 }
+  )}%`;
+
+  return {
+    label,
+    className:
+      change > 0
+        ? "is-positive"
+        : change < 0
+          ? "is-negative"
+          : ""
+  };
+}
+
+function renderPrintableReportComparison(report) {
+  const container = document.getElementById(
+    "printReportComparison"
+  );
+  const periodElement = document.getElementById(
+    "printReportComparisonPeriod"
+  );
+  const listElement = document.getElementById(
+    "printReportComparisonList"
+  );
+
+  if (!container || !periodElement || !listElement) {
+    return;
+  }
+
+  if (report.type !== "sales" || !report.previousPeriod) {
+    container.classList.add("is-hidden");
+    listElement.innerHTML = "";
+    return;
+  }
+
+  const current = getSalesReportMetrics(report.rows);
+  const previous = getSalesReportMetrics(
+    report.previousPeriod.rows
+  );
+  const metrics = [
+    {
+      label: "Penjualan Bersih",
+      current: current.netRevenue,
+      previous: previous.netRevenue,
+      format: formatRupiah
+    },
+    {
+      label: "Invoice Aktif",
+      current: current.activeInvoices,
+      previous: previous.activeInvoices,
+      format: String
+    },
+    {
+      label: "Unit Terjual",
+      current: current.totalUnits,
+      previous: previous.totalUnits,
+      format: String
+    },
+    {
+      label: "Rata-rata / Invoice",
+      current: current.averageInvoice,
+      previous: previous.averageInvoice,
+      format: formatRupiah
+    }
+  ];
+
+  periodElement.textContent =
+    `Pembanding: ${formatPrintableReportPeriod(
+      report.previousPeriod.from,
+      report.previousPeriod.to
+    )}`;
+
+  listElement.innerHTML = metrics.map((metric) => {
+    const change = formatComparisonChange(
+      metric.current,
+      metric.previous
+    );
+
+    return `
+      <article class="print-report-comparison-item">
+        <span>${escapeHtml(metric.label)}</span>
+        <div class="print-report-comparison-values">
+          <strong>${escapeHtml(metric.format(metric.current))}</strong>
+          <span class="print-report-comparison-change ${change.className}">
+            ${escapeHtml(change.label)}
+          </span>
+        </div>
+        <p class="print-report-comparison-previous">
+          Sebelumnya: ${escapeHtml(metric.format(metric.previous))}
+        </p>
+      </article>
+    `;
+  }).join("");
+
+  container.classList.remove("is-hidden");
+}
+
 function getStockReportSummary(rows = []) {
   let stockIn = 0;
   let stockOut = 0;
@@ -801,6 +958,81 @@ function renderPrintableReportSummary(
         `
       )
       .join("");
+}
+
+function renderPrintableProductSummary(
+  report
+) {
+  const container = document.getElementById(
+    "printReportProductSummary"
+  );
+  const totalElement = document.getElementById(
+    "printReportProductSummaryTotal"
+  );
+  const listElement = document.getElementById(
+    "printReportProductSummaryList"
+  );
+
+  if (!container || !totalElement || !listElement) {
+    return;
+  }
+
+  if (report.type !== "sales") {
+    container.classList.add("is-hidden");
+    totalElement.textContent = "0 model · 0 unit";
+    listElement.innerHTML = "";
+    return;
+  }
+
+  const products = new Map();
+
+  groupSalesReportRows(report.rows)
+    .filter(
+      (group) => group.statusLabel !== "Dibatalkan"
+    )
+    .forEach((group) => {
+      group.items.forEach((item) => {
+        const bike = item.bike || "-";
+
+        products.set(
+          bike,
+          (products.get(bike) || 0) +
+            Number(item.quantity || 0)
+        );
+      });
+    });
+
+  const productRows = Array.from(
+    products,
+    ([bike, units]) => ({ bike, units })
+  ).sort(
+    (a, b) =>
+      b.units - a.units ||
+      a.bike.localeCompare(b.bike, "id-ID")
+  );
+
+  const totalUnits = productRows.reduce(
+    (total, product) => total + product.units,
+    0
+  );
+
+  totalElement.textContent =
+    `${productRows.length} model · ${totalUnits} unit`;
+
+  listElement.innerHTML = productRows.length
+    ? productRows.map((product) => `
+        <div class="print-report-product-summary-item">
+          <span>${escapeHtml(product.bike)}</span>
+          <strong>${product.units} unit</strong>
+        </div>
+      `).join("")
+    : `
+        <p class="print-report-empty">
+          Tidak ada produk terjual pada periode ini.
+        </p>
+      `;
+
+  container.classList.remove("is-hidden");
 }
 
 function renderPrintableSalesInsights(report) {
@@ -1188,6 +1420,8 @@ async function preparePrintableReport(
   ).textContent = period;
 
   renderPrintableReportSummary(report);
+  renderPrintableReportComparison(report);
+  renderPrintableProductSummary(report);
   renderPrintableSalesInsights(report);
   renderPrintableReportTable(report);
 }
@@ -1257,6 +1491,36 @@ async function previewGeneratedReport() {
       `/api/admin/reports?type=${encodeURIComponent(type)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
       { method: "GET" }
     );
+
+    if (type === "sales") {
+      const previousRange =
+        getPreviousReportDateRange(from, to);
+
+      if (previousRange) {
+        try {
+          const previousReport = await fetchAdminJson(
+            `/api/admin/reports?type=sales&from=${encodeURIComponent(previousRange.from)}&to=${encodeURIComponent(previousRange.to)}`,
+            { method: "GET" }
+          );
+
+          generatedReport.previousPeriod = {
+            ...previousRange,
+            rows: previousReport.rows || []
+          };
+        } catch (comparisonError) {
+          if (handleAdminAuthError(comparisonError)) {
+            throw comparisonError;
+          }
+
+          console.warn(
+            "Failed to load previous report period:",
+            comparisonError
+          );
+          generatedReport.previousPeriod = null;
+        }
+      }
+    }
+
     renderGeneratedReport(generatedReport);
     if (note) note.textContent = generatedReport.rows.length
       ? `Preview menampilkan maksimal 100 dari ${generatedReport.rows.length} data.`
