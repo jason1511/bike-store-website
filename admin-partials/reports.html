@@ -7,6 +7,16 @@
         Pantau omzet, invoice aktif, pembatalan, stok, dan pergerakan penjualan.
       </p>
     </div>
+
+    <label class="admin-analytics-range-control">
+      <span>Periode Analitik</span>
+      <select id="reportsAnalyticsRangeInput">
+        <option value="14" selected>14 Hari</option>
+        <option value="30">30 Hari</option>
+        <option value="90">90 Hari</option>
+        <option value="365">12 Bulan</option>
+      </select>
+    </label>
   </div>
 
   <div class="admin-reports-grid">
@@ -35,19 +45,19 @@
         <article class="admin-invoice-summary-card">
           <span>Omzet Aktif</span>
           <strong id="invoiceAnalyticsRevenue">Rp 0</strong>
-          <small>Total invoice yang tidak dibatalkan</small>
+          <small>Pada periode analitik yang dipilih</small>
         </article>
 
         <article class="admin-invoice-summary-card">
           <span>Unit Terjual</span>
           <strong id="invoiceAnalyticsUnitsSold">0</strong>
-          <small>Total unit dari invoice aktif</small>
+          <small>Unit aktif pada periode terpilih</small>
         </article>
 
         <article class="admin-invoice-summary-card">
           <span>Invoice Aktif</span>
           <strong id="invoiceAnalyticsActiveInvoices">0</strong>
-          <small>Invoice yang belum dibatalkan</small>
+          <small>Invoice aktif pada periode terpilih</small>
         </article>
 
         <article class="admin-invoice-summary-card">
@@ -58,9 +68,39 @@
       </div>
 
       <div class="admin-invoice-chart-card">
-        <div>
-          <h3>Grafik Penjualan Harian</h3>
-          <p>Omzet, net omzet, dan void dalam 14 hari terakhir.</p>
+        <div class="admin-chart-card-header">
+          <div>
+            <h3>Tren Penjualan</h3>
+            <p id="invoiceAnalyticsChartDescription">
+              Omzet bersih dalam 14 hari terakhir.
+            </p>
+          </div>
+
+          <div
+            class="admin-chart-metric-switch"
+            id="invoiceAnalyticsMetricSwitch"
+            aria-label="Pilih metrik grafik penjualan"
+          >
+            <button
+              type="button"
+              class="is-active"
+              data-invoice-chart-metric="revenue"
+            >
+              Omzet
+            </button>
+            <button
+              type="button"
+              data-invoice-chart-metric="units"
+            >
+              Unit
+            </button>
+            <button
+              type="button"
+              data-invoice-chart-metric="invoices"
+            >
+              Invoice
+            </button>
+          </div>
         </div>
 
         <div
@@ -125,9 +165,42 @@
 
   <div class="admin-report-stock-layout">
     <div class="admin-stock-movement-card">
-      <div>
+      <div class="admin-chart-card-header">
+        <div>
         <h3>Grafik Pergerakan Stok</h3>
-        <p>Net change stok harian dalam 14 hari terakhir.</p>
+          <p id="reportStockAnalyticsChartDescription">
+            Masuk, terjual, adjustment, dan net dalam 14 hari terakhir.
+          </p>
+        </div>
+
+        <div class="admin-stock-chart-legend" aria-label="Legenda grafik stok">
+          <span class="is-stock-in">Masuk</span>
+          <span class="is-sale">Terjual</span>
+          <span class="is-adjustment">Adjustment</span>
+          <span class="is-net">Net</span>
+        </div>
+      </div>
+
+      <div
+        class="admin-stock-period-summary"
+        id="reportStockAnalyticsPeriodSummary"
+      >
+        <article>
+          <span>Masuk</span>
+          <strong class="is-positive" data-stock-period="in">+0</strong>
+        </article>
+        <article>
+          <span>Terjual</span>
+          <strong class="is-negative" data-stock-period="sale">-0</strong>
+        </article>
+        <article>
+          <span>Adjustment</span>
+          <strong data-stock-period="adjustment">0</strong>
+        </article>
+        <article>
+          <span>Net</span>
+          <strong data-stock-period="net">0</strong>
+        </article>
       </div>
 
       <div
@@ -142,8 +215,10 @@
 
     <div class="admin-stock-movement-card">
       <div>
-        <h3>Detail Harian</h3>
-        <p>Masuk, terjual, adjustment, dan net change per hari.</p>
+        <h3>Detail Periode</h3>
+        <p id="reportStockAnalyticsListDescription">
+          Masuk, terjual, adjustment, dan net per hari.
+        </p>
       </div>
 
       <div

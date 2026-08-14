@@ -32,24 +32,62 @@ function renderReportStockMovementList(
 }
 
 function renderReportStockMovementChart(
-  movements = []
+  movements = [],
+  analytics = {}
 ) {
+  const granularity =
+    analytics.granularity || "day";
+  const rangeDays = Number(
+    analytics.rangeDays || 14
+  );
+  const granularityLabel =
+    typeof getAnalyticsGranularityLabel === "function"
+      ? getAnalyticsGranularityLabel(granularity)
+      : "hari";
+  const rangeLabel =
+    typeof getAnalyticsRangeLabel === "function"
+      ? getAnalyticsRangeLabel(rangeDays)
+      : `${rangeDays} hari terakhir`;
+  const chartWidth = Math.max(
+    760,
+    100 + movements.length * 54
+  );
+
   renderAdminStockMovementChart(
     movements,
     {
       targetId:
         "reportStockAnalyticsMovementChart",
-      width: 760,
+      width: chartWidth,
       height: 260,
       paddingLeft: 54,
       paddingRight: 24,
       paddingTop: 52,
       paddingBottom: 38,
-      labelCount: 7,
+      labelCount: 8,
+      summaryTargetId:
+        "reportStockAnalyticsPeriodSummary",
       subtitle:
-        "Positif berarti stok naik, negatif berarti stok berkurang"
+        `Masuk, terjual, adjustment, dan net per ${granularityLabel}`
     }
   );
+
+  const chartDescription = document.getElementById(
+    "reportStockAnalyticsChartDescription"
+  );
+  const listDescription = document.getElementById(
+    "reportStockAnalyticsListDescription"
+  );
+
+  if (chartDescription) {
+    chartDescription.textContent =
+      `Masuk, terjual, adjustment, dan net dalam ${rangeLabel}.`;
+  }
+
+  if (listDescription) {
+    listDescription.textContent =
+      `Masuk, terjual, adjustment, dan net per ${granularityLabel}.`;
+  }
 }
 
 async function loadReportStockAnalytics() {
@@ -73,10 +111,22 @@ async function loadReportStockAnalytics() {
   }
 
   try {
-    const data = await fetchStockAnalytics();
+    const rangeDays = Number(
+      document.getElementById(
+        "reportsAnalyticsRangeInput"
+      )?.value || 14
+    );
+    const data = await fetchStockAnalytics(
+      [14, 30, 90, 365].includes(rangeDays)
+        ? rangeDays
+        : 14
+    );
 
     renderReportStockAnalyticsSummary(data.summary || {});
-    renderReportStockMovementChart(data.dailyMovements || []);
+    renderReportStockMovementChart(
+      data.dailyMovements || [],
+      data
+    );
     renderReportStockMovementList(data.dailyMovements || []);
   } catch (error) {
     if (handleAdminAuthError(error)) {
@@ -1860,6 +1910,9 @@ async function printGeneratedReport() {
 function setupReportsPage() {
   const refreshInvoiceAnalyticsButton = document.getElementById("refreshInvoiceAnalyticsBtn");
   const refreshStockAnalyticsButton = document.getElementById("reportRefreshStockAnalyticsBtn");
+  const analyticsRangeInput = document.getElementById(
+    "reportsAnalyticsRangeInput"
+  );
   const periodInput = document.getElementById("reportPeriodInput");
   const previewButton = document.getElementById("previewReportBtn");
 const printButton =
@@ -1906,6 +1959,30 @@ const customToInput =
   ) {
     refreshStockAnalyticsButton.dataset.reportsStockAnalyticsBound = "true";
     refreshStockAnalyticsButton.addEventListener("click", loadReportStockAnalytics);
+  }
+
+  if (
+    analyticsRangeInput &&
+    !analyticsRangeInput.dataset.analyticsRangeBound
+  ) {
+    analyticsRangeInput.dataset.analyticsRangeBound =
+      "true";
+
+    analyticsRangeInput.addEventListener(
+      "change",
+      async () => {
+        analyticsRangeInput.disabled = true;
+
+        try {
+          await Promise.allSettled([
+            loadInvoiceAnalytics(),
+            loadReportStockAnalytics()
+          ]);
+        } finally {
+          analyticsRangeInput.disabled = false;
+        }
+      }
+    );
   }
 
 if (

@@ -1,9 +1,9 @@
 /* =========================
    STOCK ANALYTICS API
 ========================= */
-async function fetchStockAnalytics() {
+async function fetchStockAnalytics(days = 14) {
   return fetchAdminJson(
-    "/api/admin/analytics/stock",
+    `/api/admin/analytics/stock?days=${encodeURIComponent(days)}`,
     {
       method: "GET"
     }

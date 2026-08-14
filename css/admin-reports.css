@@ -6,6 +6,31 @@
   gap: 22px;
 }
 
+.admin-analytics-range-control {
+  display: grid;
+  gap: 7px;
+  min-width: 170px;
+}
+
+.admin-analytics-range-control span {
+  color: #9fb8b6;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.admin-analytics-range-control select {
+  min-height: 44px;
+  padding: 0 40px 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  color: #ffffff;
+  background: rgba(7, 18, 18, 0.72);
+  font: inherit;
+  font-weight: 800;
+}
+
 /* =========================
    REPORT INVOICE ANALYTICS
 ========================= */
@@ -76,7 +101,48 @@
   font-size: 0.88rem;
 }
 
+.admin-chart-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.admin-chart-metric-switch {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  background: rgba(7, 18, 18, 0.72);
+}
+
+.admin-chart-metric-switch button {
+  padding: 8px 13px;
+  border: 0;
+  border-radius: 999px;
+  color: #9fb8b6;
+  background: transparent;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-chart-metric-switch button:hover,
+.admin-chart-metric-switch button:focus-visible {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.admin-chart-metric-switch button.is-active {
+  color: #071312;
+  background: #8fffc0;
+}
+
 .admin-invoice-line-chart {
+  position: relative;
   width: 100%;
   min-height: 300px;
   min-width: 0;
@@ -88,6 +154,29 @@
   overflow-y: hidden;
   overscroll-behavior-x: contain;
   scrollbar-width: thin;
+}
+
+.admin-chart-tooltip {
+  position: absolute;
+  z-index: 10;
+  max-width: min(320px, calc(100% - 24px));
+  padding: 8px 10px;
+  border: 1px solid rgba(143, 255, 192, 0.34);
+  border-radius: 10px;
+  color: #ffffff;
+  background: rgba(4, 14, 14, 0.96);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.4;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  transition: opacity 100ms ease;
+}
+
+.admin-chart-tooltip.is-visible {
+  opacity: 1;
 }
 
 .admin-invoice-line-chart svg {
@@ -105,6 +194,24 @@
 .invoice-chart-grid-line {
   stroke: rgba(255, 255, 255, 0.08);
   stroke-width: 1;
+}
+
+.invoice-chart-bar {
+  fill: #8fffc0;
+  opacity: 0.9;
+  transition: opacity 120ms ease;
+}
+
+.invoice-chart-bar.is-units {
+  fill: #38bdf8;
+}
+
+.invoice-chart-bar.is-invoices {
+  fill: #facc15;
+}
+
+.invoice-chart-bar:hover {
+  opacity: 1;
 }
 
 .invoice-chart-revenue-line,
@@ -168,10 +275,16 @@
 
 .invoice-chart-label,
 .invoice-chart-value,
-.invoice-chart-legend {
+.invoice-chart-legend,
+.invoice-chart-grid-label {
   fill: #9fb8b6;
   font-size: 12px;
   font-weight: 850;
+}
+
+.invoice-chart-grid-label {
+  fill: #78918e;
+  font-size: 10px;
 }
 
 .invoice-chart-legend {
@@ -213,6 +326,80 @@
 
 #adminReportsView .admin-stock-movement-chart svg {
   min-width: 960px;
+}
+
+.admin-stock-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 14px;
+  color: #dce5e3;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.admin-stock-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-stock-chart-legend span::before {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: #8fffc0;
+  content: "";
+}
+
+.admin-stock-chart-legend .is-sale::before {
+  background: #ff8f8f;
+}
+
+.admin-stock-chart-legend .is-adjustment::before {
+  background: #facc15;
+}
+
+.admin-stock-chart-legend .is-net::before {
+  height: 3px;
+  border-radius: 999px;
+  background: #38bdf8;
+}
+
+.admin-stock-period-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-stock-period-summary article {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(7, 18, 18, 0.52);
+}
+
+.admin-stock-period-summary span {
+  color: #9fb8b6;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-stock-period-summary strong {
+  color: #dce5e3;
+  font-size: 1rem;
+}
+
+.admin-stock-period-summary strong.is-positive {
+  color: #8fffc0;
+}
+
+.admin-stock-period-summary strong.is-negative {
+  color: #ffb4b4;
 }
 
 /* =========================
@@ -311,6 +498,14 @@
 }
 
 @media (max-width: 900px) {
+  #adminReportsView .admin-dashboard-header {
+    align-items: stretch;
+  }
+
+  .admin-analytics-range-control {
+    width: 100%;
+  }
+
   .admin-report-filter-grid {
     grid-template-columns: 1fr;
   }
@@ -326,6 +521,26 @@
 }
 
 @media (max-width: 760px) {
+  .admin-chart-card-header {
+    display: grid;
+  }
+
+  .admin-chart-metric-switch {
+    width: 100%;
+  }
+
+  .admin-chart-metric-switch button {
+    flex: 1 1 0;
+  }
+
+  .admin-stock-chart-legend {
+    justify-content: flex-start;
+  }
+
+  .admin-stock-period-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .admin-invoice-line-chart,
   #adminReportsView .admin-stock-movement-chart {
     min-height: 260px;
@@ -347,7 +562,8 @@
   .invoice-chart-subtitle,
   .invoice-chart-label,
   .invoice-chart-value,
-  .invoice-chart-legend {
+  .invoice-chart-legend,
+  .invoice-chart-grid-label {
     font-size: 11px;
   }
 }
@@ -383,7 +599,10 @@
   width: 100%;
   min-height: 300px;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
 }
 
 #adminReportsView .admin-invoice-line-chart svg,
@@ -391,7 +610,6 @@
   display: block;
   width: 100%;
   height: auto;
-  min-width: 0;
 }
 
 #adminReportsView .invoice-chart-title,
@@ -407,8 +625,10 @@
 #adminReportsView .invoice-chart-label,
 #adminReportsView .invoice-chart-value,
 #adminReportsView .invoice-chart-legend,
+#adminReportsView .invoice-chart-grid-label,
 #adminReportsView .stock-chart-label,
-#adminReportsView .stock-chart-value {
+#adminReportsView .stock-chart-value,
+#adminReportsView .stock-chart-grid-label {
   font-size: 11px;
 }
 
@@ -445,9 +665,11 @@
   #adminReportsView .invoice-chart-label,
   #adminReportsView .invoice-chart-value,
   #adminReportsView .invoice-chart-legend,
+  #adminReportsView .invoice-chart-grid-label,
   #adminReportsView .stock-chart-subtitle,
   #adminReportsView .stock-chart-label,
-  #adminReportsView .stock-chart-value {
+  #adminReportsView .stock-chart-value,
+  #adminReportsView .stock-chart-grid-label {
     font-size: 10px;
   }
 }
