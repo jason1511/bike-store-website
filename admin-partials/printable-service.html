@@ -1,126 +1,154 @@
+<!-- =========================
+     PRINTABLE SERVICE MODAL
+========================== -->
+<div
+  class="admin-service-modal is-hidden"
+  id="adminServiceModal"
+  aria-hidden="true"
+>
   <div
-    class="admin-service-modal is-hidden"
-    id="adminServiceModal"
-    aria-hidden="true"
-  >
-    <div
-      class="admin-service-modal-overlay"
-      id="adminServiceModalOverlay"
-    ></div>
+    class="admin-service-modal-overlay"
+    id="adminServiceModalOverlay"
+  ></div>
 
-    <div class="admin-service-modal-content">
-      <div class="admin-service-modal-actions no-print">
-        <button
-          type="button"
-          class="btn-secondary"
-          id="closeServiceModalBtn"
-        >
-          Tutup
-        </button>
+  <div class="admin-service-modal-content">
+    <div class="admin-service-modal-actions no-print">
+      <button
+        type="button"
+        class="btn-secondary"
+        id="closeServiceModalBtn"
+      >
+        Tutup
+      </button>
 
-        <button
-          type="button"
-          class="btn-primary"
-          id="printServiceBtn"
-        >
-          Cetak Service
-        </button>
-      </div>
+      <button
+        type="button"
+        class="btn-primary"
+        id="printServiceBtn"
+      >
+        Cetak Faktur Service
+      </button>
+    </div>
 
-      <article class="printable-service">
+    <article class="printable-service">
+      <div class="printable-service-page">
         <header class="printable-service-header">
-          <div class="printable-service-brand">
+          <div class="printable-service-company">
             <img
-              src="images/logo.jpeg"
+              src="images/logo-color.png"
               alt="CV Niaga Bersama Abadi"
             >
 
             <div>
-              <h1>CV Niaga Bersama Abadi</h1>
-              <p>Showroom Sepeda Listrik</p>
-              <p>Lumajang, Jawa Timur</p>
+              <h2>CV. Niaga Bersama Abadi</h2>
+              <p>Jl. Panglima Sudirman No. 90</p>
+              <p>Lumajang 67311, Jawa Timur</p>
+              <p>WA: 081 32 32 33 686</p>
             </div>
           </div>
 
           <div class="printable-service-title">
-            <p>Invoice Service</p>
-            <h2 id="printServiceNumber">SRV-0000</h2>
+            <h1>Faktur Service</h1>
+            <p>
+              No.
+              <strong id="printServiceNumber">SRV-0000</strong>
+            </p>
           </div>
         </header>
 
-        <section class="printable-service-meta">
-          <div>
-            <span>Tanggal</span>
-            <strong id="printServiceDate">-</strong>
-          </div>
-
-          <div>
-            <span>Admin</span>
-            <strong id="printServiceCreatedBy">-</strong>
-          </div>
-
-          <div>
-            <span>Status</span>
-            <strong id="printServiceStatus">-</strong>
-          </div>
-        </section>
-
-        <section class="printable-service-section">
-          <h3>Customer</h3>
-
-          <div class="printable-service-customer">
-            <div>
+        <section
+          class="printable-service-information"
+          aria-label="Informasi service"
+        >
+          <div class="printable-service-customer-fields">
+            <p>
               <span>Nama</span>
               <strong id="printServiceCustomerName">-</strong>
-            </div>
+            </p>
 
-            <div>
-              <span>WhatsApp</span>
-              <strong id="printServiceCustomerPhone">-</strong>
-            </div>
-
-            <div class="printable-service-wide">
+            <p class="is-address-field">
               <span>Alamat</span>
               <strong id="printServiceCustomerAddress">-</strong>
-            </div>
+            </p>
+
+            <p>
+              <span>No. HP</span>
+              <strong id="printServiceCustomerPhone">-</strong>
+            </p>
+          </div>
+
+          <div class="printable-service-transaction-fields">
+            <p>
+              <span>Tanggal</span>
+              <strong id="printServiceDate">-</strong>
+            </p>
+
+            <p>
+              <span>Status</span>
+              <strong
+                class="printable-service-status"
+                id="printServiceStatus"
+              >
+                -
+              </strong>
+            </p>
+
+            <p>
+              <span>Admin</span>
+              <strong id="printServiceCreatedBy">-</strong>
+            </p>
           </div>
         </section>
 
-        <section class="printable-service-section">
-          <h3>Detail Service</h3>
-
+        <section class="printable-service-details">
           <div class="printable-service-table-wrap">
             <table class="printable-service-table">
               <thead>
                 <tr>
-                  <th>Unit</th>
+                  <th>Unit Sepeda</th>
                   <th>Jenis Service</th>
-                  <th>Biaya</th>
+                  <th>Status</th>
+                  <th class="is-right">Biaya</th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr>
+                <tr class="printable-service-main-row">
                   <td id="printServiceBikeLabel">-</td>
                   <td id="printServiceType">-</td>
-                  <td id="printServiceCost">-</td>
+                  <td id="printServiceStatusTable">-</td>
+                  <td class="is-right" id="printServiceCost">Rp 0</td>
+                </tr>
+                <tr class="is-empty-row" aria-hidden="true">
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr class="is-empty-row" aria-hidden="true">
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <section class="printable-service-summary">
+          <div
+            class="printable-service-notes"
+            id="printServiceNotesSection"
+          >
+            <h3>Catatan / Pekerjaan</h3>
+            <p id="printServiceNotes">-</p>
           </div>
 
           <div class="printable-service-total-box">
             <span>Total Service</span>
             <strong id="printServiceTotal">Rp 0</strong>
           </div>
-        </section>
-
-        <section
-          class="printable-service-section"
-          id="printServiceNotesSection"
-        >
-          <h3>Catatan</h3>
-          <p id="printServiceNotes">-</p>
         </section>
 
         <footer class="printable-service-footer">
@@ -136,6 +164,7 @@
             <strong id="printServiceStaffSignature">-</strong>
           </div>
         </footer>
-      </article>
-    </div>
+      </div>
+    </article>
   </div>
+</div>
