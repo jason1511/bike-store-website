@@ -674,7 +674,19 @@ const errors = validateBike(bike);
         name: createdBike.name,
         price: createdBike.price,
         inStock: createdBike.inStock,
-        stockQty: createdBike.stockQty
+        stockQty: createdBike.stockQty,
+        stockChanges: initialStockMovements.map(
+          (movement) => ({
+            colorName:
+              movement.bikeColorName || "",
+            quantityBefore:
+              movement.quantityBefore,
+            quantityChange:
+              movement.quantityChange,
+            quantityAfter:
+              movement.quantityAfter
+          })
+        )
       }
     });
 
@@ -823,7 +835,19 @@ const errors = validateBike(bike);
           price: updatedBike.price,
           inStock: updatedBike.inStock,
           stockQty: updatedBike.stockQty
-        }
+        },
+        stockChanges: editedStockMovements.map(
+          (movement) => ({
+            colorName:
+              movement.bikeColorName || "",
+            quantityBefore:
+              movement.quantityBefore,
+            quantityChange:
+              movement.quantityChange,
+            quantityAfter:
+              movement.quantityAfter
+          })
+        )
       }
     });
 

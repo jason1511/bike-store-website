@@ -4,7 +4,7 @@
       <p class="admin-eyebrow">Aktivitas</p>
       <h1>Log Aktivitas</h1>
       <p>
-        Lihat riwayat perubahan penting di dashboard admin.
+        Pantau siapa mengubah data, target perubahan, waktu, dan dampaknya.
       </p>
     </div>
   </div>
@@ -15,61 +15,118 @@
         <div>
           <h2>Riwayat Aktivitas</h2>
           <p>
-            Log perubahan katalog, brand, invoice, service, dan user.
+            Audit perubahan data dan aktivitas keamanan. Log tidak dapat diedit.
           </p>
         </div>
 
         <div class="admin-panel-actions">
+          <button type="button" class="btn-secondary" id="resetAuditFiltersBtn">
+            Reset Filter
+          </button>
+
           <button type="button" class="btn-secondary" id="refreshAuditLogsBtn">
             Refresh
           </button>
         </div>
       </div>
 
-      <div class="admin-filter-bar">
+      <div class="admin-audit-summary-grid">
+        <article class="admin-audit-summary-card">
+          <span>Aktivitas Hari Ini</span>
+          <strong id="auditSummaryToday">0</strong>
+          <small>Semua perubahan dan keamanan</small>
+        </article>
+
+        <article class="admin-audit-summary-card">
+          <span>Perubahan Stok</span>
+          <strong id="auditSummaryStock">0</strong>
+          <small>Perubahan stok warna hari ini</small>
+        </article>
+
+        <article class="admin-audit-summary-card is-warning">
+          <span>Aksi Kritis</span>
+          <strong id="auditSummaryCritical">0</strong>
+          <small>Void, hapus, nonaktif, atau terkunci</small>
+        </article>
+
+        <article class="admin-audit-summary-card is-danger">
+          <span>Login Bermasalah</span>
+          <strong id="auditSummaryLogin">0</strong>
+          <small>Gagal atau terkunci hari ini</small>
+        </article>
+      </div>
+
+      <div class="admin-audit-filter-grid">
         <div class="admin-form-group">
           <label for="auditSearchInput">Cari Aktivitas</label>
           <input
             type="search"
             id="auditSearchInput"
-            placeholder="Cari user, aksi, target..."
+            placeholder="User, invoice, sepeda, customer, service..."
           >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="auditModuleFilter">Modul</label>
+          <select id="auditModuleFilter">
+            <option value="all">Semua Modul</option>
+            <option value="catalog">Katalog & Brand</option>
+            <option value="stock">Stok</option>
+            <option value="sales">Penjualan</option>
+            <option value="service">Service</option>
+            <option value="user">User</option>
+            <option value="security">Keamanan</option>
+          </select>
         </div>
 
         <div class="admin-form-group">
           <label for="auditActionFilter">Aksi</label>
           <select id="auditActionFilter">
-  <option value="all">Semua Aksi</option>
+            <option value="all">Semua Aksi</option>
+          </select>
+        </div>
 
-  <option value="bike_create">Tambah Sepeda</option>
-  <option value="bike_update">Edit Sepeda</option>
-  <option value="bike_reactivate">Aktifkan Sepeda</option>
-  <option value="bike_deactivate">Nonaktifkan Sepeda</option>
+        <div class="admin-form-group">
+          <label for="auditActorFilter">Administrator</label>
+          <select id="auditActorFilter">
+            <option value="all">Semua User</option>
+          </select>
+        </div>
 
-  <option value="brand_create">Tambah Brand</option>
-  <option value="brand_update">Edit Brand</option>
-  <option value="brand_activate">Aktifkan Brand</option>
-  <option value="brand_deactivate">Nonaktifkan Brand</option>
+        <div class="admin-form-group">
+          <label for="auditPeriodFilter">Periode</label>
+          <select id="auditPeriodFilter">
+            <option value="today">Hari Ini</option>
+            <option value="7">7 Hari</option>
+            <option value="30" selected>30 Hari</option>
+            <option value="custom">Custom</option>
+            <option value="all">Semua Waktu</option>
+          </select>
+        </div>
 
-  <option value="invoice_create">Buat Invoice</option>
-  <option value="invoice_void">Batalkan Invoice</option>
-            <option value="invoice_edit">
-  Edit Invoice
-</option>
+        <div class="admin-form-group">
+          <label for="auditSeverityFilter">Tingkat</label>
+          <select id="auditSeverityFilter">
+            <option value="all">Semua Tingkat</option>
+            <option value="normal">Normal</option>
+            <option value="warning">Peringatan</option>
+            <option value="critical">Kritis</option>
+          </select>
+        </div>
+      </div>
 
-<option value="invoice_delete_authorized">
-  Otorisasi Hapus Invoice
-</option>
+      <div
+        class="admin-audit-custom-range is-hidden"
+        id="auditCustomDateRange"
+      >
+        <div class="admin-form-group">
+          <label for="auditFromDateInput">Dari Tanggal</label>
+          <input type="date" id="auditFromDateInput">
+        </div>
 
-<option value="invoice_delete">
-  Hapus Invoice
-</option>
-  <option value="service_create">Buat Service</option>
-  <option value="service_update">Update Service</option>
-
-  <option value="user_create">Tambah User</option>
-  <option value="user_toggle">Aktif / Nonaktif User</option>
-</select>
+        <div class="admin-form-group">
+          <label for="auditToDateInput">Sampai Tanggal</label>
+          <input type="date" id="auditToDateInput">
         </div>
       </div>
 
@@ -82,6 +139,12 @@
           Log aktivitas belum dimuat.
         </div>
       </div>
+
+      <nav
+        class="admin-audit-pagination is-hidden"
+        id="adminAuditPagination"
+        aria-label="Halaman log aktivitas"
+      ></nav>
     </article>
   </div>
 </section>

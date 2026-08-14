@@ -2,7 +2,8 @@ import {
   createSessionToken,
   getPermissions,
   jsonResponse,
-  verifyPassword
+  verifyPassword,
+  writeAuditLog
 } from "../../_shared/auth.js";
 
 function normalizeUsername(username) {
@@ -21,6 +22,60 @@ function getClientIp(request) {
 
 function createLoginAttemptId() {
   return `login_${Date.now()}_${crypto.randomUUID()}`;
+}
+
+function maskIpAddress(ipAddress) {
+  const value = String(ipAddress || "unknown");
+
+  if (value.includes(".")) {
+    const parts = value.split(".");
+
+    return parts.length === 4
+      ? `${parts.slice(0, 3).join(".")}.*`
+      : "unknown";
+  }
+
+  if (value.includes(":")) {
+    const groups = value.split(":")
+      .filter(Boolean)
+      .slice(0, 4)
+      .join(":");
+
+    return groups ? `${groups}::*` : "unknown";
+  }
+
+  return value === "unknown" ? value : "masked";
+}
+
+async function recordLoginAudit(
+  env,
+  user,
+  action,
+  details = {}
+) {
+  try {
+    await writeAuditLog(
+      env,
+      user || {
+        id: "",
+        username:
+          details.attemptedUsername || "unknown",
+        role: "guest"
+      },
+      {
+        action,
+        targetType: "auth",
+        targetId: "",
+        targetLabel:
+          details.attemptedUsername ||
+          user?.username ||
+          "unknown",
+        details
+      }
+    );
+  } catch (error) {
+    console.error("Login audit write failed:", error);
+  }
 }
 
 async function countRecentFailedLogins(env, username, ipAddress) {
@@ -212,6 +267,18 @@ export async function onRequestPost(context) {
     }
 
     if (failedLoginCount >= 5) {
+      await recordLoginAudit(
+        env,
+        null,
+        "login_locked",
+        {
+          attemptedUsername: username || "unknown",
+          reason: "too_many_attempts",
+          failedAttempts: failedLoginCount,
+          ipHint: maskIpAddress(ipAddress)
+        }
+      );
+
       return jsonResponse(
         {
           error: "Terlalu banyak percobaan login. Coba lagi dalam beberapa menit."
@@ -228,6 +295,18 @@ export async function onRequestPost(context) {
         false
       );
 
+      await recordLoginAudit(
+        env,
+        null,
+        "login_failed",
+        {
+          attemptedUsername:
+            username || "missing_username",
+          reason: "missing_credentials",
+          ipHint: maskIpAddress(ipAddress)
+        }
+      );
+
       return jsonResponse(
         { error: "Username dan password wajib diisi" },
         400
@@ -240,6 +319,17 @@ export async function onRequestPost(context) {
 
     if (!user) {
       await recordLoginAttempt(env, username, ipAddress, false);
+
+      await recordLoginAudit(
+        env,
+        null,
+        "login_failed",
+        {
+          attemptedUsername: username,
+          reason: "invalid_credentials",
+          ipHint: maskIpAddress(ipAddress)
+        }
+      );
 
       return jsonResponse(
         { error: "Username atau password salah" },
@@ -256,6 +346,16 @@ export async function onRequestPost(context) {
     );
 
     await recordLoginAttempt(env, username, ipAddress, true);
+
+    await recordLoginAudit(
+      env,
+      user,
+      "login_success",
+      {
+        attemptedUsername: username,
+        ipHint: maskIpAddress(ipAddress)
+      }
+    );
 
     return jsonResponse({
       success: true,

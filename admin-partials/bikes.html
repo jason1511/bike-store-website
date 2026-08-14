@@ -14,7 +14,7 @@
     <div class="admin-panel-header">
       <div>
         <h2>Ringkasan Stok</h2>
-        <p>Total stok dan pergerakan stok harian.</p>
+        <p>Kondisi persediaan saat ini berdasarkan stok per warna.</p>
       </div>
 
       <div class="admin-panel-actions">
@@ -42,37 +42,52 @@
       </article>
 
       <article class="admin-stock-summary-card">
+        <span>Varian Warna</span>
+        <strong id="stockAnalyticsColorVariants">0</strong>
+        <small>Warna dari model aktif</small>
+      </article>
+
+      <article class="admin-stock-summary-card">
         <span>Stok Rendah</span>
         <strong id="stockAnalyticsLowStock">0</strong>
-        <small>Stok 1 sampai 3 unit</small>
+        <small>Varian dengan stok 1–3</small>
       </article>
 
       <article class="admin-stock-summary-card">
         <span>Stok Habis</span>
         <strong id="stockAnalyticsOutOfStock">0</strong>
-        <small>Unit dengan stok 0</small>
+        <small>Varian aktif dengan stok 0</small>
       </article>
     </div>
 
-    <div class="admin-stock-movement-card">
+    <div class="admin-stock-health-card">
       <div>
-        <h3>Pergerakan Stok Harian</h3>
-        <p>Masuk, terjual, adjustment, dan net change.</p>
+        <h3>Kondisi Stok per Warna</h3>
+        <p>Distribusi varian aktif berdasarkan jumlah unit saat ini.</p>
       </div>
+
       <div
-  class="admin-stock-movement-chart"
-  id="stockAnalyticsMovementChart"
->
-  <div class="admin-empty-state">
-    Grafik belum dimuat.
-  </div>
-</div>
-      <div
-        class="admin-stock-movement-list"
-        id="stockAnalyticsMovementList"
+        class="admin-stock-health-chart"
+        id="stockAnalyticsHealthChart"
       >
         <div class="admin-empty-state">
-          Statistik belum dimuat.
+          Ringkasan belum dimuat.
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-stock-health-card">
+      <div>
+        <h3>Perlu Restock</h3>
+        <p>Delapan varian aktif dengan stok paling mendesak.</p>
+      </div>
+
+      <div
+        class="admin-restock-list"
+        id="stockAnalyticsRestockList"
+      >
+        <div class="admin-empty-state">
+          Daftar restock belum dimuat.
         </div>
       </div>
     </div>
@@ -121,6 +136,26 @@
             <option value="all">Semua Brand</option>
           </select>
         </div>
+
+        <div class="admin-form-group">
+          <label for="adminBikeStockFilter">Kondisi Stok</label>
+          <select id="adminBikeStockFilter">
+            <option value="all">Semua</option>
+            <option value="out">Ada yang Habis</option>
+            <option value="low">Ada yang Rendah</option>
+            <option value="safe">Semua Aman</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="adminBikeSortInput">Urutkan</label>
+          <select id="adminBikeSortInput">
+            <option value="attention">Perlu Restock</option>
+            <option value="name">Nama A–Z</option>
+            <option value="stock-asc">Stok Terendah</option>
+            <option value="stock-desc">Stok Tertinggi</option>
+          </select>
+        </div>
       </div>
 
       <p class="admin-result-count" id="adminBikeResultCount">
@@ -132,6 +167,12 @@
           Data sepeda belum dimuat.
         </div>
       </div>
+
+      <nav
+        class="admin-bike-pagination is-hidden"
+        id="adminBikePagination"
+        aria-label="Halaman katalog sepeda"
+      ></nav>
     </article>
 
     <div

@@ -1,7 +1,8 @@
 import {
   hashPassword,
   jsonResponse,
-  requireRole
+  requireRole,
+  writeAuditLog
 } from "../../_shared/auth.js";
 
 function createUserId() {
@@ -242,9 +243,25 @@ export async function onRequestPost(context) {
       )
       .run();
 
+    const createdUser = await getUserById(
+      env.BIKE_DB,
+      userId
+    );
+
+    await writeAuditLog(env, auth.user, {
+      action: "user_create",
+      targetType: "user",
+      targetId: createdUser.id,
+      targetLabel: createdUser.username,
+      details: {
+        role: createdUser.role,
+        isActive: createdUser.isActive
+      }
+    });
+
     return jsonResponse({
       success: true,
-      user: await getUserById(env.BIKE_DB, userId)
+      user: createdUser
     });
   } catch (error) {
     console.error("Admin users POST error:", error);
@@ -293,15 +310,10 @@ export async function onRequestPut(context) {
       );
     }
 
-    const existingUser = await env.BIKE_DB
-      .prepare(`
-        SELECT id
-        FROM admin_users
-        WHERE id = ?
-        LIMIT 1
-      `)
-      .bind(id)
-      .first();
+    const existingUser = await getUserById(
+      env.BIKE_DB,
+      id
+    );
 
     if (!existingUser) {
       return jsonResponse({ error: "User tidak ditemukan." }, 404);
@@ -336,9 +348,56 @@ export async function onRequestPut(context) {
         .run();
     }
 
+    const updatedUser = await getUserById(
+      env.BIKE_DB,
+      id
+    );
+    const changedFields = [];
+
+    if (existingUser.role !== updatedUser.role) {
+      changedFields.push("role");
+    }
+
+    if (existingUser.isActive !== updatedUser.isActive) {
+      changedFields.push("status");
+    }
+
+    if (password) {
+      changedFields.push("password");
+    }
+
+    if (changedFields.length) {
+      await writeAuditLog(env, auth.user, {
+        action: "user_update",
+        targetType: "user",
+        targetId: updatedUser.id,
+        targetLabel: updatedUser.username,
+        details: {
+          changedFields,
+          before: {
+            role: existingUser.role,
+            isActive: existingUser.isActive
+          },
+          after: {
+            role: updatedUser.role,
+            isActive: updatedUser.isActive
+          },
+          passwordChanged: Boolean(password),
+          roleChanged:
+            existingUser.role !== updatedUser.role,
+          statusChanged:
+            existingUser.isActive !==
+            updatedUser.isActive,
+          deactivated:
+            existingUser.isActive === true &&
+            updatedUser.isActive === false
+        }
+      });
+    }
+
     return jsonResponse({
       success: true,
-      user: await getUserById(env.BIKE_DB, id)
+      user: updatedUser
     });
   } catch (error) {
     console.error("Admin users PUT error:", error);

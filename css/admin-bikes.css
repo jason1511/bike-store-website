@@ -8,6 +8,16 @@
   margin-bottom: 14px;
 }
 
+#adminCatalogueView .admin-filter-bar {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#adminCatalogueView
+  .admin-filter-bar
+  .admin-form-group:first-child {
+  grid-column: 1 / -1;
+}
+
 .admin-result-count {
   color: #b8c4c2;
   font-size: 0.92rem;
@@ -95,8 +105,13 @@
 
 .admin-stock-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+#adminCatalogueView
+  .admin-stock-summary-card:first-child {
+  grid-column: 1 / -1;
 }
 
 .admin-stock-summary-card {
@@ -129,6 +144,195 @@
   color: #dce5e3;
   font-size: 0.82rem;
   line-height: 1.4;
+}
+
+/* =========================
+   CURRENT STOCK HEALTH
+========================= */
+.admin-stock-health-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
+    rgba(8, 20, 20, 0.5);
+}
+
+.admin-stock-health-card h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.admin-stock-health-card > div > p {
+  margin: 4px 0 0;
+  color: #9fb8b6;
+  font-size: 0.88rem;
+}
+
+.admin-stock-health-chart {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.admin-stock-health-bar {
+  display: flex;
+  width: 100%;
+  min-height: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(7, 18, 18, 0.75);
+}
+
+.admin-stock-health-bar span {
+  flex: var(--stock-health-share) 1 0;
+  min-width: 7px;
+}
+
+.admin-stock-health-bar .is-out,
+.admin-stock-health-legend .is-out::before {
+  background: #ff7d7d;
+}
+
+.admin-stock-health-bar .is-low,
+.admin-stock-health-legend .is-low::before {
+  background: #facc15;
+}
+
+.admin-stock-health-bar .is-safe,
+.admin-stock-health-legend .is-safe::before {
+  background: #8fffc0;
+}
+
+.admin-stock-health-bar .is-high,
+.admin-stock-health-legend .is-high::before {
+  background: #38bdf8;
+}
+
+.admin-stock-health-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-stock-health-legend article {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  min-width: 0;
+  padding: 10px 10px 10px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(7, 18, 18, 0.56);
+}
+
+.admin-stock-health-legend article::before {
+  position: absolute;
+  top: 13px;
+  left: 11px;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  content: "";
+}
+
+.admin-stock-health-legend span {
+  color: #dce5e3;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.admin-stock-health-legend strong {
+  justify-self: end;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.admin-stock-health-legend small {
+  grid-column: 1 / -1;
+  color: #78918e;
+  font-size: 0.7rem;
+}
+
+.admin-restock-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-restock-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 13px;
+  background: rgba(7, 18, 18, 0.62);
+}
+
+.admin-restock-bike {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-restock-bike > span {
+  color: #9fb8b6;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-restock-bike > strong {
+  color: #ffffff;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-restock-bike small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b8c4c2;
+  font-size: 0.76rem;
+}
+
+.admin-restock-bike i {
+  flex: 0 0 10px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  background: var(--stock-swatch, #cccccc);
+}
+
+.admin-restock-quantity {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.admin-restock-quantity strong {
+  color: #ffd28a;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.admin-restock-row.is-out .admin-restock-quantity strong {
+  color: #ff9f9f;
+}
+
+.admin-restock-quantity span {
+  color: #9fb8b6;
+  font-size: 0.66rem;
+  font-weight: 850;
+  text-transform: uppercase;
 }
 
 .admin-stock-movement-card {
@@ -347,9 +551,9 @@
 .admin-bike-list {
   display: grid;
   gap: 14px;
-  max-height: min(760px, calc(100vh - 360px));
-  overflow: auto;
-  padding-right: 4px;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
 }
 
 .admin-bike-list-card {
@@ -363,9 +567,17 @@
     rgba(15, 25, 25, 0.58);
 }
 
+.admin-bike-list-card.is-inactive {
+  border-style: dashed;
+  opacity: 0.82;
+}
+
 .admin-bike-list-main {
   display: grid;
-  grid-template-columns: minmax(160px, 0.8fr) minmax(220px, 1.2fr);
+  grid-template-columns:
+    minmax(160px, 0.75fr)
+    minmax(220px, 1.25fr)
+    auto;
   gap: 16px;
   align-items: center;
 }
@@ -397,6 +609,11 @@
   font-weight: 850;
 }
 
+.admin-bike-list-price.is-missing {
+  color: #9fb8b6;
+  font-style: italic;
+}
+
 .admin-bike-color-stock-list {
   display: flex;
   flex-wrap: wrap;
@@ -409,6 +626,58 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.admin-bike-list-side {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.admin-bike-total-stock {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+  min-width: 58px;
+}
+
+.admin-bike-total-stock span,
+.admin-bike-total-stock small {
+  color: #9fb8b6;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-bike-total-stock strong {
+  color: #8fffc0;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.admin-bike-total-stock small {
+  color: #ffb4b4;
+}
+
+.admin-bike-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-bike-pagination span {
+  color: #b8c4c2;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.admin-bike-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* =========================
@@ -716,6 +985,14 @@ body.is-bike-editor-open {
   #adminCatalogueView .admin-bike-color-stock-list {
     justify-content: flex-start;
   }
+
+  #adminCatalogueView .admin-bike-list-side {
+    justify-items: start;
+  }
+
+  #adminCatalogueView .admin-bike-total-stock {
+    justify-items: start;
+  }
 }
 
 @media (max-width: 640px) {
@@ -725,6 +1002,25 @@ body.is-bike-editor-open {
 
   .admin-stock-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  #adminCatalogueView
+    .admin-stock-summary-card:first-child {
+    grid-column: auto;
+  }
+
+  .admin-stock-health-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-bike-pagination {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-bike-pagination span {
+    grid-column: 1 / -1;
+    grid-row: 1;
   }
 }
 

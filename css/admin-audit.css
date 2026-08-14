@@ -1,13 +1,89 @@
 /* =========================
    AUDIT LOGS
 ========================= */
+.admin-audit-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admin-audit-summary-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(37, 211, 102, 0.18);
+  border-radius: 16px;
+  background: rgba(7, 18, 18, 0.58);
+}
+
+.admin-audit-summary-card span {
+  color: #9fb8b6;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-audit-summary-card strong {
+  color: #8fffc0;
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  line-height: 1;
+}
+
+.admin-audit-summary-card small {
+  color: #b8c4c2;
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.admin-audit-summary-card.is-warning {
+  border-color: rgba(250, 204, 21, 0.24);
+}
+
+.admin-audit-summary-card.is-warning strong {
+  color: #facc15;
+}
+
+.admin-audit-summary-card.is-danger {
+  border-color: rgba(255, 125, 125, 0.24);
+}
+
+.admin-audit-summary-card.is-danger strong {
+  color: #ff9f9f;
+}
+
+.admin-audit-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-audit-filter-grid .admin-form-group:first-child {
+  grid-column: span 2;
+}
+
+.admin-audit-custom-range {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(7, 18, 18, 0.46);
+}
+
 .admin-audit-list {
   display: grid;
   gap: 12px;
-  max-height: 760px;
-  overflow: auto;
-  padding-right: 4px;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
 }
+
 .admin-audit-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -15,9 +91,22 @@
   padding: 16px 18px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid #38bdf8;
   background:
     radial-gradient(circle at top right, rgba(159, 184, 182, 0.08), transparent 34%),
     rgba(15, 25, 25, 0.58);
+}
+
+.admin-audit-card.is-create {
+  border-left-color: #8fffc0;
+}
+
+.admin-audit-card.is-warning {
+  border-left-color: #facc15;
+}
+
+.admin-audit-card.is-critical {
+  border-left-color: #ff7d7d;
 }
 
 .admin-audit-card-main {
@@ -27,8 +116,69 @@
   align-items: flex-start;
 }
 
+.admin-audit-card-content {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-audit-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.admin-audit-module,
+.admin-audit-severity {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 23px;
+  padding: 3px 8px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 999px;
+  color: #bcecff;
+  background: rgba(56, 189, 248, 0.09);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-audit-module.is-stock {
+  color: #ffd873;
+  border-color: rgba(250, 204, 21, 0.24);
+  background: rgba(250, 204, 21, 0.08);
+}
+
+.admin-audit-module.is-security,
+.admin-audit-module.is-user {
+  color: #d7c4ff;
+  border-color: rgba(168, 139, 250, 0.24);
+  background: rgba(168, 139, 250, 0.08);
+}
+
+.admin-audit-severity.is-normal {
+  color: #b8c4c2;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-audit-severity.is-warning {
+  color: #ffd873;
+  border-color: rgba(250, 204, 21, 0.24);
+  background: rgba(250, 204, 21, 0.08);
+}
+
+.admin-audit-severity.is-critical {
+  color: #ffb4b4;
+  border-color: rgba(255, 125, 125, 0.26);
+  background: rgba(255, 125, 125, 0.08);
+}
+
 .admin-audit-action {
-  margin: 0 0 4px;
+  margin: 0;
   color: #8fffc0;
   font-size: 0.78rem;
   font-weight: 950;
@@ -50,7 +200,11 @@
 }
 
 .admin-audit-meta {
-  color: #dce5e3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  color: #9fb8b6;
   font-size: 0.86rem;
 }
 
@@ -58,17 +212,160 @@
   color: #8fffc0;
   font-weight: 950;
 }
+.admin-audit-details-text {
+  margin: 3px 0 0;
+  color: #dce5e3;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .admin-audit-details {
   margin: 0;
-  padding: 12px;
+  padding: 0;
   border-radius: 14px;
   color: #cdd8d6;
   background-color: rgba(15, 25, 25, 0.72);
   border: 1px solid rgba(159, 184, 182, 0.14);
   font-size: 0.84rem;
   line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-word;
+  overflow: hidden;
+}
+
+.admin-audit-details summary {
+  padding: 10px 12px;
+  color: #dce5e3;
+  font-weight: 850;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-audit-details[open] summary {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-audit-details > *:not(summary) {
+  margin-inline: 12px;
+}
+
+.admin-audit-details > *:last-child {
+  margin-bottom: 12px;
+}
+
+.admin-audit-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-audit-detail-grid > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(7, 18, 18, 0.58);
+}
+
+.admin-audit-detail-grid span,
+.admin-audit-change-section h4 {
+  color: #9fb8b6;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-audit-detail-grid strong {
+  color: #ffffff;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-audit-change-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-audit-change-section h4 {
+  margin: 0;
+}
+
+.admin-audit-field-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-audit-field-chips span {
+  padding: 5px 8px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 999px;
+  color: #bcecff;
+  background: rgba(56, 189, 248, 0.07);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.admin-audit-stock-changes,
+.admin-audit-item-list {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-audit-stock-changes > div,
+.admin-audit-item-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(7, 18, 18, 0.58);
+}
+
+.admin-audit-stock-changes span,
+.admin-audit-item-list span {
+  color: #dce5e3;
+  overflow-wrap: anywhere;
+}
+
+.admin-audit-stock-changes strong,
+.admin-audit-item-list strong {
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.admin-audit-stock-changes em {
+  color: #ffd873;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.admin-audit-item-list > div {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.admin-audit-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-audit-pagination span {
+  color: #b8c4c2;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.admin-audit-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Compatibility for older/simple generated audit markup */
@@ -102,11 +399,53 @@
    RESPONSIVE AUDIT LOGS
 ========================= */
 @media (max-width: 720px) {
+  .admin-audit-summary-grid,
+  .admin-audit-filter-grid,
+  .admin-audit-custom-range {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-audit-filter-grid .admin-form-group:first-child {
+    grid-column: auto;
+  }
+
   .admin-audit-card-main {
     flex-direction: column;
   }
 
   .admin-audit-time {
     white-space: normal;
+  }
+
+  .admin-audit-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-audit-stock-changes > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .admin-audit-stock-changes em {
+    grid-column: 2;
+  }
+
+  .admin-audit-pagination {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-audit-pagination span {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .admin-audit-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-audit-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
