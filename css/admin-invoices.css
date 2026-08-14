@@ -1,6 +1,13 @@
 /* =========================
    INVOICE PAGE
 ========================= */
+#adminSalesView .admin-dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
 .admin-sales-header-actions {
   align-self: flex-start;
 }
@@ -834,6 +841,11 @@
    RESPONSIVE
 ========================= */
 @media (max-width: 900px) {
+  #adminSalesView .admin-dashboard-header {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
   .admin-sales-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
