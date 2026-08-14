@@ -3,12 +3,32 @@
    Load this file LAST.
 ========================= */
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.admin-body,
+.admin-page,
+.admin-dashboard,
+.admin-view,
+.admin-workspace,
+.admin-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* =========================
    TABLET / SMALL LAPTOP
 ========================= */
 @media (max-width: 1100px) {
   .admin-page {
-    padding: 18px 14px 36px;
+    min-height: 100dvh;
+    padding:
+      max(18px, env(safe-area-inset-top))
+      max(14px, env(safe-area-inset-right))
+      max(36px, env(safe-area-inset-bottom))
+      max(14px, env(safe-area-inset-left));
   }
 
   .admin-dashboard {
@@ -16,8 +36,8 @@
   }
 
   .admin-navbar {
-    position: sticky;
-    top: 10px;
+    position: relative;
+    top: auto;
     display: grid;
     grid-template-columns: 1fr;
     gap: 14px;
@@ -35,6 +55,9 @@
     flex-wrap: nowrap;
     padding-bottom: 4px;
     scrollbar-width: thin;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
   }
 
   .admin-navbar-links > * {
@@ -74,19 +97,89 @@
   .admin-audit-list {
     max-height: none;
   }
+
+  .admin-report-table-wrap,
+  .admin-stock-movement-chart,
+  .admin-invoice-line-chart,
+  .admin-invoice-chart,
+  .admin-service-table-wrap,
+  .printable-service-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  .admin-modal,
+  .admin-invoice-modal,
+  .admin-service-modal,
+  .admin-bike-editor-modal {
+    align-items: start;
+    justify-items: stretch;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-modal-content,
+  .admin-invoice-modal-content,
+  .admin-service-modal-content,
+  .admin-bike-editor-modal-content {
+    max-height: none;
+    overflow: visible;
+    margin: auto;
+  }
+
+  body:has(
+    .admin-modal:not(.is-hidden),
+    .admin-invoice-modal:not(.is-hidden),
+    .admin-service-modal:not(.is-hidden),
+    .admin-bike-editor-modal:not(.is-hidden)
+  ) {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 1100px) and (pointer: coarse) {
+  .admin-form-group input,
+  .admin-form-group select,
+  .admin-form-group textarea,
+  .admin-search-input,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  button,
+  .admin-nav-link,
+  .admin-action-btn,
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+  }
 }
 
 /* =========================
    MOBILE GENERAL
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   html,
   body {
+    max-width: 100%;
     overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .admin-page {
-    padding: 12px 10px 28px;
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(28px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
   }
 
   .admin-login-card,
@@ -177,10 +270,22 @@
   }
 }
 
+@media (min-width: 600px) and (max-width: 900px) {
+  .admin-panel-actions,
+  .admin-form-actions,
+  .admin-report-actions,
+  .admin-card-actions,
+  .admin-service-actions,
+  .admin-user-actions,
+  .admin-brand-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* =========================
    MOBILE NAVBAR
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .admin-navbar {
     top: 8px;
     gap: 12px;
@@ -235,7 +340,7 @@
 /* =========================
    SUMMARY CARDS / ANALYTICS
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .admin-stock-summary-grid,
   .admin-report-stock-summary-grid,
   .admin-invoice-summary-grid {
@@ -292,7 +397,7 @@
 /* =========================
    CATALOG / BIKE CARDS
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .admin-bike-list-card,
   .admin-color-variant-card {
     padding: 14px;
@@ -305,23 +410,20 @@
     grid-template-columns: 1fr;
   }
 
-  .admin-bike-meta {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-bike-meta > span,
-  .admin-bike-meta > .admin-bike-color-stock {
-    padding: 10px;
-  }
-
   .admin-bike-editor-modal {
-    padding: 8px;
-    place-items: stretch;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    align-items: start;
+    justify-items: stretch;
   }
 
   .admin-bike-editor-modal-content {
     width: 100%;
-    max-height: calc(100dvh - 16px);
+    max-height: none;
+    overflow: visible;
     border-radius: 18px;
   }
 
@@ -337,7 +439,7 @@
 /* =========================
    BRAND PAGE
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .admin-brand-upload-box,
   .admin-brand-preview {
     flex-direction: column;
@@ -372,7 +474,7 @@
 /* =========================
    INVOICE PAGE
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .admin-invoice-preview {
     flex-direction: column;
     align-items: flex-start;
@@ -407,8 +509,13 @@
 
   .admin-invoice-modal,
   .admin-modal {
-    padding: 10px;
-    place-items: stretch;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+    align-items: start;
+    justify-items: stretch;
   }
 
   .admin-invoice-modal-content,
@@ -416,8 +523,8 @@
   .admin-void-modal {
     width: 100%;
     max-width: none;
-    max-height: calc(100dvh - 20px);
-    overflow: auto;
+    max-height: none;
+    overflow: visible;
     border-radius: 18px;
   }
 
@@ -433,7 +540,7 @@
 /* =========================
    SERVICE PAGE
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .admin-service-card-main {
     display: grid;
     grid-template-columns: 1fr;
@@ -444,14 +551,19 @@
   }
 
   .admin-service-modal {
-    padding: 10px;
-    place-items: stretch;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+    align-items: start;
+    justify-items: stretch;
   }
 
   .admin-service-modal-content {
     width: 100%;
-    max-height: calc(100dvh - 20px);
-    overflow: auto;
+    max-height: none;
+    overflow: visible;
     border-radius: 18px;
   }
 
@@ -464,7 +576,7 @@
 /* =========================
    USERS / AUDIT
 ========================= */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .admin-user-card,
   .admin-user-item,
   .admin-user-row {
