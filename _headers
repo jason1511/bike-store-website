@@ -1,25 +1,13 @@
+/admin
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
 /admin.html
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
-/js/admin-core.js
+/css/*
   Cache-Control: no-cache, must-revalidate
 
-/js/admin-bikes.js
-  Cache-Control: no-cache, must-revalidate
-
-/js/admin-invoices.js
-  Cache-Control: no-cache, must-revalidate
-
-/js/admin-services.js
-  Cache-Control: no-cache, must-revalidate
-
-/js/admin-users.js
-  Cache-Control: no-cache, must-revalidate
-
-/js/admin-audit.js
-  Cache-Control: no-cache, must-revalidate
-
-/js/admin.js
+/js/*
   Cache-Control: no-cache, must-revalidate
 
 /api/*
