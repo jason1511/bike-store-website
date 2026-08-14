@@ -7,6 +7,14 @@ let pendingDeleteInvoiceId = "";
 let pendingEditInvoiceId = "";
 let editingInvoiceItemIndex = -1;
 let pendingEditInvoiceItems = [];
+const ADMIN_INVOICE_PAGE_SIZE = 25;
+let adminInvoiceListState = {
+  page: 1,
+  total: 0,
+  totalPages: 1,
+  searchTimer: null,
+  requestId: 0
+};
 
 function normalizeInvoiceFrameNumbers(
   value
@@ -36,8 +44,57 @@ function getInvoiceFrameNumbersLabel(
 }
 
 async function fetchInvoices() {
+  const params = new URLSearchParams({
+    page: String(adminInvoiceListState.page),
+    limit: String(ADMIN_INVOICE_PAGE_SIZE)
+  });
+  const filters = {
+    search: document.getElementById(
+      "invoiceSearchInput"
+    )?.value || "",
+    status: document.getElementById(
+      "invoiceStatusFilter"
+    )?.value || "all",
+    payment: document.getElementById(
+      "invoicePaymentFilter"
+    )?.value || "all",
+    bank: document.getElementById(
+      "invoiceBankFilter"
+    )?.value || "all",
+    actor: document.getElementById(
+      "invoiceActorFilter"
+    )?.value || "all",
+    from: document.getElementById(
+      "invoiceFromDateInput"
+    )?.value || "",
+    to: document.getElementById(
+      "invoiceToDateInput"
+    )?.value || ""
+  };
+
+  Object.entries(filters).forEach(([key, value]) => {
+    const normalizedValue = String(value || "").trim();
+
+    if (
+      normalizedValue &&
+      normalizedValue !== "all"
+    ) {
+      params.set(key, normalizedValue);
+    }
+  });
+
+  if (
+    filters.from &&
+    filters.to &&
+    filters.from > filters.to
+  ) {
+    throw new Error(
+      "Tanggal awal tidak boleh melewati tanggal akhir."
+    );
+  }
+
   const data = await fetchAdminJson(
-    "/api/admin/invoices?limit=50",
+    `/api/admin/invoices?${params.toString()}`,
     {
       method: "GET"
     }
@@ -47,7 +104,7 @@ async function fetchInvoices() {
     data.permissions
       ?.canMaintainInvoices === true;
 
-  return data.invoices || [];
+  return data;
 }
 async function updateInvoice(
   invoice
@@ -119,73 +176,251 @@ function getInvoicePaymentLabel(invoice) {
 
   return method;
 }
-function getFilteredInvoices() {
-  const searchInput = document.getElementById("invoiceSearchInput");
-  const paymentFilter = document.getElementById("invoicePaymentFilter");
-
-  const searchTerm = normalizeSearchText(searchInput?.value || "");
-  const paymentValue = paymentFilter?.value ?? "all";
-
-  return adminInvoicesCache.filter((invoice) => {
-    if (paymentValue !== "all") {
-      const invoicePayment = invoice.paymentMethod || "";
-
-      const matchesLegacyTransfer =
-        paymentValue === "Bank Transfer" && invoicePayment === "Transfer";
-
-      if (invoicePayment !== paymentValue && !matchesLegacyTransfer) {
-        return false;
-      }
-    }
-
-    if (!searchTerm) {
-      return true;
-    }
-
-    const searchableText = normalizeSearchText([
-      invoice.invoiceNumber,
-      invoice.customerName,
-      invoice.customerPhone,
-      invoice.customerAddress,
-      invoice.bikeBrand,
-      invoice.bikeName,
-      invoice.bikeColorName,
-      invoice.paymentMethod,
-      invoice.paymentBank,
-      invoice.createdByUsername,
-      invoice.createdByRole,
-      invoice.notes
-    ].join(" "));
-
-    return searchableText.includes(searchTerm);
-  });
-}
-
-function updateInvoiceResultCount(filteredCount, totalCount) {
+function updateInvoiceResultCount(pagination = {}) {
   const resultCount = document.getElementById("adminInvoiceResultCount");
 
   if (!resultCount) {
     return;
   }
 
-  if (!totalCount) {
-    resultCount.textContent = "Belum ada invoice.";
+  const page = Number(pagination.page || 1);
+  const limit = Number(
+    pagination.limit || ADMIN_INVOICE_PAGE_SIZE
+  );
+  const total = Number(pagination.total || 0);
+
+  if (!total) {
+    resultCount.textContent =
+      "Tidak ada invoice pada filter ini.";
     return;
   }
 
-  if (filteredCount === totalCount) {
-    resultCount.textContent = `Menampilkan semua ${totalCount} invoice.`;
+  const start = (page - 1) * limit + 1;
+  const end = Math.min(start + limit - 1, total);
+
+  resultCount.textContent =
+    `Menampilkan ${start}–${end} dari ${total} invoice.`;
+}
+
+function renderInvoiceSummary(summary = {}) {
+  const values = {
+    salesSummaryInvoices: Number(
+      summary.invoicesToday || 0
+    ).toLocaleString("id-ID"),
+    salesSummaryUnits: Number(
+      summary.unitsToday || 0
+    ).toLocaleString("id-ID"),
+    salesSummaryRevenue: formatRupiah(
+      summary.revenueToday || 0
+    ),
+    salesSummaryVoided: Number(
+      summary.voidedToday || 0
+    ).toLocaleString("id-ID")
+  };
+
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.textContent = value;
+    }
+  });
+}
+
+function populateInvoiceActorFilter(actors = []) {
+  const select = document.getElementById(
+    "invoiceActorFilter"
+  );
+
+  if (!select) {
     return;
   }
 
-  resultCount.textContent = `Menampilkan ${filteredCount} dari ${totalCount} invoice.`;
+  const currentValue = select.value || "all";
+
+  select.innerHTML = `
+    <option value="all">Semua Staff</option>
+    ${actors.map((actor) => `
+      <option value="${escapeHtml(actor)}">
+        ${escapeHtml(actor)}
+      </option>
+    `).join("")}
+  `;
+
+  if (actors.includes(currentValue)) {
+    select.value = currentValue;
+  }
+}
+
+function getInvoicePaginationPages(page, totalPages) {
+  const pages = new Set([1, totalPages]);
+
+  for (
+    let value = Math.max(1, page - 1);
+    value <= Math.min(totalPages, page + 1);
+    value += 1
+  ) {
+    pages.add(value);
+  }
+
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
+function renderInvoicePagination(pagination = {}) {
+  const container = document.getElementById(
+    "adminInvoicePagination"
+  );
+
+  if (!container) {
+    return;
+  }
+
+  const page = Number(pagination.page || 1);
+  const totalPages = Number(
+    pagination.totalPages || 1
+  );
+
+  if (totalPages <= 1) {
+    container.classList.add("is-hidden");
+    container.innerHTML = "";
+    return;
+  }
+
+  const pages = getInvoicePaginationPages(
+    page,
+    totalPages
+  );
+  let previousPage = 0;
+  const pageButtons = pages.map((value) => {
+    const separator =
+      previousPage && value - previousPage > 1
+        ? `<span aria-hidden="true">…</span>`
+        : "";
+
+    previousPage = value;
+
+    return `${separator}
+      <button
+        type="button"
+        class="admin-invoice-page-btn ${
+          value === page ? "is-active" : ""
+        }"
+        data-invoice-page="${value}"
+        ${value === page ? 'aria-current="page"' : ""}
+      >
+        ${value}
+      </button>
+    `;
+  }).join("");
+
+  container.classList.remove("is-hidden");
+  container.innerHTML = `
+    <button
+      type="button"
+      class="admin-invoice-page-btn"
+      data-invoice-page="${Math.max(1, page - 1)}"
+      ${page <= 1 ? "disabled" : ""}
+    >
+      Sebelumnya
+    </button>
+    <div class="admin-invoice-page-numbers">
+      ${pageButtons}
+    </div>
+    <button
+      type="button"
+      class="admin-invoice-page-btn"
+      data-invoice-page="${Math.min(
+        totalPages,
+        page + 1
+      )}"
+      ${page >= totalPages ? "disabled" : ""}
+    >
+      Berikutnya
+    </button>
+  `;
 }
 
 function applyInvoiceFilters() {
-  const filteredInvoices = getFilteredInvoices();
+  loadInvoices({ resetPage: true });
+}
 
-  renderInvoices(filteredInvoices);
-  updateInvoiceResultCount(filteredInvoices.length, adminInvoicesCache.length);
+function scheduleInvoiceSearch() {
+  window.clearTimeout(
+    adminInvoiceListState.searchTimer
+  );
+
+  adminInvoiceListState.searchTimer =
+    window.setTimeout(() => {
+      loadInvoices({ resetPage: true });
+    }, 250);
+}
+
+function renderInvoiceCardItemDetails(invoice) {
+  const items = getInvoiceItems(invoice);
+
+  return `
+    <details class="admin-invoice-item-details">
+      <summary>
+        Rincian produk
+        <span>${items.length} baris item</span>
+      </summary>
+
+      <div class="admin-invoice-item-detail-list">
+        ${items.map((item) => {
+          const quantity = Number(item.quantity || 0);
+          const unitPrice = Number(item.unitPrice || 0);
+          const lineTotal = Number(
+            item.lineTotal || quantity * unitPrice
+          );
+
+          return `
+            <article class="admin-invoice-item-detail-row">
+              <div>
+                <strong>${escapeHtml(
+                  `${item.bikeBrand || ""} ${
+                    item.bikeName || ""
+                  }`.trim() || "Sepeda"
+                )}</strong>
+                <span>${escapeHtml(
+                  item.bikeColorName || "Warna belum dicatat"
+                )}</span>
+              </div>
+
+              <div>
+                <span>Jumlah</span>
+                <strong>${quantity.toLocaleString(
+                  "id-ID"
+                )} unit</strong>
+              </div>
+
+              <div>
+                <span>Harga satuan</span>
+                <strong>${escapeHtml(
+                  formatRupiah(unitPrice)
+                )}</strong>
+              </div>
+
+              <div>
+                <span>Subtotal</span>
+                <strong>${escapeHtml(
+                  formatRupiah(lineTotal)
+                )}</strong>
+              </div>
+
+              <div class="admin-invoice-frame-detail">
+                <span>Nomor rangka</span>
+                <strong>${escapeHtml(
+                  getInvoiceFrameNumbersLabel(
+                    item.frameNumbers
+                  )
+                )}</strong>
+              </div>
+            </article>
+          `;
+        }).join("")}
+      </div>
+    </details>
+  `;
 }
 
 function renderInvoices(invoices) {
@@ -210,7 +445,11 @@ function renderInvoices(invoices) {
     .map((invoice) => {
       const voided = isInvoiceVoided(invoice);
       const itemSummary = getInvoiceCardItemSummary(invoice);
-const totalQuantity = getInvoiceTotalQuantity(invoice);
+      const totalQuantity = getInvoiceTotalQuantity(invoice);
+      const deletableLegacy =
+        canMaintainInvoices &&
+        (!Array.isArray(invoice.items) ||
+          invoice.items.length === 0);
 
       return `
         <article class="admin-invoice-card ${voided ? "is-voided" : ""}">
@@ -223,6 +462,12 @@ const totalQuantity = getInvoiceTotalQuantity(invoice);
               <h3>
                 ${escapeHtml(invoice.customerName)}
               </h3>
+
+              ${invoice.customerPhone
+                ? `<p class="admin-invoice-customer-phone">${escapeHtml(
+                    invoice.customerPhone
+                  )}</p>`
+                : ""}
             </div>
 
             <div class="admin-invoice-card-side">
@@ -236,30 +481,42 @@ const totalQuantity = getInvoiceTotalQuantity(invoice);
             </div>
           </div>
 
-          <div class="admin-invoice-meta">
-            <strong>Sepeda:</strong>
-${escapeHtml(itemSummary)}
+          <div class="admin-invoice-facts">
+            <div class="is-product">
+              <span>Produk</span>
+              <strong>${escapeHtml(itemSummary)}</strong>
+            </div>
 
-            <span>
-              <strong>Jumlah:</strong>
-              ${totalQuantity} unit total
-            </span>
+            <div>
+              <span>Jumlah</span>
+              <strong>${totalQuantity.toLocaleString(
+                "id-ID"
+              )} unit</strong>
+            </div>
 
-            <span>
-              <strong>Pembayaran:</strong>
-              ${escapeHtml(getInvoicePaymentLabel(invoice))}
-            </span>
+            <div>
+              <span>Pembayaran</span>
+              <strong>${escapeHtml(
+                getInvoicePaymentLabel(invoice)
+              )}</strong>
+            </div>
 
-            <span>
-              <strong>Dibuat oleh:</strong>
-              ${escapeHtml(invoice.createdByUsername || "-")} (${escapeHtml(invoice.createdByRole || "-")})
-            </span>
+            <div>
+              <span>Tanggal</span>
+              <strong>${escapeHtml(
+                formatAuditDate(invoice.createdAt)
+              )}</strong>
+            </div>
 
-            <span>
-              <strong>Tanggal:</strong>
-              ${escapeHtml(formatAuditDate(invoice.createdAt))}
-            </span>
+            <div>
+              <span>Dibuat oleh</span>
+              <strong>${escapeHtml(
+                invoice.createdByUsername || "-"
+              )}</strong>
+            </div>
           </div>
+
+          ${renderInvoiceCardItemDetails(invoice)}
 
           ${
             voided
@@ -283,10 +540,10 @@ ${escapeHtml(itemSummary)}
   class="admin-action-btn"
   data-open-invoice="${escapeHtml(invoice.id)}"
 >
-  ${voided ? "Lihat" : "Lihat / Print"}
+  ${voided ? "Lihat Detail" : "Detail / Faktur"}
 </button>
 ${
-  canMaintainInvoices
+  canMaintainInvoices && !voided
     ? `
         <button
           type="button"
@@ -313,8 +570,8 @@ ${
                   </button>
                 `
             }
-            ${
-  canMaintainInvoices
+${
+  deletableLegacy
     ? `
         <button
           type="button"
@@ -323,7 +580,7 @@ ${
             invoice.id
           )}"
         >
-          Hapus
+          Hapus Legacy
         </button>
       `
     : ""
@@ -862,14 +1119,51 @@ function closeEditInvoiceModal() {
   editingInvoiceItemIndex = -1;
   pendingEditInvoiceItems = [];
 }
-async function loadInvoices() {
+async function loadInvoices(options = {}) {
   const list = document.getElementById("adminInvoiceList");
 
+  if (options.resetPage) {
+    adminInvoiceListState.page = 1;
+  }
+
+  const requestId = ++adminInvoiceListState.requestId;
+
+  if (list) {
+    list.innerHTML = `
+      <div class="admin-empty-state">
+        Memuat invoice...
+      </div>
+    `;
+  }
+
   try {
-    adminInvoicesCache = await fetchInvoices();
-    applyInvoiceFilters();
-    await loadInvoiceAnalytics();
+    const data = await fetchInvoices();
+
+    if (requestId !== adminInvoiceListState.requestId) {
+      return;
+    }
+
+    adminInvoicesCache = data.invoices || [];
+    adminInvoiceListState.page = Number(
+      data.pagination?.page || 1
+    );
+    adminInvoiceListState.total = Number(
+      data.pagination?.total || 0
+    );
+    adminInvoiceListState.totalPages = Number(
+      data.pagination?.totalPages || 1
+    );
+
+    populateInvoiceActorFilter(data.actors || []);
+    renderInvoiceSummary(data.summary || {});
+    renderInvoices(adminInvoicesCache);
+    updateInvoiceResultCount(data.pagination || {});
+    renderInvoicePagination(data.pagination || {});
   } catch (error) {
+    if (requestId !== adminInvoiceListState.requestId) {
+      return;
+    }
+
     if (handleAdminAuthError(error)) {
       return;
     }
@@ -884,7 +1178,8 @@ async function loadInvoices() {
       `;
     }
 
-    updateInvoiceResultCount(0, 0);
+    updateInvoiceResultCount({ total: 0 });
+    renderInvoicePagination({ totalPages: 1 });
   }
 }
 function removePendingEditInvoiceItem(
@@ -2399,7 +2694,185 @@ function setupInvoiceDeleteControls() {
     );
   }
 }
+
+function updateInvoiceBankFilterState() {
+  const paymentFilter = document.getElementById(
+    "invoicePaymentFilter"
+  );
+  const bankFilter = document.getElementById(
+    "invoiceBankFilter"
+  );
+
+  if (!bankFilter) {
+    return;
+  }
+
+  const payment = paymentFilter?.value || "all";
+  const bankIsRelevant =
+    payment === "all" || payment === "Bank Transfer";
+
+  bankFilter.disabled = !bankIsRelevant;
+
+  if (!bankIsRelevant) {
+    bankFilter.value = "all";
+  }
+}
+
+function resetInvoiceListFilters() {
+  const defaults = {
+    invoiceSearchInput: "",
+    invoiceStatusFilter: "all",
+    invoicePaymentFilter: "all",
+    invoiceBankFilter: "all",
+    invoiceActorFilter: "all",
+    invoiceFromDateInput: "",
+    invoiceToDateInput: ""
+  };
+
+  Object.entries(defaults).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.value = value;
+    }
+  });
+
+  updateInvoiceBankFilterState();
+  loadInvoices({ resetPage: true });
+}
+
+function setupInvoiceListControls() {
+  const refreshButton = document.getElementById(
+    "refreshInvoicesBtn"
+  );
+  const focusButton = document.getElementById(
+    "focusInvoiceFormBtn"
+  );
+  const resetButton = document.getElementById(
+    "resetInvoiceFiltersBtn"
+  );
+  const searchInput = document.getElementById(
+    "invoiceSearchInput"
+  );
+  const pagination = document.getElementById(
+    "adminInvoicePagination"
+  );
+  const paymentFilter = document.getElementById(
+    "invoicePaymentFilter"
+  );
+  const filterIds = [
+    "invoiceStatusFilter",
+    "invoicePaymentFilter",
+    "invoiceBankFilter",
+    "invoiceActorFilter",
+    "invoiceFromDateInput",
+    "invoiceToDateInput"
+  ];
+
+  if (
+    refreshButton &&
+    !refreshButton.dataset.invoiceRefreshBound
+  ) {
+    refreshButton.dataset.invoiceRefreshBound = "true";
+    refreshButton.addEventListener(
+      "click",
+      () => loadInvoices()
+    );
+  }
+
+  if (
+    focusButton &&
+    !focusButton.dataset.invoiceFocusBound
+  ) {
+    focusButton.dataset.invoiceFocusBound = "true";
+    focusButton.addEventListener("click", () => {
+      document.getElementById("invoiceCreationPanel")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+      window.setTimeout(() => {
+        document.getElementById(
+          "invoiceCustomerNameInput"
+        )?.focus();
+      }, 300);
+    });
+  }
+
+  if (
+    resetButton &&
+    !resetButton.dataset.invoiceResetBound
+  ) {
+    resetButton.dataset.invoiceResetBound = "true";
+    resetButton.addEventListener(
+      "click",
+      resetInvoiceListFilters
+    );
+  }
+
+  if (
+    searchInput &&
+    !searchInput.dataset.invoiceSearchBound
+  ) {
+    searchInput.dataset.invoiceSearchBound = "true";
+    searchInput.addEventListener(
+      "input",
+      scheduleInvoiceSearch
+    );
+  }
+
+  filterIds.forEach((id) => {
+    const element = document.getElementById(id);
+
+    if (
+      !element ||
+      element.dataset.invoiceListFilterBound
+    ) {
+      return;
+    }
+
+    element.dataset.invoiceListFilterBound = "true";
+    element.addEventListener("change", () => {
+      if (element === paymentFilter) {
+        updateInvoiceBankFilterState();
+      }
+
+      loadInvoices({ resetPage: true });
+    });
+  });
+
+  if (
+    pagination &&
+    !pagination.dataset.invoicePaginationBound
+  ) {
+    pagination.dataset.invoicePaginationBound = "true";
+    pagination.addEventListener("click", (event) => {
+      const button = event.target.closest(
+        "[data-invoice-page]"
+      );
+
+      if (!button || button.disabled) {
+        return;
+      }
+
+      adminInvoiceListState.page = Number(
+        button.dataset.invoicePage || 1
+      );
+      loadInvoices();
+      document.getElementById("adminInvoiceResultCount")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+    });
+  }
+
+  updateInvoiceBankFilterState();
+}
+
 async function loadInvoicePage() {
+  setupInvoiceListControls();
   setupInvoiceEditControls();
   setupInvoiceDeleteControls();
 

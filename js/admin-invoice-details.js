@@ -101,17 +101,29 @@ function getInvoiceTotalQuantity(invoice) {
 
 function getInvoiceCardItemSummary(invoice) {
   const items = getInvoiceItems(invoice);
+  const groups = groupInvoiceItemsByProduct(items);
+  const preview = groups.slice(0, 2).map((group) => {
+    const colors = group.items.slice(0, 2)
+      .map((item) => {
+        return `${item.bikeColorName || "Warna belum dicatat"} ×${Number(
+          item.quantity || 0
+        ).toLocaleString("id-ID")}`;
+      });
+    const remainingColors = group.items.length - colors.length;
 
-  if (items.length === 1) {
-    const item = items[0];
+    return `${group.label} · ${colors.join(", ")}${
+      remainingColors > 0
+        ? ` +${remainingColors} warna`
+        : ""
+    }`;
+  });
+  const remainingProducts = groups.length - preview.length;
 
-    return [
-      `${item.bikeBrand || ""} ${item.bikeName || ""}`.trim(),
-      item.bikeColorName ? `(${item.bikeColorName})` : ""
-    ].filter(Boolean).join(" ");
-  }
-
-  return `${items.length} item invoice`;
+  return `${preview.join(" | ")}${
+    remainingProducts > 0
+      ? ` | +${remainingProducts} model lainnya`
+      : ""
+  }`;
 }
 
 function renderPrintableInvoiceItems(invoice) {

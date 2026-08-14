@@ -2,19 +2,68 @@
   <div class="admin-dashboard-header">
     <div>
       <p class="admin-eyebrow">Penjualan</p>
-      <h1>Invoice Penjualan</h1>
+      <h1>Penjualan & Faktur</h1>
       <p>
-        Buat invoice penjualan sepeda, pilih warna unit, dan kurangi stok warna
-        secara otomatis.
+        Buat transaksi, periksa stok, cari faktur, dan tangani pembatalan.
       </p>
     </div>
+
+    <div class="admin-panel-actions admin-sales-header-actions">
+      <button
+        type="button"
+        class="btn-primary"
+        id="focusInvoiceFormBtn"
+      >
+        Tambah Penjualan
+      </button>
+
+      <button
+        type="button"
+        class="btn-secondary"
+        id="refreshInvoicesBtn"
+      >
+        Refresh
+      </button>
+    </div>
   </div>
+
+  <section
+    class="admin-sales-summary-grid"
+    aria-label="Ringkasan penjualan hari ini"
+  >
+    <article class="admin-sales-summary-card">
+      <span>Invoice Hari Ini</span>
+      <strong id="salesSummaryInvoices">0</strong>
+      <small>Transaksi yang dibuat hari ini</small>
+    </article>
+
+    <article class="admin-sales-summary-card">
+      <span>Unit Terjual</span>
+      <strong id="salesSummaryUnits">0</strong>
+      <small>Unit dari invoice aktif hari ini</small>
+    </article>
+
+    <article class="admin-sales-summary-card is-revenue">
+      <span>Omzet Hari Ini</span>
+      <strong id="salesSummaryRevenue">Rp 0</strong>
+      <small>Nilai invoice aktif hari ini</small>
+    </article>
+
+    <article class="admin-sales-summary-card is-warning">
+      <span>Dibatalkan Hari Ini</span>
+      <strong id="salesSummaryVoided">0</strong>
+      <small>Invoice yang dibatalkan hari ini</small>
+    </article>
+  </section>
 
   <!-- =========================
        MAIN INVOICE WORKSPACE
   ========================== -->
   <div class="admin-workspace">
-    <article class="admin-panel admin-editor-panel">
+    <article
+      class="admin-panel admin-editor-panel"
+      id="invoiceCreationPanel"
+    >
       <div class="admin-panel-header">
         <div>
           <h2>Buat Invoice</h2>
@@ -135,30 +184,72 @@
           <p>Daftar invoice penjualan yang tersimpan.</p>
         </div>
 
-        <div class="admin-panel-actions">
-          <button type="button" class="btn-secondary" id="refreshInvoicesBtn">
-            Refresh
-          </button>
-        </div>
       </div>
 
-      <div class="admin-filter-bar">
+      <div class="admin-invoice-filter-grid">
         <div class="admin-form-group">
           <label for="invoiceSearchInput">Cari Invoice</label>
           <input
             type="search"
             id="invoiceSearchInput"
-            placeholder="Cari invoice, customer, sepeda..."
+            placeholder="Invoice, customer, telepon, sepeda, nomor rangka..."
           >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceStatusFilter">Status</label>
+          <select id="invoiceStatusFilter">
+            <option value="all">Semua Status</option>
+            <option value="active">Aktif</option>
+            <option value="voided">Dibatalkan</option>
+          </select>
         </div>
 
         <div class="admin-form-group">
           <label for="invoicePaymentFilter">Pembayaran</label>
           <select id="invoicePaymentFilter">
-            <option value="all">Semua</option>
+            <option value="all">Semua Pembayaran</option>
             <option value="Cash">Cash</option>
             <option value="Bank Transfer">Bank Transfer</option>
           </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceBankFilter">Bank</label>
+          <select id="invoiceBankFilter">
+            <option value="all">Semua Bank</option>
+            <option value="BRI">BRI</option>
+            <option value="BNI">BNI</option>
+            <option value="BCA">BCA</option>
+            <option value="Bank Lainnya">Bank Lainnya</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceActorFilter">Dibuat Oleh</label>
+          <select id="invoiceActorFilter">
+            <option value="all">Semua Staff</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceFromDateInput">Dari Tanggal</label>
+          <input type="date" id="invoiceFromDateInput">
+        </div>
+
+        <div class="admin-form-group">
+          <label for="invoiceToDateInput">Sampai Tanggal</label>
+          <input type="date" id="invoiceToDateInput">
+        </div>
+
+        <div class="admin-invoice-filter-actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            id="resetInvoiceFiltersBtn"
+          >
+            Reset Filter
+          </button>
         </div>
       </div>
 
@@ -171,6 +262,12 @@
           Invoice belum dimuat.
         </div>
       </div>
+
+      <nav
+        class="admin-invoice-pagination is-hidden"
+        id="adminInvoicePagination"
+        aria-label="Navigasi halaman invoice"
+      ></nav>
     </article>
   </div>
 

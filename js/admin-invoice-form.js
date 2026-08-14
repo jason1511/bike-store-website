@@ -552,10 +552,7 @@ function setupInvoiceForm() {
   const addItemButton = document.getElementById("addInvoiceItemBtn");
   const pendingItemsList = document.getElementById("pendingInvoiceItemsList");
 
-  const refreshButton = document.getElementById("refreshInvoicesBtn");
   const createButton = document.getElementById("createInvoiceBtn");
-  const searchInput = document.getElementById("invoiceSearchInput");
-  const paymentFilter = document.getElementById("invoicePaymentFilter");
   const paymentMethodInput = document.getElementById("invoicePaymentMethodInput");
 
   if (openItemModalButton && !openItemModalButton.dataset.invoiceItemBound) {
@@ -672,21 +669,6 @@ function setupInvoiceForm() {
     });
   }
 
-  if (refreshButton && !refreshButton.dataset.invoiceRefreshBound) {
-    refreshButton.dataset.invoiceRefreshBound = "true";
-    refreshButton.addEventListener("click", loadInvoices);
-  }
-
-  if (searchInput && !searchInput.dataset.invoiceFilterBound) {
-    searchInput.dataset.invoiceFilterBound = "true";
-    searchInput.addEventListener("input", applyInvoiceFilters);
-  }
-
-  if (paymentFilter && !paymentFilter.dataset.invoiceFilterBound) {
-    paymentFilter.dataset.invoiceFilterBound = "true";
-    paymentFilter.addEventListener("change", applyInvoiceFilters);
-  }
-
   if (!form || form.dataset.invoiceSubmitBound) {
     return;
   }
@@ -724,7 +706,7 @@ function setupInvoiceForm() {
       }
 
       populateInvoiceBikeOptions();
-      await loadInvoices();
+      await loadInvoices({ resetPage: true });
 
       if (
         typeof isCurrentUserAdmin === "function" &&

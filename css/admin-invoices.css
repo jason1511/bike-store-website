@@ -1,6 +1,87 @@
 /* =========================
    INVOICE PAGE
 ========================= */
+.admin-sales-header-actions {
+  align-self: flex-start;
+}
+
+.admin-sales-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-sales-summary-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid rgba(37, 211, 102, 0.2);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(37, 211, 102, 0.11),
+      transparent 44%
+    ),
+    rgba(8, 20, 20, 0.66);
+}
+
+.admin-sales-summary-card > span {
+  color: #a9bebc;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-sales-summary-card > strong {
+  overflow-wrap: anywhere;
+  color: #8fffc0;
+  font-size: clamp(1.45rem, 2.3vw, 2rem);
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.admin-sales-summary-card > small {
+  color: #9fb8b6;
+  font-size: 0.77rem;
+  line-height: 1.35;
+}
+
+.admin-sales-summary-card.is-warning {
+  border-color: rgba(251, 191, 36, 0.24);
+}
+
+.admin-sales-summary-card.is-warning > strong {
+  color: #fcd34d;
+}
+
+.admin-invoice-filter-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, minmax(145px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(7, 18, 18, 0.42);
+}
+
+.admin-invoice-filter-grid .admin-form-group {
+  min-width: 0;
+}
+
+.admin-invoice-filter-actions {
+  display: flex;
+  align-items: end;
+}
+
+.admin-invoice-filter-actions button {
+  width: 100%;
+}
+
 .admin-invoice-preview {
   display: flex;
   align-items: center;
@@ -167,9 +248,6 @@
 .admin-invoice-list {
   display: grid;
   gap: 14px;
-  max-height: 760px;
-  overflow: auto;
-  padding-right: 4px;
 }
 
 .admin-invoice-card {
@@ -219,6 +297,12 @@
   font-size: 1rem;
 }
 
+.admin-invoice-customer-phone {
+  margin: 5px 0 0;
+  color: #a9bebc;
+  font-size: 0.82rem;
+}
+
 .admin-invoice-card-side {
   display: grid;
   justify-items: end;
@@ -232,23 +316,155 @@
   white-space: nowrap;
 }
 
-.admin-invoice-meta {
+.admin-invoice-facts {
   display: grid;
-  gap: 8px;
-  color: #dce5e3;
-  font-size: 0.87rem;
-  line-height: 1.45;
+  grid-template-columns:
+    minmax(210px, 1.5fr)
+    repeat(4, minmax(105px, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.admin-invoice-meta span,
-.admin-invoice-meta div {
-  color: #dce5e3;
+.admin-invoice-facts > div {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  padding: 11px 12px;
+  background: rgba(7, 18, 18, 0.78);
 }
 
-.admin-invoice-meta strong {
+.admin-invoice-facts span {
   color: #9fb8b6;
-  display: inline-block;
-  min-width: 92px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-invoice-facts strong {
+  overflow-wrap: anywhere;
+  color: #f4f8f7;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.admin-invoice-item-details {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(7, 18, 18, 0.46);
+}
+
+.admin-invoice-item-details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  color: #dce5e3;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.admin-invoice-item-details > summary:hover {
+  color: #8fffc0;
+  background: rgba(37, 211, 102, 0.06);
+}
+
+.admin-invoice-item-details > summary span {
+  color: #9fb8b6;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.admin-invoice-item-detail-list {
+  display: grid;
+  gap: 1px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.admin-invoice-item-detail-row {
+  display: grid;
+  grid-template-columns:
+    minmax(170px, 1.5fr)
+    minmax(72px, 0.55fr)
+    minmax(110px, 0.8fr)
+    minmax(110px, 0.8fr)
+    minmax(150px, 1fr);
+  gap: 12px;
+  padding: 11px 13px;
+  background: rgba(7, 18, 18, 0.88);
+}
+
+.admin-invoice-item-detail-row > div {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-invoice-item-detail-row span {
+  color: #8fa9a6;
+  font-size: 0.68rem;
+}
+
+.admin-invoice-item-detail-row strong {
+  overflow-wrap: anywhere;
+  color: #e8efed;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.admin-invoice-item-detail-row > div:first-child span {
+  color: #a9bebc;
+}
+
+.admin-invoice-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-invoice-page-numbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.admin-invoice-page-btn {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 11px;
+  color: #dce5e3;
+  background: rgba(7, 18, 18, 0.7);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.admin-invoice-page-btn:hover:not(:disabled),
+.admin-invoice-page-btn.is-active {
+  border-color: rgba(37, 211, 102, 0.5);
+  color: #07120f;
+  background: #8fffc0;
+}
+
+.admin-invoice-page-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
 }
 
 .invoice-status-badge {
@@ -618,6 +834,14 @@
    RESPONSIVE
 ========================= */
 @media (max-width: 900px) {
+  .admin-sales-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-invoice-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .admin-section-card-header,
   .admin-invoice-card-main,
   .pending-invoice-item {
@@ -634,8 +858,47 @@
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .admin-invoice-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-invoice-facts .is-product {
+    grid-column: 1 / -1;
+  }
+
+  .admin-invoice-item-detail-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-invoice-item-detail-row > div:first-child,
+  .admin-invoice-frame-detail {
+    grid-column: 1 / -1;
+  }
 }
 @media (max-width: 700px) {
+  .admin-sales-header-actions,
+  .admin-invoice-pagination {
+    width: 100%;
+  }
+
+  .admin-sales-header-actions button {
+    flex: 1;
+  }
+
+  .admin-invoice-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-invoice-pagination {
+    flex-wrap: wrap;
+  }
+
+  .admin-invoice-page-numbers {
+    order: -1;
+    width: 100%;
+  }
+
   .admin-invoice-edit-modal {
     width: 100%;
     max-width: none;
@@ -668,5 +931,24 @@
   .admin-invoice-edit-modal
     .admin-modal-actions button {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-sales-summary-grid,
+  .admin-invoice-facts,
+  .admin-invoice-item-detail-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-invoice-facts .is-product,
+  .admin-invoice-item-detail-row > div:first-child,
+  .admin-invoice-frame-detail {
+    grid-column: auto;
+  }
+
+  .admin-sales-header-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }

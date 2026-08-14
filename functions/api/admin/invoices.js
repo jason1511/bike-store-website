@@ -620,6 +620,127 @@ async function writeStockMovement(env, user, data) {
     .run();
 }
 
+function getPositiveInteger(value, fallback) {
+  const number = Number(value);
+
+  return Number.isInteger(number) && number > 0
+    ? number
+    : fallback;
+}
+
+function isInvoiceDateValue(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(
+    String(value || "")
+  );
+}
+
+function buildInvoiceListFilters(url) {
+  const conditions = [];
+  const bindings = [];
+  const search = String(
+    url.searchParams.get("search") || ""
+  ).trim().slice(0, 120);
+  const status = String(
+    url.searchParams.get("status") || "all"
+  ).trim().toLowerCase();
+  const payment = String(
+    url.searchParams.get("payment") || "all"
+  ).trim();
+  const bank = String(
+    url.searchParams.get("bank") || "all"
+  ).trim();
+  const actor = String(
+    url.searchParams.get("actor") || "all"
+  ).trim().slice(0, 80);
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+
+  if (search) {
+    const pattern = `%${search}%`;
+
+    conditions.push(`(
+      i.invoice_number LIKE ?
+      OR i.customer_name LIKE ?
+      OR i.customer_phone LIKE ?
+      OR i.customer_address LIKE ?
+      OR i.notes LIKE ?
+      OR i.created_by_username LIKE ?
+      OR EXISTS (
+        SELECT 1
+        FROM invoice_items search_item
+        WHERE search_item.invoice_id = i.id
+          AND (
+            search_item.bike_brand LIKE ?
+            OR search_item.bike_name LIKE ?
+            OR search_item.bike_color_name LIKE ?
+            OR search_item.frame_numbers LIKE ?
+          )
+      )
+    )`);
+    bindings.push(
+      pattern,
+      pattern,
+      pattern,
+      pattern,
+      pattern,
+      pattern,
+      pattern,
+      pattern,
+      pattern,
+      pattern
+    );
+  }
+
+  if (["active", "voided"].includes(status)) {
+    conditions.push(
+      "COALESCE(i.status, 'active') = ?"
+    );
+    bindings.push(status);
+  }
+
+  if (payment === "Cash") {
+    conditions.push("i.payment_method = ?");
+    bindings.push(payment);
+  } else if (payment === "Bank Transfer") {
+    conditions.push(
+      "i.payment_method IN ('Bank Transfer', 'Transfer')"
+    );
+  }
+
+  if (
+    ["BRI", "BNI", "BCA", "Bank Lainnya"].includes(bank)
+  ) {
+    conditions.push("i.payment_bank = ?");
+    bindings.push(bank);
+  }
+
+  if (actor && actor !== "all") {
+    conditions.push("i.created_by_username = ?");
+    bindings.push(actor);
+  }
+
+  if (isInvoiceDateValue(from)) {
+    conditions.push(
+      "date(datetime(i.created_at), '+7 hours') >= date(?)"
+    );
+    bindings.push(from);
+  }
+
+  if (isInvoiceDateValue(to)) {
+    conditions.push(
+      "date(datetime(i.created_at), '+7 hours') <= date(?)"
+    );
+    bindings.push(to);
+  }
+
+  return {
+    whereSql: conditions.length
+      ? `WHERE ${conditions.join(" AND ")}`
+      : "",
+    bindings
+  };
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
 
@@ -635,40 +756,151 @@ export async function onRequestGet(context) {
     }
 
     const url = new URL(request.url);
-    const limit = Math.min(Number(url.searchParams.get("limit") || 50), 100);
+    const page = getPositiveInteger(
+      url.searchParams.get("page"),
+      1
+    );
+    const limit = Math.min(
+      getPositiveInteger(
+        url.searchParams.get("limit"),
+        25
+      ),
+      50
+    );
+    const { whereSql, bindings } =
+      buildInvoiceListFilters(url);
+
+    const countResult = await env.BIKE_DB
+      .prepare(`
+        SELECT COUNT(*) AS total
+        FROM invoices i
+        ${whereSql}
+      `)
+      .bind(...bindings)
+      .first();
+    const total = Number(countResult?.total || 0);
+    const totalPages = Math.max(
+      1,
+      Math.ceil(total / limit)
+    );
+    const safePage = Math.min(page, totalPages);
+    const offset = (safePage - 1) * limit;
 
     const result = await env.BIKE_DB
       .prepare(`
-        SELECT *
-        FROM invoices
-        ORDER BY datetime(created_at) DESC
-        LIMIT ?
+        SELECT i.*
+        FROM invoices i
+        ${whereSql}
+        ORDER BY datetime(i.created_at) DESC, i.id DESC
+        LIMIT ? OFFSET ?
       `)
-      .bind(limit)
+      .bind(...bindings, limit, offset)
       .all();
 
     const invoices = (result.results || []).map(rowToInvoice);
-const invoiceIds = invoices.map((invoice) => invoice.id);
-const itemsByInvoiceId = await getInvoiceItemsByInvoiceIds(
-  env.BIKE_DB,
-  invoiceIds
-);
+    const invoiceIds = invoices.map(
+      (invoice) => invoice.id
+    );
+    const itemsByInvoiceId =
+      await getInvoiceItemsByInvoiceIds(
+        env.BIKE_DB,
+        invoiceIds
+      );
+    const invoicesWithItems = invoices.map(
+      (invoice) => ({
+        ...invoice,
+        items:
+          itemsByInvoiceId.get(invoice.id) || []
+      })
+    );
 
-const invoicesWithItems = invoices.map((invoice) => ({
-  ...invoice,
-  items: itemsByInvoiceId.get(invoice.id) || []
-}));
+    const summary = await env.BIKE_DB
+      .prepare(`
+        SELECT
+          SUM(
+            CASE
+              WHEN date(datetime(i.created_at), '+7 hours') =
+                date('now', '+7 hours')
+              THEN 1 ELSE 0
+            END
+          ) AS invoices_today,
+          SUM(
+            CASE
+              WHEN date(datetime(i.created_at), '+7 hours') =
+                date('now', '+7 hours')
+                AND COALESCE(i.status, 'active') != 'voided'
+              THEN COALESCE(
+                (
+                  SELECT SUM(summary_item.quantity)
+                  FROM invoice_items summary_item
+                  WHERE summary_item.invoice_id = i.id
+                ),
+                i.quantity,
+                0
+              )
+              ELSE 0
+            END
+          ) AS units_today,
+          SUM(
+            CASE
+              WHEN date(datetime(i.created_at), '+7 hours') =
+                date('now', '+7 hours')
+                AND COALESCE(i.status, 'active') != 'voided'
+              THEN i.total_price ELSE 0
+            END
+          ) AS revenue_today,
+          SUM(
+            CASE
+              WHEN COALESCE(i.status, 'active') = 'voided'
+                AND date(datetime(i.voided_at), '+7 hours') =
+                  date('now', '+7 hours')
+              THEN 1 ELSE 0
+            END
+          ) AS voided_today
+        FROM invoices i
+      `)
+      .first();
 
-return jsonResponse({
-  success: true,
+    const actorResult = await env.BIKE_DB
+      .prepare(`
+        SELECT DISTINCT created_by_username
+        FROM invoices
+        WHERE created_by_username IS NOT NULL
+          AND trim(created_by_username) != ''
+        ORDER BY created_by_username COLLATE NOCASE ASC
+      `)
+      .all();
 
-  invoices: invoicesWithItems,
-
-  permissions: {
-    canMaintainInvoices:
-      auth.user.role === "admin"
-  }
-});
+    return jsonResponse({
+      success: true,
+      invoices: invoicesWithItems,
+      summary: {
+        invoicesToday: Number(
+          summary?.invoices_today || 0
+        ),
+        unitsToday: Number(
+          summary?.units_today || 0
+        ),
+        revenueToday: Number(
+          summary?.revenue_today || 0
+        ),
+        voidedToday: Number(
+          summary?.voided_today || 0
+        )
+      },
+      actors: (actorResult.results || [])
+        .map((row) => row.created_by_username),
+      pagination: {
+        page: safePage,
+        limit,
+        total,
+        totalPages
+      },
+      permissions: {
+        canMaintainInvoices:
+          auth.user.role === "admin"
+      }
+    });
   } catch (error) {
     console.error("Invoices GET error:", error);
 
