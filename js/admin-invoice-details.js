@@ -126,7 +126,7 @@ function renderPrintableInvoiceItems(invoice) {
   if (!items.length) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="5">Data invoice belum tersedia.</td>
+        <td colspan="6">Data invoice belum tersedia.</td>
       </tr>
     `;
     return;
@@ -159,7 +159,7 @@ function renderPrintableInvoiceItems(invoice) {
       0
     );
 
-    const variantDetails = group.items
+    const colorDetails = group.items
       .map((item) => {
         const color =
           item.bikeColorName || "-";
@@ -167,56 +167,70 @@ function renderPrintableInvoiceItems(invoice) {
         const itemQuantity =
           Number(item.quantity || 1);
 
-        return `${color} (${itemQuantity} unit)`;
+        return `${color} (${itemQuantity})`;
       })
-      .join(" · ");
-
-    const frameNumbers = group.items
-      .flatMap((item) =>
-        normalizeInvoiceFrameNumbers(
-          item.frameNumbers
-        )
-      );
-
-    const unitPrices = Array.from(
-      new Set(
-        group.items.map((item) =>
-          Number(item.unitPrice || 0)
-        )
+      .map(
+        (detail) => `
+          <span class="printable-invoice-variant-line">
+            ${escapeHtml(detail)}
+          </span>
+        `
       )
-    );
+      .join("");
 
-    const unitPriceLabel =
-      unitPrices.length === 1
-        ? formatRupiah(unitPrices[0])
-        : unitPrices
-            .map((price) =>
-              formatRupiah(price)
-            )
-            .join(" / ");
+    const frameNumberDetails = group.items
+      .map((item) => {
+        const frameNumbers =
+          normalizeInvoiceFrameNumbers(
+            item.frameNumbers
+          );
+
+        return `
+          <span class="printable-invoice-variant-line">
+            ${escapeHtml(
+              frameNumbers.length
+                ? frameNumbers.join(", ")
+                : "-"
+            )}
+          </span>
+        `;
+      })
+      .join("");
+
+    const unitPriceDetails = group.items
+      .map(
+        (item) => `
+          <span class="printable-invoice-variant-line">
+            ${escapeHtml(
+              formatRupiah(
+                Number(item.unitPrice || 0)
+              )
+            )}
+          </span>
+        `
+      )
+      .join("");
 
     return `
       <tr>
-        <td class="is-center">
+        <td class="is-center printable-invoice-quantity-cell">
           ${quantity}
-          <small>unit</small>
         </td>
 
         <td class="printable-invoice-product-cell">
           <strong>${escapeHtml(group.label)}</strong>
-          <small>${escapeHtml(variantDetails)}</small>
+        </td>
+
+        <td class="printable-invoice-color-cell">
+          ${colorDetails}
         </td>
 
         <td class="printable-invoice-frame-numbers">
-          ${escapeHtml(
-            frameNumbers.length
-              ? frameNumbers.join(", ")
-              : "-"
-          )}
+          ${frameNumberDetails}
         </td>
 
         <td class="is-right">
-          ${escapeHtml(unitPriceLabel)}
+          ${unitPriceDetails}
         </td>
 
         <td class="is-right">
@@ -237,6 +251,7 @@ function renderPrintableInvoiceItems(invoice) {
     rows.push(`
       <tr class="is-empty-row" aria-hidden="true">
         <td>&nbsp;</td>
+        <td></td>
         <td></td>
         <td></td>
         <td></td>
