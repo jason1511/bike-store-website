@@ -491,21 +491,6 @@ async function reactivateBikeById(db, id) {
   return getBikeById(db, id);
 }
 
-function assertStockPermission(auth, existingBike, nextBike) {
-  const oldStockQty = Number(existingBike.stockQty || 0);
-  const newStockQty = Number(nextBike.stockQty || 0);
-  const isIncreasingStock = newStockQty > oldStockQty;
-
-  if (auth.user.role !== "admin" && isIncreasingStock) {
-    return jsonResponse(
-      { error: "Hanya admin yang bisa menambah stok." },
-      403
-    );
-  }
-
-  return null;
-}
-
 export async function onRequestGet(context) {
   const { request, env } = context;
 
@@ -584,13 +569,6 @@ const errors = validateBike(bike);
 
     if (errors.length) {
       return jsonResponse({ error: "Invalid bike data", errors }, 400);
-    }
-
-    if (auth.user.role !== "admin" && Number(bike.stockQty || 0) > 0) {
-      return jsonResponse(
-        { error: "Hanya admin yang bisa membuat sepeda dengan stok awal." },
-        403
-      );
     }
 
     const existingBike = await getBikeById(env.BIKE_DB, bike.id);
@@ -740,10 +718,14 @@ const errors = validateBike(bike);
       return jsonResponse({ error: "Bike not found" }, 404);
     }
 
-    const stockPermissionError = assertStockPermission(auth, existingBike, bike);
-
-    if (stockPermissionError) {
-      return stockPermissionError;
+    if (
+      auth.user.role !== "admin" &&
+      Boolean(existingBike.inStock) !== Boolean(bike.inStock)
+    ) {
+      return jsonResponse(
+        { error: "Hanya admin yang bisa mengubah status katalog sepeda." },
+        403
+      );
     }
 
     const updateBikeStatement =
@@ -866,7 +848,7 @@ export async function onRequestDelete(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin", "staff"]);
+    const auth = await requireRole(request, env, ["admin"]);
 
     if (!auth.ok) {
       return auth.response;

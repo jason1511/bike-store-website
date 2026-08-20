@@ -275,7 +275,7 @@ export async function onRequestPut(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin", "staff"]);
+    const auth = await requireRole(request, env, ["admin"]);
 
     if (!auth.ok) {
       return auth.response;

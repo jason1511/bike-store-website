@@ -230,13 +230,24 @@ function getBearerToken(request) {
 }
 
 export function getPermissions(role) {
+  const isAdmin = role === "admin";
+  const isStaff = role === "staff";
+
   return {
-    canManageCatalogue: role === "admin" || role === "staff",
-    canUploadImages: role === "admin" || role === "staff",
-    canDeactivate: role === "admin" || role === "staff",
-    canReactivate: role === "admin" || role === "staff",
-    canHardDelete: role === "admin",
-    canManageUsers: role === "admin"
+    canManageCatalogue: isAdmin || isStaff,
+    canAdjustStock: isAdmin || isStaff,
+    canUploadImages: isAdmin || isStaff,
+    canDeactivate: isAdmin,
+    canReactivate: isAdmin,
+    canHardDelete: isAdmin,
+    canCreateInvoices: isAdmin || isStaff,
+    canMaintainInvoices: isAdmin,
+    canCreateServices: isAdmin || isStaff,
+    canMaintainServices: isAdmin,
+    canViewReports: isAdmin,
+    canManageBrands: isAdmin,
+    canManageUsers: isAdmin,
+    canViewAudit: isAdmin
   };
 }
 
@@ -378,11 +389,22 @@ const activeUser = await getActiveAuthUserFromD1(
   tokenUser
 );
 
-  if (!activeUser || !allowedRoles.includes(activeUser.role)) {
+  if (!activeUser) {
     return {
       ok: false,
       user: null,
       response: jsonResponse({ error: "Unauthorized" }, 401)
+    };
+  }
+
+  if (!allowedRoles.includes(activeUser.role)) {
+    return {
+      ok: false,
+      user: activeUser,
+      response: jsonResponse(
+        { error: "Anda tidak memiliki izin untuk tindakan ini." },
+        403
+      )
     };
   }
 

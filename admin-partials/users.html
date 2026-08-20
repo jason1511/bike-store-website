@@ -1,4 +1,4 @@
-<section class="admin-view" id="adminUsersView">
+<section class="admin-view" id="adminUsersView" data-admin-only-view>
   <div class="admin-dashboard-header">
     <div>
       <p class="admin-eyebrow">Admin</p>
@@ -8,6 +8,44 @@
       </p>
     </div>
   </div>
+
+  <div class="admin-user-summary-grid" aria-label="Ringkasan user">
+    <article class="admin-user-summary-card">
+      <span>Total User</span>
+      <strong id="adminUserTotalCount">0</strong>
+      <small>Semua akun tersimpan</small>
+    </article>
+
+    <article class="admin-user-summary-card">
+      <span>Admin Aktif</span>
+      <strong id="adminUserAdminCount">0</strong>
+      <small>Akses penuh sistem</small>
+    </article>
+
+    <article class="admin-user-summary-card">
+      <span>Staff Aktif</span>
+      <strong id="adminUserStaffCount">0</strong>
+      <small>Akses operasional</small>
+    </article>
+
+    <article class="admin-user-summary-card is-warning">
+      <span>Nonaktif</span>
+      <strong id="adminUserInactiveCount">0</strong>
+      <small>Tidak dapat login</small>
+    </article>
+  </div>
+
+  <section class="admin-user-role-guide" aria-label="Hak akses role">
+    <article>
+      <span class="admin-user-role is-admin">Admin</span>
+      <p>Kendali penuh termasuk laporan, user, aktivitas, pembatalan transaksi, dan status katalog.</p>
+    </article>
+
+    <article>
+      <span class="admin-user-role is-staff">Staff</span>
+      <p>Katalog dan stok, pembuatan serta pencetakan penjualan dan service. Tanpa akses laporan atau tindakan sensitif.</p>
+    </article>
+  </section>
 
   <div class="admin-workspace">
     <article class="admin-panel admin-editor-panel">
@@ -35,8 +73,12 @@
       type="password"
       id="newUserPasswordInput"
       placeholder="Password"
+      minlength="8"
+      autocomplete="new-password"
       required
     >
+
+    <p class="admin-form-note">Minimal 8 karakter.</p>
   </div>
 
   <div class="admin-form-group">
@@ -53,8 +95,7 @@
     </button>
 
     <p class="admin-form-note" id="adminUserFormNote">
-      Admin bisa mengelola user, brand, katalog, invoice, dan service.
-      Staff hanya untuk operasional.
+      Buat akun sesuai tanggung jawab pengguna.
     </p>
   </div>
 </form>
@@ -74,9 +115,40 @@
         </div>
       </div>
 
+      <div class="admin-user-filter-bar">
+        <div class="admin-form-group">
+          <label for="adminUserSearchInput">Cari User</label>
+          <input
+            type="search"
+            id="adminUserSearchInput"
+            placeholder="Cari username..."
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label for="adminUserRoleFilter">Role</label>
+          <select id="adminUserRoleFilter">
+            <option value="all">Semua Role</option>
+            <option value="admin">Admin</option>
+            <option value="staff">Staff</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="adminUserStatusFilter">Status</label>
+          <select id="adminUserStatusFilter">
+            <option value="all">Semua Status</option>
+            <option value="active">Aktif</option>
+            <option value="inactive">Nonaktif</option>
+          </select>
+        </div>
+      </div>
+
       <p class="admin-result-count" id="adminUserResultCount">
         User belum dimuat.
       </p>
+
+      <p class="admin-form-note admin-user-list-note" id="adminUserListNote" aria-live="polite"></p>
 
       <div class="admin-user-list" id="adminUserList">
         <div class="admin-empty-state">

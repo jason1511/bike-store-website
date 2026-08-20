@@ -291,13 +291,19 @@ function renderServices(services) {
             Lihat / Print
           </button>
 
-          <button
-            type="button"
-            class="admin-action-btn"
-            data-edit-service="${escapeHtml(service.id)}"
-          >
-            Edit Service
-          </button>
+          ${
+            isCurrentUserAdmin()
+              ? `
+                <button
+                  type="button"
+                  class="admin-action-btn"
+                  data-edit-service="${escapeHtml(service.id)}"
+                >
+                  Edit Service
+                </button>
+              `
+              : ""
+          }
         </div>
       </article>
     `)

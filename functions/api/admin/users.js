@@ -88,6 +88,19 @@ async function getUserByUsername(db, username) {
   return row ? rowToUser(row) : null;
 }
 
+async function countActiveAdmins(db) {
+  const row = await db
+    .prepare(`
+      SELECT COUNT(*) AS total
+      FROM admin_users
+      WHERE role = 'admin'
+        AND is_active = 1
+    `)
+    .first();
+
+  return Number(row?.total || 0);
+}
+
 function validateCreateUserPayload({ username, password, role }) {
   const errors = [];
 
@@ -317,6 +330,33 @@ export async function onRequestPut(context) {
 
     if (!existingUser) {
       return jsonResponse({ error: "User tidak ditemukan." }, 404);
+    }
+
+    const removesOwnAdminAccess =
+      auth.user.id === existingUser.id &&
+      (role !== "admin" || !Boolean(isActive));
+
+    if (removesOwnAdminAccess) {
+      return jsonResponse(
+        { error: "Anda tidak bisa menurunkan role atau menonaktifkan akun sendiri." },
+        403
+      );
+    }
+
+    const removesActiveAdmin =
+      existingUser.role === "admin" &&
+      existingUser.isActive &&
+      (role !== "admin" || !Boolean(isActive));
+
+    if (removesActiveAdmin) {
+      const activeAdminCount = await countActiveAdmins(env.BIKE_DB);
+
+      if (activeAdminCount <= 1) {
+        return jsonResponse(
+          { error: "Admin aktif terakhir tidak boleh diturunkan atau dinonaktifkan." },
+          409
+        );
+      }
     }
 
     if (password) {

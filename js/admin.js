@@ -21,8 +21,14 @@ async function setupAdminProtectedModules() {
     return;
   }
 
+  const isAdmin = typeof isCurrentUserAdmin === "function" && isCurrentUserAdmin();
+
   if (typeof loadAdminPartials === "function") {
     await loadAdminPartials();
+  }
+
+  if (typeof configureAdminNavigationForRole === "function") {
+    configureAdminNavigationForRole();
   }
 
   try {
@@ -40,7 +46,7 @@ async function setupAdminProtectedModules() {
     setupAdminViewNavigation();
   }
 
-  if (typeof setupAdminBrandManager === "function") {
+  if (isAdmin && typeof setupAdminBrandManager === "function") {
     await setupAdminBrandManager();
   }
 
@@ -84,15 +90,15 @@ async function setupAdminProtectedModules() {
     setupServiceModal();
   }
 
-  if (typeof setupAdminUserManagement === "function") {
+  if (isAdmin && typeof setupAdminUserManagement === "function") {
     setupAdminUserManagement();
   }
 
-  if (typeof setupAuditLogs === "function") {
+  if (isAdmin && typeof setupAuditLogs === "function") {
     setupAuditLogs();
   }
 
-  if (typeof setupReportsPage === "function") {
+  if (isAdmin && typeof setupReportsPage === "function") {
     setupReportsPage();
   }
 
@@ -108,19 +114,19 @@ async function setupAdminProtectedModules() {
     await loadServicePage();
   }
 
-  if (typeof loadAdminUsersPage === "function") {
+  if (isAdmin && typeof loadAdminUsersPage === "function") {
     await loadAdminUsersPage();
-  } else if (typeof loadAdminUsers === "function") {
+  } else if (isAdmin && typeof loadAdminUsers === "function") {
     await loadAdminUsers();
   }
 
-  if (typeof loadAuditPage === "function") {
+  if (isAdmin && typeof loadAuditPage === "function") {
     await loadAuditPage();
-  } else if (typeof loadAuditLogs === "function") {
+  } else if (isAdmin && typeof loadAuditLogs === "function") {
     await loadAuditLogs();
   }
 
-  if (typeof loadReportsPage === "function") {
+  if (isAdmin && typeof loadReportsPage === "function") {
     await loadReportsPage();
   }
 }

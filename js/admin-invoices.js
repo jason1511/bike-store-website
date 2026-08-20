@@ -558,7 +558,7 @@ ${
     : ""
 }
             ${
-              voided
+              voided || !canMaintainInvoices
                 ? ""
                 : `
                   <button

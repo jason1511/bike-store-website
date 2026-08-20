@@ -182,6 +182,7 @@ function renderAdminBikeColorStock(bike) {
 
 function renderAdminBikes(bikes) {
   const bikeList = document.getElementById("adminBikeList");
+  const canChangeCatalogueStatus = isCurrentUserAdmin();
 
   if (!bikeList) {
     return;
@@ -242,7 +243,9 @@ function renderAdminBikes(bikes) {
                 </button>
 
                 ${
-                  isActive
+                  !canChangeCatalogueStatus
+                    ? ""
+                    : isActive
                     ? `
                       <button
                         type="button"

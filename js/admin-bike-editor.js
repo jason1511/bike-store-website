@@ -158,7 +158,7 @@ document.querySelectorAll("[data-color-variant-card]").forEach(updateColorVarian
   setAdminFormNote(
     isCurrentUserAdmin()
       ? "Admin bisa mengatur stok internal."
-      : "Staff bisa mengedit katalog, tetapi tidak bisa menambah stok internal."
+      : "Staff bisa menambah dan menyesuaikan stok; semua perubahan dicatat."
   );
 
   setUploadNote(
@@ -210,7 +210,7 @@ document.querySelectorAll("[data-color-variant-card]").forEach(updateColorVarian
   setAdminFormNote(
     isCurrentUserAdmin()
       ? "Admin bisa mengatur stok internal."
-      : "Staff bisa mengedit katalog, tetapi tidak bisa menambah stok internal."
+      : "Staff bisa menambah dan menyesuaikan stok; semua perubahan dicatat."
   );
 
   setUploadNote(

@@ -1,6 +1,84 @@
 /* =========================
    USER MANAGEMENT
 ========================= */
+.admin-user-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-user-summary-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(37, 211, 102, 0.24);
+  border-radius: 18px;
+  background: rgba(8, 23, 20, 0.72);
+}
+
+.admin-user-summary-card span,
+.admin-user-controls label > span,
+.admin-user-reset-form label > span {
+  color: #9fb8b6;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-user-summary-card strong {
+  color: #7dffb5;
+  font-size: clamp(1.8rem, 3vw, 2.45rem);
+  line-height: 1;
+}
+
+.admin-user-summary-card small {
+  color: #d0dcda;
+  line-height: 1.4;
+}
+
+.admin-user-summary-card.is-warning {
+  border-color: rgba(255, 177, 85, 0.3);
+}
+
+.admin-user-summary-card.is-warning strong {
+  color: #ffd08a;
+}
+
+.admin-user-role-guide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admin-user-role-guide article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(15, 25, 25, 0.58);
+}
+
+.admin-user-role-guide p {
+  margin: 0;
+  color: #dce5e3;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.admin-user-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(140px, 0.75fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 .admin-user-list {
   display: grid;
   gap: 12px;
@@ -26,6 +104,26 @@
   display: grid;
   gap: 8px;
   min-width: 0;
+}
+
+.admin-user-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-user-current-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border: 1px solid rgba(120, 200, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(120, 200, 255, 0.12);
+  color: #bfe5ff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .admin-user-card h3 {
@@ -99,6 +197,60 @@
   min-height: 36px;
 }
 
+.admin-user-controls {
+  display: grid;
+  gap: 10px;
+  width: min(390px, 100%);
+  min-width: 0;
+}
+
+.admin-user-controls > label,
+.admin-user-reset-form > label {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-user-controls select,
+.admin-user-reset-form input {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 11px;
+  background: #0a1817;
+  color: #ffffff;
+  font: inherit;
+}
+
+.admin-user-controls select:disabled,
+.admin-user-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.admin-user-reset-form {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-user-reset-form.is-hidden {
+  display: none;
+}
+
+.admin-user-reset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-user-list-note:empty {
+  display: none;
+}
+
 /* Compatibility for older/simple generated user markup */
 .admin-user-item,
 .admin-user-row {
@@ -151,6 +303,12 @@
    RESPONSIVE USER MANAGEMENT
 ========================= */
 @media (max-width: 720px) {
+  .admin-user-summary-grid,
+  .admin-user-role-guide,
+  .admin-user-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
   .admin-user-card,
   .admin-user-item,
   .admin-user-row {
@@ -160,5 +318,39 @@
 
   .admin-user-actions {
     justify-content: flex-start;
+  }
+
+  .admin-user-controls,
+  .admin-user-reset-form {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-actions,
+  .admin-user-reset-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .admin-user-actions button,
+  .admin-user-reset-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1050px) {
+  .admin-user-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-user-card {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .admin-user-controls {
+    width: 100%;
   }
 }

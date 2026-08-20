@@ -125,7 +125,7 @@ export async function onRequestGet(context) {
   const { request, env } = context;
 
   try {
-    const auth = await requireRole(request, env, ["admin", "staff"]);
+    const auth = await requireRole(request, env, ["admin"]);
     if (!auth.ok) return auth.response;
     if (!env.BIKE_DB) return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
 

@@ -10,6 +10,9 @@
 /js/*
   Cache-Control: no-cache, must-revalidate
 
+/admin-partials/*
+  Cache-Control: no-cache, must-revalidate
+
 /api/*
   Cache-Control: no-store
 
