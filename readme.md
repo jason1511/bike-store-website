@@ -5,7 +5,6 @@ A production-oriented e-bike showroom website and internal business management s
 The project combines a public product catalogue with inventory, sales, service, user management, audit and reporting tools. It was developed from real store requirements and continues to evolve as the business workflow changes.
 
 - **Live website:** https://niagabersama.com/
-- **Admin dashboard:** https://niagabersama.com/admin.html
 - **Repository:** https://github.com/jason1511/bike-store-website
 
 > The live admin dashboard is protected. Production usernames, passwords and other credentials are not published.
