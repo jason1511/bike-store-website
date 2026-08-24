@@ -229,7 +229,11 @@ function openBikeModal(bikeId) {
             </span>
           </a>
 
-          <a href="contact.html" class="btn-secondary">
+          <a href="/bikes/${encodeURIComponent(bike.id)}" class="btn-secondary">
+            Buka Halaman Produk
+          </a>
+
+          <a href="/contact" class="btn-secondary">
             Lihat Kontak Toko
           </a>
         </div>
