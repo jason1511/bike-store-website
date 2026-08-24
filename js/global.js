@@ -100,6 +100,7 @@ function createBikeCard(bike) {
   const imageSrc = getBikeDisplayImageForCard(bike);
   const imageAlt = bike.alt || `Sepeda listrik ${bike.name || bike.brand || ""}`;
   const colorName = defaultColor?.name || bike.colorName || "";
+  const detailUrl = `/bikes/${encodeURIComponent(bike.id)}`;
 
   const isUnavailable = isBikeUnavailable(bike);
   const availabilityLabel = getBikeAvailabilityLabel(bike);
@@ -183,7 +184,7 @@ function createBikeCard(bike) {
       <div class="bike-info">
         <p class="bike-brand">${escapeHtml(bike.brand)}</p>
 
-        <h3>${escapeHtml(bike.name)}</h3>
+        <h3><a href="${escapeHtml(detailUrl)}" class="bike-card-title-link" onclick="event.stopPropagation();">${escapeHtml(bike.name)}</a></h3>
 
         ${colorLabelHtml}
 
@@ -202,6 +203,14 @@ function createBikeCard(bike) {
         <p class="bike-price">${formatPrice(bike.price)}</p>
 
         ${unavailableNoteHtml}
+
+        <a
+          href="${escapeHtml(detailUrl)}"
+          class="bike-detail-page-link"
+          onclick="event.stopPropagation();"
+        >
+          Lihat Detail Produk
+        </a>
 
         <a
           href="${getWhatsAppLink(bike)}"
