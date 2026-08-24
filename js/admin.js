@@ -165,6 +165,99 @@ async function initializeAdminProtectedModules() {
 }
 
 /* =========================
+   PASSWORD VISIBILITY
+========================= */
+const PASSWORD_VISIBLE_ICON = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+    <circle cx="12" cy="12" r="2.75"></circle>
+  </svg>
+`;
+
+const PASSWORD_HIDDEN_ICON = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="m3 3 18 18"></path>
+    <path d="M10.6 6.15A10.6 10.6 0 0 1 12 6c6 0 9.5 6 9.5 6a16.7 16.7 0 0 1-2.05 2.75"></path>
+    <path d="M6.6 6.6C3.95 8.3 2.5 12 2.5 12s3.5 6 9.5 6a9.8 9.8 0 0 0 3.4-.6"></path>
+    <path d="M9.9 9.9a2.75 2.75 0 0 0 3.9 3.9"></path>
+  </svg>
+`;
+
+function setPasswordVisibility(input, button, isVisible) {
+  input.type = isVisible ? "text" : "password";
+  button.setAttribute("aria-label", isVisible ? "Sembunyikan password" : "Tampilkan password");
+  button.setAttribute("title", isVisible ? "Sembunyikan password" : "Tampilkan password");
+  button.setAttribute("aria-pressed", String(isVisible));
+  button.innerHTML = isVisible ? PASSWORD_HIDDEN_ICON : PASSWORD_VISIBLE_ICON;
+}
+
+function enhancePasswordInput(input) {
+  if (!(input instanceof HTMLInputElement) || input.dataset.passwordToggleReady) {
+    return;
+  }
+
+  input.dataset.passwordToggleReady = "true";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "admin-password-field";
+  input.parentNode.insertBefore(wrapper, input);
+  wrapper.append(input);
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "admin-password-toggle";
+  setPasswordVisibility(input, button, false);
+
+  button.addEventListener("click", () => {
+    const isVisible = input.type !== "password";
+    setPasswordVisibility(input, button, !isVisible);
+    input.focus({ preventScroll: true });
+  });
+
+  wrapper.append(button);
+}
+
+function enhancePasswordInputs(root = document) {
+  if (root instanceof HTMLInputElement && root.matches('input[type="password"]')) {
+    enhancePasswordInput(root);
+  }
+
+  if (typeof root.querySelectorAll === "function") {
+    root.querySelectorAll('input[type="password"]').forEach(enhancePasswordInput);
+  }
+}
+
+function setupPasswordVisibilityToggles() {
+  if (document.body.dataset.passwordVisibilityBound) return;
+  document.body.dataset.passwordVisibilityBound = "true";
+
+  enhancePasswordInputs();
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) enhancePasswordInputs(node);
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  document.addEventListener("reset", (event) => {
+    window.setTimeout(() => {
+      event.target
+        .querySelectorAll("[data-password-toggle-ready]")
+        .forEach((input) => {
+          const button = input.parentElement?.querySelector(".admin-password-toggle");
+          if (button) setPasswordVisibility(input, button, false);
+        });
+    }, 0);
+  });
+}
+
+setupPasswordVisibilityToggles();
+
+/* =========================
    ADMIN STARTUP
 ========================= */
 async function initializeAdmin() {
