@@ -280,6 +280,8 @@ function setupBikeModal() {
   }
 
   bikeGrid.addEventListener("click", (event) => {
+    if (event.target.closest("a, button")) return;
+
     const bikeCard = event.target.closest(".bike-card");
 
     if (!bikeCard) {
@@ -290,6 +292,8 @@ function setupBikeModal() {
   });
 
   bikeGrid.addEventListener("keydown", (event) => {
+    if (event.target.closest("a, button, input, select")) return;
+
     const bikeCard = event.target.closest(".bike-card");
 
     if (!bikeCard) {
