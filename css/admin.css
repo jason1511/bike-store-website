@@ -480,3 +480,59 @@ button:disabled {
     flex-wrap: wrap;
   }
 }
+
+/* =========================
+   PASSWORD VISIBILITY
+========================= */
+.admin-password-field {
+  position: relative;
+  width: 100%;
+}
+
+.admin-password-field > input {
+  min-height: 52px;
+  padding-right: 58px !important;
+}
+
+.admin-password-toggle {
+  appearance: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: calc(100% - 8px);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #9fb8b6;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.admin-password-toggle:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-password-toggle:focus-visible {
+  color: #8fffc0;
+  outline: 2px solid rgba(37, 211, 102, 0.72);
+  outline-offset: -2px;
+}
+
+.admin-password-toggle svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
