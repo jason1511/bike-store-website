@@ -36,13 +36,25 @@ function formatRupiah(value) {
   return `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
 }
 
+function getProductDisplayName(bike) {
+  const brand = String(bike.brand || "").trim();
+  const name = String(bike.name || "").trim();
+
+  if (!brand) return name;
+  if (!name) return brand;
+
+  return name.toLowerCase().startsWith(brand.toLowerCase())
+    ? name
+    : `${brand} ${name}`;
+}
+
 function createWhatsAppUrl(bike) {
   const phone = String(bike.brand || "").toLowerCase() === "saige"
     ? "6282122065168"
     : "6282141519010";
 
   const message = encodeURIComponent(
-    `Halo, saya ingin menanyakan ${bike.brand} ${bike.name} yang ada di katalog CV Niaga Bersama Abadi.`
+    `Halo, saya ingin menanyakan ${getProductDisplayName(bike)} yang ada di katalog CV Niaga Bersama Abadi.`
   );
 
   return `https://wa.me/${phone}?text=${message}`;
@@ -57,7 +69,7 @@ function createProductStructuredData(bike, canonicalUrl, imageUrl) {
   const product = {
     "@type": "Product",
     "@id": `${canonicalUrl}#product`,
-    name: `${bike.brand} ${bike.name}`.trim(),
+    name: getProductDisplayName(bike),
     description: bike.description || "Sepeda listrik untuk kebutuhan mobilitas harian.",
     image: [imageUrl],
     sku: bike.id,
@@ -127,7 +139,7 @@ function createProductStructuredData(bike, canonicalUrl, imageUrl) {
           {
             "@type": "ListItem",
             position: 3,
-            name: `${bike.brand} ${bike.name}`.trim(),
+            name: getProductDisplayName(bike),
             item: canonicalUrl
           }
         ]
@@ -173,9 +185,10 @@ function renderNotFound() {
 function renderProductPage(bike) {
   const canonicalUrl = `${SITE_URL}/bikes/${encodeURIComponent(bike.id)}`;
   const imageUrl = toAbsoluteUrl(bike.image);
-  const title = `${bike.brand} ${bike.name} | Sepeda Listrik Lumajang`;
+  const displayName = getProductDisplayName(bike);
+  const title = `${displayName} | Sepeda Listrik Lumajang`;
   const description = truncate(
-    bike.description || `${bike.brand} ${bike.name}, sepeda listrik yang tersedia di showroom CV Niaga Bersama Abadi Lumajang.`
+    bike.description || `${displayName}, sepeda listrik yang tersedia di showroom CV Niaga Bersama Abadi Lumajang.`
   );
   const themeMain = getSafeThemeColor(bike.brandTheme?.main, "#203333");
   const themeSecond = getSafeThemeColor(bike.brandTheme?.second, "#2f4f4f");
@@ -286,7 +299,7 @@ function renderProductPage(bike) {
       <section class="product-information" aria-labelledby="productSpecsHeading">
         <div>
           <p class="section-tag">Spesifikasi</p>
-          <h2 id="productSpecsHeading">Informasi ${escapeHtml(bike.brand)} ${escapeHtml(bike.name)}</h2>
+          <h2 id="productSpecsHeading">Informasi ${escapeHtml(displayName)}</h2>
         </div>
         <dl class="product-spec-grid">
           ${specs.map(([label, value]) => `
