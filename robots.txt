@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /api/
 Disallow: /admin-partials/
+Disallow: /api/admin/
 
 Sitemap: https://niagabersama.com/sitemap.xml
