@@ -1040,3 +1040,155 @@ body.is-bike-editor-open {
     padding: 14px;
   }
 }
+
+/* =========================
+   STOCK RECEIVING MODAL
+========================= */
+.admin-stock-receive-modal-content {
+  width: min(720px, 100%);
+}
+
+.admin-stock-receive-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-stock-receive-total,
+.admin-stock-receive-current,
+.admin-stock-receive-preview {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid rgba(37, 211, 102, 0.2);
+  border-radius: 16px;
+  background: rgba(37, 211, 102, 0.07);
+}
+
+.admin-stock-receive-total {
+  grid-column: 1 / -1;
+}
+
+.admin-stock-receive-total span,
+.admin-stock-receive-current span,
+.admin-stock-receive-preview span {
+  color: #9fb8b6;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-stock-receive-total strong,
+.admin-stock-receive-current strong,
+.admin-stock-receive-preview strong {
+  color: #8fffc0;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.admin-stock-receive-total small,
+.admin-stock-receive-preview small {
+  color: #dce5e3;
+  font-size: 0.82rem;
+}
+
+.admin-stock-receive-mode {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.admin-stock-receive-mode legend {
+  width: 100%;
+  margin-bottom: 9px;
+  color: #dce5e3;
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.admin-stock-receive-mode label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(7, 18, 18, 0.56);
+  cursor: pointer;
+}
+
+.admin-stock-receive-mode label:has(input:checked) {
+  border-color: rgba(37, 211, 102, 0.5);
+  background: rgba(37, 211, 102, 0.1);
+}
+
+.admin-stock-receive-mode input {
+  margin-top: 3px;
+}
+
+.admin-stock-receive-mode span {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-stock-receive-mode strong {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.admin-stock-receive-mode small {
+  color: #9fb8b6;
+  line-height: 1.4;
+}
+
+#stockReceiveExistingFields,
+.admin-stock-new-color-fields {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.45fr);
+  gap: 16px;
+}
+
+.admin-stock-new-color-fields .admin-form-wide,
+.admin-stock-receive-form .admin-form-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-stock-receive-current {
+  min-height: 74px;
+}
+
+.admin-stock-receive-preview {
+  border-color: rgba(56, 189, 248, 0.22);
+  background: rgba(56, 189, 248, 0.07);
+}
+
+.admin-stock-receive-preview strong {
+  color: #7dd3fc;
+}
+
+@media (max-width: 700px) {
+  .admin-stock-receive-form,
+  .admin-stock-receive-mode,
+  #stockReceiveExistingFields,
+  .admin-stock-new-color-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stock-receive-form > *,
+  .admin-stock-receive-mode,
+  #stockReceiveExistingFields,
+  .admin-stock-new-color-fields,
+  .admin-stock-new-color-fields .admin-form-wide,
+  .admin-stock-receive-form .admin-form-wide {
+    grid-column: 1;
+  }
+}
