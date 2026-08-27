@@ -74,6 +74,10 @@ async function setupAdminProtectedModules() {
     setupAdminBikeFilters();
   }
 
+  if (typeof setupStockReceiving === "function") {
+    setupStockReceiving();
+  }
+
   if (typeof setupInvoiceForm === "function") {
     setupInvoiceForm();
   }
