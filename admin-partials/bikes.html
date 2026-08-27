@@ -389,4 +389,171 @@
     </article>
     </div>
   </div>
+
+<div
+    class="admin-bike-editor-modal is-hidden"
+    id="adminStockReceiveModal"
+    aria-hidden="true"
+  >
+    <div
+      class="admin-bike-editor-modal-overlay"
+      id="adminStockReceiveModalOverlay"
+    ></div>
+
+    <article
+      class="admin-panel admin-bike-editor-modal-content admin-stock-receive-modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="adminStockReceiveTitle"
+    >
+      <div class="admin-panel-header">
+        <div>
+          <p class="admin-eyebrow">Penerimaan Persediaan</p>
+          <h2 id="adminStockReceiveTitle">Tambah Stok</h2>
+          <p id="adminStockReceiveBikeLabel">
+            Pilih sepeda untuk menambahkan stok.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          id="closeStockReceiveBtn"
+        >
+          Tutup
+        </button>
+      </div>
+
+      <form class="admin-stock-receive-form" id="adminStockReceiveForm">
+        <input type="hidden" id="stockReceiveBikeIdInput">
+
+        <div class="admin-stock-receive-total">
+          <span>Total stok sepeda saat ini</span>
+          <strong id="stockReceiveBikeTotal">0</strong>
+          <small id="stockReceiveCatalogueStatus">Aktif di katalog</small>
+        </div>
+
+        <fieldset class="admin-stock-receive-mode">
+          <legend>Pilih jenis penambahan</legend>
+
+          <label>
+            <input
+              type="radio"
+              name="stockReceiveMode"
+              value="existing"
+              checked
+            >
+            <span>
+              <strong>Warna Tersedia</strong>
+              <small>Tambah unit ke warna yang sudah ada.</small>
+            </span>
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="stockReceiveMode"
+              value="new"
+            >
+            <span>
+              <strong>Warna Baru</strong>
+              <small>Tambahkan varian warna baru ke sepeda ini.</small>
+            </span>
+          </label>
+        </fieldset>
+
+        <section id="stockReceiveExistingFields">
+          <div class="admin-form-group">
+            <label for="stockReceiveExistingColorInput">Warna</label>
+            <select id="stockReceiveExistingColorInput" required></select>
+          </div>
+
+          <div class="admin-stock-receive-current">
+            <span>Stok warna saat ini</span>
+            <strong id="stockReceiveCurrentColorQty">0</strong>
+          </div>
+        </section>
+
+        <section
+          class="admin-stock-new-color-fields is-hidden"
+          id="stockReceiveNewColorFields"
+        >
+          <div class="admin-form-group">
+            <label for="stockReceiveNewColorNameInput">Nama Warna</label>
+            <input
+              type="text"
+              id="stockReceiveNewColorNameInput"
+              placeholder="Contoh: Merah"
+            >
+          </div>
+
+          <div class="admin-form-group">
+            <label for="stockReceiveNewColorHexInput">Kode Warna</label>
+            <input
+              type="color"
+              id="stockReceiveNewColorHexInput"
+              value="#cccccc"
+            >
+          </div>
+
+          <div class="admin-form-group admin-form-wide">
+            <label for="stockReceiveNewColorImageInput">
+              Gambar Warna
+            </label>
+            <input
+              type="file"
+              id="stockReceiveNewColorImageInput"
+              accept="image/jpeg,image/png,image/webp"
+            >
+            <p class="admin-form-note">
+              Opsional. Jika dipilih, gambar diupload saat stok disimpan.
+            </p>
+          </div>
+        </section>
+
+        <div class="admin-form-group">
+          <label for="stockReceiveQuantityInput">Jumlah Stok Masuk</label>
+          <input
+            type="number"
+            id="stockReceiveQuantityInput"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            value="1"
+            required
+          >
+        </div>
+
+        <div class="admin-stock-receive-preview">
+          <span>Stok warna setelah disimpan</span>
+          <strong id="stockReceiveResultQty">1</strong>
+          <small id="stockReceiveCalculation">0 + 1 = 1</small>
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
+          <label for="stockReceiveNoteInput">Catatan / Referensi</label>
+          <input
+            type="text"
+            id="stockReceiveNoteInput"
+            maxlength="250"
+            placeholder="Contoh: Kiriman supplier 27 Agustus"
+          >
+        </div>
+
+        <div class="admin-form-actions admin-form-wide">
+          <button
+            type="submit"
+            class="btn-primary"
+            id="saveStockReceiveBtn"
+          >
+            Tambahkan Stok
+          </button>
+
+          <p class="admin-form-note" id="stockReceiveFormNote">
+            Jumlah akan ditambahkan ke stok terbaru di database.
+          </p>
+        </div>
+      </form>
+    </article>
+  </div>
 </section>
