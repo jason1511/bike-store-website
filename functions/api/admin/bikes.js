@@ -844,6 +844,344 @@ const errors = validateBike(bike);
   }
 }
 
+function getD1ChangeCount(result) {
+  return Number(
+    result?.meta?.changes ??
+    result?.changes ??
+    0
+  );
+}
+
+async function getBikeStockSnapshot(db, id) {
+  return db
+    .prepare(`
+      SELECT
+        id,
+        brand,
+        name,
+        colorName,
+        colors,
+        image,
+        inStock,
+        stockQty,
+        updatedAt
+      FROM bikes
+      WHERE id = ?
+      LIMIT 1
+    `)
+    .bind(id)
+    .first();
+}
+
+function normalizeStockColorKey(value) {
+  return String(value || "")
+    .trim()
+    .toLocaleLowerCase("id-ID");
+}
+
+function getStockReceiptColors(snapshot) {
+  const colors = normalizeBikeColors(snapshot?.colors);
+
+  if (colors.length) {
+    return colors;
+  }
+
+  const legacyStock = Math.max(
+    0,
+    Number(snapshot?.stockQty || 0)
+  );
+  const legacyName = String(
+    snapshot?.colorName || "Warna Utama"
+  ).trim();
+
+  if (!legacyName && legacyStock <= 0) {
+    return [];
+  }
+
+  return [{
+    name: legacyName || "Warna Utama",
+    hex: "#cccccc",
+    image: String(snapshot?.image || "").trim(),
+    stockQty: legacyStock
+  }];
+}
+
+export async function onRequestPatch(context) {
+  const { request, env } = context;
+
+  try {
+    const auth = await requireRole(
+      request,
+      env,
+      ["admin", "staff"]
+    );
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.BIKE_DB) {
+      return jsonResponse(
+        { error: "D1 binding BIKE_DB is missing" },
+        500
+      );
+    }
+
+    const payload = await request.json();
+    const bikeId = String(payload.bikeId || "").trim();
+    const mode = String(payload.mode || "existing").trim();
+    const requestedColorName = String(
+      payload.colorName || ""
+    ).trim();
+    const quantity = Number(payload.quantity);
+    const note = String(payload.note || "").trim().slice(0, 250);
+
+    if (!bikeId) {
+      return jsonResponse(
+        { error: "Sepeda wajib dipilih." },
+        400
+      );
+    }
+
+    if (!["existing", "new"].includes(mode)) {
+      return jsonResponse(
+        { error: "Mode penambahan stok tidak valid." },
+        400
+      );
+    }
+
+    if (
+      !Number.isInteger(quantity) ||
+      quantity <= 0
+    ) {
+      return jsonResponse(
+        { error: "Jumlah stok masuk harus berupa bilangan bulat lebih dari 0." },
+        400
+      );
+    }
+
+    if (!requestedColorName) {
+      return jsonResponse(
+        { error: "Warna wajib dipilih atau diisi." },
+        400
+      );
+    }
+
+    const snapshot = await getBikeStockSnapshot(
+      env.BIKE_DB,
+      bikeId
+    );
+
+    if (!snapshot) {
+      return jsonResponse(
+        { error: "Sepeda tidak ditemukan." },
+        404
+      );
+    }
+
+    const originalColorsText = String(
+      snapshot.colors || ""
+    );
+    const originalStockQty = Math.max(
+      0,
+      Number(snapshot.stockQty || 0)
+    );
+    const colors = getStockReceiptColors(snapshot);
+    const requestedColorKey = normalizeStockColorKey(
+      requestedColorName
+    );
+    let targetColor = colors.find((color) => {
+      return normalizeStockColorKey(color.name) ===
+        requestedColorKey;
+    });
+
+    if (mode === "existing") {
+      if (!targetColor) {
+        return jsonResponse(
+          {
+            error:
+              "Warna tidak ditemukan. Refresh data stok lalu coba lagi."
+          },
+          409
+        );
+      }
+    } else {
+      if (targetColor) {
+        return jsonResponse(
+          {
+            error:
+              "Warna tersebut sudah ada. Pilih Warna Tersedia untuk menambah stoknya."
+          },
+          409
+        );
+      }
+
+      const colorHex = String(
+        payload.colorHex || "#cccccc"
+      ).trim();
+
+      if (!/^#[0-9a-f]{6}$/i.test(colorHex)) {
+        return jsonResponse(
+          { error: "Kode warna tidak valid." },
+          400
+        );
+      }
+
+      targetColor = {
+        name: requestedColorName,
+        hex: colorHex,
+        image: String(payload.image || "").trim(),
+        stockQty: 0
+      };
+      colors.push(targetColor);
+    }
+
+    const quantityBefore = Math.max(
+      0,
+      Number(targetColor.stockQty || 0)
+    );
+    targetColor.stockQty = quantityBefore + quantity;
+
+    const nextColors = normalizeBikeColors(colors);
+    const nextColorsText = JSON.stringify(nextColors);
+    const nextStockQty = getColorStockTotal(nextColors);
+    const primaryColorName = nextColors[0]?.name || "";
+    const primaryColorImage = nextColors[0]?.image || "";
+    const nextImage = String(snapshot.image || "").trim() ||
+      primaryColorImage;
+
+    const updateResult = await env.BIKE_DB
+      .prepare(`
+        UPDATE bikes
+        SET
+          colors = ?,
+          colorName = ?,
+          image = ?,
+          stockQty = ?,
+          updatedAt = CURRENT_TIMESTAMP
+        WHERE id = ?
+          AND COALESCE(colors, '') = ?
+          AND stockQty = ?
+      `)
+      .bind(
+        nextColorsText,
+        primaryColorName,
+        nextImage,
+        nextStockQty,
+        bikeId,
+        originalColorsText,
+        originalStockQty
+      )
+      .run();
+
+    if (getD1ChangeCount(updateResult) <= 0) {
+      return jsonResponse(
+        {
+          error:
+            "Stok baru saja berubah. Data sudah diamankan; refresh lalu ulangi penambahan stok."
+        },
+        409
+      );
+    }
+
+    const movement = {
+      bikeId,
+      bikeBrand: snapshot.brand,
+      bikeName: snapshot.name,
+      bikeColorName: targetColor.name,
+      movementType: "stock_in",
+      quantityChange: quantity,
+      quantityBefore,
+      quantityAfter: targetColor.stockQty,
+      note: note || (
+        mode === "new"
+          ? `Stok awal warna baru - ${targetColor.name}`
+          : `Penerimaan stok - Warna ${targetColor.name}`
+      )
+    };
+
+    try {
+      await createStockMovementStatement(
+        env.BIKE_DB,
+        auth.user,
+        movement
+      ).run();
+    } catch (movementError) {
+      await env.BIKE_DB
+        .prepare(`
+          UPDATE bikes
+          SET
+            colors = ?,
+            colorName = ?,
+            image = ?,
+            stockQty = ?,
+            updatedAt = ?
+          WHERE id = ?
+            AND colors = ?
+            AND stockQty = ?
+        `)
+        .bind(
+          originalColorsText,
+          String(snapshot.colorName || ""),
+          String(snapshot.image || ""),
+          originalStockQty,
+          snapshot.updatedAt,
+          bikeId,
+          nextColorsText,
+          nextStockQty
+        )
+        .run();
+
+      throw movementError;
+    }
+
+    const updatedBike = await getBikeById(
+      env.BIKE_DB,
+      bikeId
+    );
+
+    await writeAuditLog(env, auth.user, {
+      action: "stock_receive",
+      targetType: "bike",
+      targetId: updatedBike.id,
+      targetLabel: getBikeLabel(updatedBike),
+      details: {
+        mode,
+        colorName: targetColor.name,
+        quantityBefore,
+        quantityAdded: quantity,
+        quantityAfter: targetColor.stockQty,
+        totalStockBefore: originalStockQty,
+        totalStockAfter: nextStockQty,
+        note
+      }
+    });
+
+    return jsonResponse({
+      success: true,
+      role: auth.user.role,
+      bike: updatedBike,
+      stock: {
+        colorName: targetColor.name,
+        quantityBefore,
+        quantityAdded: quantity,
+        quantityAfter: targetColor.stockQty,
+        totalStockAfter: nextStockQty
+      }
+    });
+  } catch (error) {
+    console.error("Admin bikes PATCH error:", error);
+    return jsonResponse(
+      {
+        error:
+          error.message ||
+          "Gagal menambahkan stok."
+      },
+      500
+    );
+  }
+}
+
 export async function onRequestDelete(context) {
   const { request, env } = context;
 
