@@ -38,6 +38,162 @@ body.dark-theme .page-hero p {
   color: #cbd8d6;
 }
 
+.page-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.page-hero-actions a {
+  text-decoration: none;
+}
+
+.page-hero-actions .btn-primary,
+.page-hero-actions .btn-secondary {
+  min-height: 48px;
+  padding: 13px 20px;
+}
+
+/* =========================
+   PAGE-STYLE COMPARE MODAL
+========================= */
+body.is-compare-page-open {
+  overflow: hidden;
+}
+
+.compare-page-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.compare-page-modal.is-open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.compare-page-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 18, 18, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.compare-page-shell {
+  position: relative;
+  width: min(1280px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 26px;
+  background: var(--color-bg);
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.36);
+  transform: translateY(18px) scale(0.985);
+  transition: transform 0.24s ease;
+}
+
+.compare-page-modal.is-open .compare-page-shell {
+  transform: translateY(0) scale(1);
+}
+
+.compare-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 24px 30px;
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.compare-page-header > div {
+  max-width: 850px;
+}
+
+.compare-page-header .section-tag {
+  margin-bottom: 6px;
+}
+
+.compare-page-header h2 {
+  margin: 0 0 8px;
+  color: var(--color-primary);
+  font-size: clamp(1.45rem, 3vw, 2.35rem);
+  line-height: 1.15;
+}
+
+.compare-page-header p:last-child {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.compare-page-close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease;
+}
+
+.compare-page-close:hover {
+  transform: rotate(5deg) scale(1.04);
+  background: var(--color-primary-light);
+}
+
+.compare-page-close:focus-visible {
+  outline: 3px solid var(--color-primary-soft);
+  outline-offset: 3px;
+}
+
+.compare-page-modal .bike-compare-ai {
+  min-height: 620px;
+}
+
+body.dark-theme .compare-page-shell {
+  background: #101818;
+}
+
+body.dark-theme .compare-page-header {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(16, 24, 24, 0.94);
+}
+
+body.dark-theme .compare-page-header h2,
+body.dark-theme .compare-page-close {
+  color: #ffffff;
+}
+
+body.dark-theme .compare-page-header p:last-child {
+  color: #cbd8d6;
+}
+
+body.dark-theme .compare-page-close {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: #172323;
+}
+
 /* =========================
    AI COMPARE SECTION
 ========================= */
@@ -1567,6 +1723,32 @@ body.dark-theme .bike-modal-selected-stock.is-empty {
 }
 
 @media (max-width: 768px) {
+  .compare-page-modal {
+    padding: 0;
+  }
+
+  .compare-page-shell {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-width: 0;
+    border-radius: 0;
+  }
+
+  .compare-page-header {
+    gap: 16px;
+    padding: 18px 20px;
+  }
+
+  .compare-page-header p:last-child {
+    display: none;
+  }
+
+  .compare-page-close {
+    width: 42px;
+    height: 42px;
+  }
+
   .page-hero {
     padding: 60px 20px 34px;
   }
@@ -1736,6 +1918,15 @@ body.dark-theme .bike-modal-selected-stock.is-empty {
 }
 
 @media (max-width: 480px) {
+  .page-hero-actions {
+    display: grid;
+  }
+
+  .page-hero-actions .btn-primary,
+  .page-hero-actions .btn-secondary {
+    width: 100%;
+  }
+
   .bike-compare-ai {
     padding: 34px 16px;
   }
