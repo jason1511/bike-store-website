@@ -389,6 +389,31 @@ body.dark-theme .store-email-link {
   color: #ffffff;
 }
 /* =========================
+   DIRECT CONTACT NUMBER
+========================= */
+.store-contact-number {
+  display: grid;
+  gap: 4px;
+}
+
+.store-contact-number a {
+  width: fit-content;
+  color: var(--store-brand-main);
+  font-size: 1.02rem;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.store-contact-number a:hover {
+  opacity: 0.78;
+}
+
+body.dark-theme .store-contact-number a {
+  color: #ffffff;
+}
+
+/* =========================
    STORE HOURS
 ========================= */
 .store-hours {
@@ -419,6 +444,13 @@ body.dark-theme .store-email-link {
   line-height: 1.5;
 }
 
+.store-hours li span:last-child {
+  flex: 0 0 auto;
+  color: #203333;
+  font-weight: 800;
+  text-align: right;
+}
+
 .store-hours li::before {
   content: "";
   position: absolute;
@@ -434,7 +466,8 @@ body.dark-theme .store-hours {
   color: #e6f0ef;
 }
 
-body.dark-theme .store-hours strong {
+body.dark-theme .store-hours strong,
+body.dark-theme .store-hours li span:last-child {
   color: #ffffff;
 }
 /* =========================
