@@ -1,3 +1,178 @@
+let homeBrandOptions = [];
+
+function getHomeBrandFallbacks() {
+  if (!Array.isArray(bikes)) {
+    return [];
+  }
+
+  const names = [...new Set(bikes.map((bike) => bike.brand).filter(Boolean))];
+
+  return names
+    .sort((a, b) => a.localeCompare(b))
+    .map((name) => {
+      const fallbackTheme = getBrandTheme(name);
+
+      return {
+        id: normalizeBrandSlug(name),
+        name,
+        slug: normalizeBrandSlug(name),
+        logoPath: fallbackTheme.logo || "",
+        className: fallbackTheme.className,
+        theme: {
+          main: fallbackTheme.main,
+          second: fallbackTheme.second,
+          soft: fallbackTheme.soft,
+          glow: fallbackTheme.glow
+        }
+      };
+    });
+}
+
+function getSafeBrandThemeValue(value, fallback) {
+  const candidate = String(value || "").trim();
+
+  if (!candidate || !/^[#(),.%\sa-zA-Z0-9-]+$/.test(candidate)) {
+    return fallback;
+  }
+
+  return candidate;
+}
+
+function getHomeBrandPresentation(brand) {
+  const fallbackTheme = getBrandTheme(brand.name);
+  const theme = brand.theme || {};
+  const slug = normalizeBrandSlug(brand.slug || brand.name);
+  const name = String(brand.name || "Brand");
+  const logoPath = String(brand.logoPath || fallbackTheme.logo || "");
+
+  return {
+    name,
+    slug,
+    logoPath,
+    className: brand.className || (slug ? `brand-${slug}` : "brand-default"),
+    style: [
+      `--brand-main: ${getSafeBrandThemeValue(theme.main, fallbackTheme.main)}`,
+      `--brand-second: ${getSafeBrandThemeValue(theme.second, fallbackTheme.second)}`,
+      `--brand-soft: ${getSafeBrandThemeValue(theme.soft, fallbackTheme.soft)}`,
+      `--brand-glow: ${getSafeBrandThemeValue(theme.glow, fallbackTheme.glow)}`
+    ].join("; ")
+  };
+}
+
+function createHomeBrandLogo(brand, decorative = false) {
+  if (!brand.logoPath) {
+    return `<span class="brand-logo-fallback" aria-hidden="true">${escapeHtml(brand.name.slice(0, 2).toUpperCase())}</span>`;
+  }
+
+  return `
+    <img
+      src="${escapeHtml(brand.logoPath)}"
+      alt="${decorative ? "" : `${escapeHtml(brand.name)} logo`}"
+      loading="lazy"
+    >
+  `;
+}
+
+function createBrandMarqueeGroup(brands, groupIndex) {
+  return `
+    <div class="brand-marquee-group"${groupIndex > 0 ? ' aria-hidden="true"' : ""}>
+      ${brands
+        .map((rawBrand) => {
+          const brand = getHomeBrandPresentation(rawBrand);
+
+          return `
+            <a
+              href="/bikes?brand=${encodeURIComponent(brand.slug || brand.name)}"
+              class="brand-marquee-item ${escapeHtml(brand.className)}"
+              style="${escapeHtml(brand.style)}"
+              ${groupIndex > 0 ? 'tabindex="-1"' : ""}
+            >
+              ${createHomeBrandLogo(brand, groupIndex > 0)}
+              <span>${escapeHtml(brand.name)}</span>
+            </a>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function renderHomeBrands() {
+  const marquee = document.getElementById("brandMarquee");
+  const marqueeTrack = document.getElementById("brandMarqueeTrack");
+  const brandGrid = document.getElementById("homeBrandGrid");
+
+  if (!marquee || !marqueeTrack || !brandGrid) {
+    return;
+  }
+
+  if (!homeBrandOptions.length) {
+    marquee.hidden = true;
+    brandGrid.innerHTML = `
+      <div class="brand-empty-state">
+        <strong>Brand sedang diperbarui</strong>
+        <span>Silakan lihat katalog atau hubungi showroom untuk pilihan terbaru.</span>
+      </div>
+    `;
+    return;
+  }
+
+  marquee.hidden = false;
+  marqueeTrack.innerHTML = Array.from(
+    { length: 4 },
+    (_, index) => createBrandMarqueeGroup(homeBrandOptions, index)
+  ).join("");
+
+  brandGrid.innerHTML = homeBrandOptions
+    .map((rawBrand) => {
+      const brand = getHomeBrandPresentation(rawBrand);
+
+      return `
+        <a
+          href="/bikes?brand=${encodeURIComponent(brand.slug || brand.name)}"
+          class="brand-logo-card ${escapeHtml(brand.className)}"
+          style="${escapeHtml(brand.style)}"
+          aria-label="Lihat sepeda ${escapeHtml(brand.name)}"
+        >
+          ${createHomeBrandLogo(brand)}
+          <span>${escapeHtml(brand.name)}</span>
+          <small>Lihat koleksi</small>
+        </a>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll("#brandMarqueeTrack img, #homeBrandGrid img").forEach((image) => {
+    image.addEventListener("error", () => {
+      const fallback = document.createElement("span");
+      const brandName = image.closest("a")?.querySelector("span:last-of-type")?.textContent || "BR";
+
+      fallback.className = "brand-logo-fallback";
+      fallback.setAttribute("aria-hidden", "true");
+      fallback.textContent = brandName.slice(0, 2).toUpperCase();
+      image.replaceWith(fallback);
+    }, { once: true });
+  });
+}
+
+async function loadHomeBrands() {
+  try {
+    const response = await fetch("/api/brands");
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Gagal memuat brand aktif.");
+    }
+
+    homeBrandOptions = Array.isArray(data?.brands) ? data.brands : [];
+  } catch (error) {
+    console.error("Failed to load active homepage brands:", error);
+    homeBrandOptions = getHomeBrandFallbacks();
+  }
+
+  renderHomeBrands();
+}
+
 function setupBikeFinderForm() {
   const form = document.getElementById("bikeFinderForm");
   const result = document.getElementById("bikeFinderResult");
@@ -51,7 +226,7 @@ result.innerHTML = `
     </div>
 
     <div class="ai-recommend-info">
-      <p class="hero-bike-label">Rekomendasi AI</p>
+      <p class="hero-bike-label">Rekomendasi Cerdas</p>
       <p class="hero-bike-brand">${bike.brand}</p>
       <h3>${bike.name}</h3>
 
@@ -132,7 +307,7 @@ function renderHeroFeaturedBike() {
       <img src="${randomBike.image}" alt="${randomBike.alt}">
 
       <div class="hero-bike-info">
-        <p class="hero-bike-label">Rekomendasi Hari Ini</p>
+        <p class="hero-bike-label">Pilihan Hari Ini</p>
         <p class="hero-bike-brand">${randomBike.brand}</p>
         <h3>${randomBike.name}</h3>
         <p>Jarak tempuh ${randomBike.range || "-"}</p>
@@ -180,6 +355,7 @@ async function initializeHomePage() {
     await loadBikes();
   }
 
+  await loadHomeBrands();
   renderHeroFeaturedBike();
   setupBikeFinderForm();
 }
