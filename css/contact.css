@@ -261,6 +261,70 @@ body.dark-theme .store-brand-logos img {
 }
 
 /* =========================
+   MAP BUTTONS
+========================= */
+.store-map-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 4px 0 16px;
+}
+
+.store-map-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--store-brand-main) 48%,
+    transparent
+  );
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--store-brand-main) 9%,
+    #ffffff
+  );
+  color: var(--store-brand-main);
+  font-size: 0.86rem;
+  font-weight: 850;
+  line-height: 1.25;
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.store-map-link:hover {
+  transform: translateY(-2px);
+  background: color-mix(
+    in srgb,
+    var(--store-brand-main) 16%,
+    #ffffff
+  );
+  text-decoration: none;
+  box-shadow: 0 10px 22px var(--store-brand-glow);
+}
+
+body.dark-theme .store-map-link {
+  border-color: color-mix(
+    in srgb,
+    var(--store-brand-main) 64%,
+    #ffffff
+  );
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+body.dark-theme .store-map-link:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* =========================
    WHATSAPP BUTTON
 ========================= */
 .store-whatsapp-link {
@@ -447,7 +511,8 @@ body.dark-theme .store-hours strong {
 }
 
 @media (hover: none) {
-  .store-whatsapp-link:hover {
+  .store-whatsapp-link:hover,
+  .store-map-link:hover {
     transform: none;
   }
 }
