@@ -53,67 +53,24 @@
   <main>
     <section class="page-hero">
       <div class="page-hero-content">
-        <p class="section-tag">Katalog Showroom</p>
-        <h1>Katalog Sepeda Listrik</h1>
+        <p class="section-tag">Mobilitas Cerdas Dimulai di Sini</p>
+        <h1>Temukan Sepeda Listrik yang Pas untuk Gaya Hidup Anda</h1>
         <p>
-          Lihat pilihan sepeda listrik di Lumajang dari brand Exotic, Pacific,
-          Larizz, Saige, Uwinfly, dan Nuv. Untuk harga terbaru dan ketersediaan
-          unit, silakan hubungi showroom melalui WhatsApp.
+          Jelajahi model unggulan dari Exotic, Pacific, Larizz, Saige, Uwinfly,
+          dan Nuv. Bandingkan performa, jarak tempuh, kenyamanan, warna, dan
+          ketersediaan stok—lalu dapatkan penawaran terbaru langsung dari showroom.
         </p>
-      </div>
-    </section>
 
-    <section class="bike-compare-ai">
-      <div class="bike-compare-content">
-        <div class="compare-heading">
-          <p class="section-tag">Bandingkan Sepeda</p>
-          <h2>Bingung antara dua model?</h2>
-          <p>
-            Pilih dua sepeda listrik dari katalog, lalu sistem akan membantu
-            membandingkan kelebihan, kenyamanan, fitur keamanan, dan kecocokan penggunaannya.
-          </p>
-        </div>
-
-        <form class="compare-form" id="compareBikeForm">
-          <div class="form-group">
-            <label for="compareBikeOne">Sepeda pertama</label>
-            <select id="compareBikeOne" required>
-              <option value="">Pilih sepeda pertama</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="compareBikeTwo">Sepeda kedua</label>
-            <select id="compareBikeTwo" required>
-              <option value="">Pilih sepeda kedua</option>
-            </select>
-          </div>
-
-          <div class="form-group compare-usage-group">
-            <label for="compareUsageInput">Kebutuhan utama</label>
-            <input
-              type="text"
-              id="compareUsageInput"
-              placeholder="Contoh: antar anak sekolah, kerja harian, jalan santai"
-            >
-          </div>
-
-          <button type="submit" class="btn-primary">
-            Bandingkan
+        <div class="page-hero-actions">
+          <a class="btn-primary" href="#bikeCatalogue">Jelajahi Koleksi</a>
+          <button type="button" class="btn-secondary" id="openCompareModal">
+            Bandingkan 2 Model
           </button>
-        </form>
-
-        <div class="compare-result" id="compareBikeResult">
-          <h3>Hasil perbandingan akan muncul di sini</h3>
-          <p>
-            Cocok untuk pelanggan yang sudah punya dua pilihan, tetapi masih bingung
-            model mana yang lebih sesuai.
-          </p>
         </div>
       </div>
     </section>
 
-    <section class="bike-listing">
+    <section class="bike-listing" id="bikeCatalogue">
       <div class="bike-toolbar">
         <div class="filter-panel">
           <p class="filter-label">Pilih Brand</p>
@@ -155,6 +112,87 @@
       <div class="bike-grid" id="bikeGrid"></div>
     </section>
   </main>
+
+  <div class="compare-page-modal" id="comparePageModal" aria-hidden="true">
+    <div class="compare-page-overlay" id="comparePageOverlay"></div>
+
+    <section
+      class="compare-page-shell"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="comparePageTitle"
+    >
+      <header class="compare-page-header">
+        <div>
+          <p class="section-tag">Smart Comparison</p>
+          <h2 id="comparePageTitle">Bandingkan Lebih Cerdas, Pilih dengan Percaya Diri</h2>
+          <p>
+            Bandingkan dua model berdampingan dan temukan pilihan yang paling sesuai
+            untuk aktivitas harian, kenyamanan, performa, dan kebutuhan Anda.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="compare-page-close"
+          id="closeCompareModal"
+          aria-label="Tutup halaman perbandingan"
+        >
+          &times;
+        </button>
+      </header>
+
+      <section class="bike-compare-ai" aria-label="Formulir perbandingan sepeda">
+        <div class="bike-compare-content">
+          <div class="compare-heading">
+            <p class="section-tag">Temukan Pilihan Terbaik</p>
+            <h2>Dua model, satu keputusan yang lebih yakin</h2>
+            <p>
+              Pilih dua sepeda yang menarik perhatian Anda. Rekomendasi cerdas kami
+              merangkum perbedaan utama agar Anda lebih mudah menentukan model yang tepat.
+            </p>
+          </div>
+
+          <form class="compare-form" id="compareBikeForm">
+            <div class="form-group">
+              <label for="compareBikeOne">Model pilihan pertama</label>
+              <select id="compareBikeOne" required>
+                <option value="">Pilih model pertama</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="compareBikeTwo">Model pembanding</label>
+              <select id="compareBikeTwo" required>
+                <option value="">Pilih model pembanding</option>
+              </select>
+            </div>
+
+            <div class="form-group compare-usage-group">
+              <label for="compareUsageInput">Aktivitas atau kebutuhan utama</label>
+              <input
+                type="text"
+                id="compareUsageInput"
+                placeholder="Contoh: perjalanan kerja, antar anak, belanja harian, atau jalan santai"
+              >
+            </div>
+
+            <button type="submit" class="btn-primary">
+              Lihat Rekomendasi
+            </button>
+          </form>
+
+          <div class="compare-result" id="compareBikeResult" aria-live="polite">
+            <h3>Pilihan terbaik Anda akan tampil di sini</h3>
+            <p>
+              Pilih dua model untuk melihat perbedaan utama dan rekomendasi
+              yang ringkas, jelas, dan mudah dipahami.
+            </p>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
 
   <div class="bike-modal" id="bikeModal" aria-hidden="true">
     <div class="bike-modal-overlay" id="bikeModalOverlay"></div>
