@@ -557,7 +557,7 @@ body.dark-theme .brand-marquee-item {
 
 .brand-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 20px;
 }
 
@@ -653,6 +653,101 @@ body.dark-theme .brand-logo-card {
 
 body.dark-theme .brand-logo-card span {
   color: #ffffff;
+}
+
+.brand-loading {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 24px;
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.brand-loading-card,
+.brand-empty-state {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 150px;
+  padding: 28px;
+  border: 1px dashed var(--color-border);
+  border-radius: 20px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.brand-empty-state strong {
+  color: var(--color-primary);
+  font-size: 1.12rem;
+}
+
+.brand-logo-fallback {
+  display: inline-grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--brand-main), var(--brand-second));
+  color: #ffffff !important;
+  font-size: 1rem !important;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  box-shadow: 0 12px 24px var(--brand-glow);
+}
+
+.brand-marquee-item .brand-logo-fallback {
+  width: 48px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 0.72rem !important;
+}
+
+.brand-logo-card small {
+  position: relative;
+  z-index: 1;
+  color: var(--brand-main);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.brand-logo-card:focus-visible,
+.brand-marquee-item:focus-visible {
+  outline: 3px solid var(--brand-main);
+  outline-offset: 4px;
+}
+
+.brand-marquee:hover .brand-marquee-track,
+.brand-marquee:focus-within .brand-marquee-track {
+  animation-play-state: paused;
+}
+
+body.dark-theme .brand-loading-card,
+body.dark-theme .brand-empty-state {
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #cbd8d6;
+}
+
+body.dark-theme .brand-empty-state strong {
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-marquee {
+    overflow-x: auto;
+  }
+
+  .brand-marquee-track {
+    animation: none;
+  }
+
+  .brand-marquee-group:not(:first-child) {
+    display: none;
+  }
 }
 
 /* =========================
