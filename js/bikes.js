@@ -336,6 +336,65 @@ function getCompareElements() {
   };
 }
 
+let comparePageReturnFocus = null;
+
+function openComparePageModal() {
+  const modal = document.getElementById("comparePageModal");
+  const closeButton = document.getElementById("closeCompareModal");
+
+  if (!modal) {
+    return;
+  }
+
+  comparePageReturnFocus =
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("is-compare-page-open");
+
+  window.requestAnimationFrame(() => {
+    closeButton?.focus();
+  });
+}
+
+function closeComparePageModal({ restoreFocus = true } = {}) {
+  const modal = document.getElementById("comparePageModal");
+
+  if (!modal) {
+    return;
+  }
+
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("is-compare-page-open");
+
+  if (restoreFocus && comparePageReturnFocus) {
+    comparePageReturnFocus.focus();
+  }
+}
+
+function setupComparePageModal() {
+  const modal = document.getElementById("comparePageModal");
+  const openButton = document.getElementById("openCompareModal");
+  const closeButton = document.getElementById("closeCompareModal");
+  const overlay = document.getElementById("comparePageOverlay");
+
+  if (!modal || !openButton || !closeButton || !overlay) {
+    return;
+  }
+
+  openButton.addEventListener("click", openComparePageModal);
+  closeButton.addEventListener("click", () => closeComparePageModal());
+  overlay.addEventListener("click", () => closeComparePageModal());
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-open")) {
+      closeComparePageModal();
+    }
+  });
+}
+
 function setupCompareBikeDropdowns() {
   const { bikeOne, bikeTwo } = getCompareElements();
 
@@ -352,12 +411,12 @@ function setupCompareBikeDropdowns() {
     .join("");
 
   bikeOne.innerHTML = `
-    <option value="">Pilih sepeda pertama</option>
+    <option value="">Pilih model pertama</option>
     ${bikeOptions}
   `;
 
   bikeTwo.innerHTML = `
-    <option value="">Pilih sepeda kedua</option>
+    <option value="">Pilih model pembanding</option>
     ${bikeOptions}
   `;
 }
@@ -532,8 +591,8 @@ function renderCompareLoading() {
 
   result.innerHTML = `
     <div class="compare-result-card">
-      <h3>Membandingkan sepeda...</h3>
-      <p>AI sedang membantu memilih sepeda yang paling sesuai.</p>
+      <h3>Menyiapkan rekomendasi...</h3>
+      <p>Menganalisis spesifikasi dan kebutuhan Anda untuk menemukan pilihan yang paling sesuai.</p>
     </div>
   `;
 }
@@ -599,7 +658,7 @@ function renderCompareResult(data) {
       </div>
 
       <div class="compare-ai-summary">
-        <p class="compare-eyebrow">Rekomendasi AI</p>
+        <p class="compare-eyebrow">Rekomendasi Cerdas</p>
         <h3>${escapeHtml(data.summary || "Hasil perbandingan sepeda")}</h3>
 
         ${
@@ -622,6 +681,7 @@ function renderCompareResult(data) {
 
   result.querySelectorAll("[data-bike-id]").forEach((button) => {
     button.addEventListener("click", () => {
+      closeComparePageModal({ restoreFocus: false });
       openBikeModal(button.dataset.bikeId);
     });
   });
@@ -674,7 +734,7 @@ function setupCompareBikes() {
 
     if (button) {
       button.disabled = true;
-      button.textContent = "Membandingkan...";
+      button.textContent = "Menganalisis...";
     }
 
     renderCompareLoading();
@@ -691,7 +751,7 @@ function setupCompareBikes() {
     } finally {
       if (button) {
         button.disabled = false;
-        button.textContent = "Bandingkan";
+        button.textContent = "Lihat Rekomendasi";
       }
     }
   };
@@ -730,6 +790,7 @@ async function initializeBikesPage() {
     setupBikeSort();
     setupClearFilters();
     setupBikeModal();
+    setupComparePageModal();
     setupCompareBikeDropdowns();
     setupCompareBikes();
 
