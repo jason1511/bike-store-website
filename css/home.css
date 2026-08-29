@@ -721,11 +721,6 @@ body.dark-theme .brand-logo-card span {
   outline-offset: 4px;
 }
 
-.brand-marquee:hover .brand-marquee-track,
-.brand-marquee:focus-within .brand-marquee-track {
-  animation-play-state: paused;
-}
-
 body.dark-theme .brand-loading-card,
 body.dark-theme .brand-empty-state {
   border-color: rgba(255, 255, 255, 0.16);
