@@ -131,6 +131,66 @@ function getInitialBrandFromUrl() {
   return matchedBike ? matchedBike.brand : "all";
 }
 
+function getCurrentBrandSlug() {
+  if (currentBrand === "all") {
+    return "";
+  }
+
+  const matchedBrand = getPublicBrandByName(currentBrand);
+
+  return matchedBrand?.slug || normalizeBrandSlug(currentBrand);
+}
+
+function updateCatalogueBrandUrl({ replace = false } = {}) {
+  const url = new URL(window.location.href);
+
+  url.pathname = "/bikes";
+  url.hash = "";
+
+  const brandSlug = getCurrentBrandSlug();
+
+  if (brandSlug) {
+    url.searchParams.set("brand", brandSlug);
+  } else {
+    url.searchParams.delete("brand");
+  }
+
+  const nextUrl = `${url.pathname}${url.search}`;
+  const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+  if (nextUrl === currentUrl) {
+    return;
+  }
+
+  const state = {
+    ...(window.history.state || {}),
+    catalogueBrand: brandSlug || "all"
+  };
+
+  if (replace) {
+    window.history.replaceState(state, "", nextUrl);
+    return;
+  }
+
+  window.history.pushState(state, "", nextUrl);
+}
+
+function applyCatalogueBrandFromUrl() {
+  currentBrand = getInitialBrandFromUrl();
+  updateActiveFilterButton();
+  renderBikes();
+}
+
+function setupCatalogueHistory() {
+  window.addEventListener("popstate", (event) => {
+    if (event.state?.bikeModal) {
+      return;
+    }
+
+    applyCatalogueBrandFromUrl();
+  });
+}
+
 function renderBikes() {
   const bikeGrid = document.getElementById("bikeGrid");
 
@@ -206,6 +266,7 @@ function setupBikeFilters() {
     button.addEventListener("click", () => {
       currentBrand = button.dataset.brand || "all";
 
+      updateCatalogueBrandUrl();
       updateActiveFilterButton();
       renderBikes();
     });
@@ -252,9 +313,7 @@ function setupClearFilters() {
     currentSort = "default";
     currentSearch = "";
 
-    const url = new URL(window.location);
-    url.searchParams.delete("brand");
-    window.history.replaceState({}, "", url);
+    updateCatalogueBrandUrl();
 
     if (searchInput) {
       searchInput.value = "";
@@ -786,6 +845,7 @@ async function initializeBikesPage() {
     currentBrand = getInitialBrandFromUrl();
 
     setupBikeFilters();
+    setupCatalogueHistory();
     setupBikeSearch();
     setupBikeSort();
     setupClearFilters();
