@@ -1,3 +1,27 @@
+const BIKE_MODAL_HISTORY_STATE_KEY = "bikeModal";
+
+function getBikeModalProductUrl(bikeId) {
+  return `/bikes/${encodeURIComponent(bikeId)}`;
+}
+
+function updateBikeModalUrl(bikeId) {
+  const currentState = window.history.state || {};
+  const nextState = {
+    ...currentState,
+    [BIKE_MODAL_HISTORY_STATE_KEY]: {
+      bikeId
+    }
+  };
+  const productUrl = getBikeModalProductUrl(bikeId);
+
+  if (currentState[BIKE_MODAL_HISTORY_STATE_KEY]) {
+    window.history.replaceState(nextState, "", productUrl);
+    return;
+  }
+
+  window.history.pushState(nextState, "", productUrl);
+}
+
 function updateModalStockLabel(modalLayout, stockQty) {
   const stockLabel = modalLayout.querySelector(".bike-modal-selected-stock");
 
@@ -50,13 +74,17 @@ function switchBikeModalColor(button) {
   button.classList.add("is-active");
 }
 
-function openBikeModal(bikeId) {
+function openBikeModal(bikeId, options = {}) {
   const bikeModal = document.getElementById("bikeModal");
   const bikeModalBody = document.getElementById("bikeModalBody");
   const bike = getBikeById(bikeId);
 
   if (!bikeModal || !bikeModalBody || !bike) {
     return;
+  }
+
+  if (options.updateHistory !== false) {
+    updateBikeModalUrl(bike.id);
   }
 
   const brandTheme = getBrandTheme(bike);
@@ -246,7 +274,7 @@ function openBikeModal(bikeId) {
   document.body.style.overflow = "hidden";
 }
 
-function closeBikeModal() {
+function closeBikeModal(options = {}) {
   const bikeModal = document.getElementById("bikeModal");
 
   if (!bikeModal) {
@@ -256,6 +284,13 @@ function closeBikeModal() {
   bikeModal.classList.remove("is-open");
   bikeModal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
+
+  if (
+    options.updateHistory !== false &&
+    window.history.state?.[BIKE_MODAL_HISTORY_STATE_KEY]
+  ) {
+    window.history.back();
+  }
 }
 
 function setupBikeModalControls() {
@@ -263,17 +298,28 @@ function setupBikeModalControls() {
   const bikeModalOverlay = document.getElementById("bikeModalOverlay");
 
   if (bikeModalClose) {
-    bikeModalClose.addEventListener("click", closeBikeModal);
+    bikeModalClose.addEventListener("click", () => closeBikeModal());
   }
 
   if (bikeModalOverlay) {
-    bikeModalOverlay.addEventListener("click", closeBikeModal);
+    bikeModalOverlay.addEventListener("click", () => closeBikeModal());
   }
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeBikeModal();
     }
+  });
+
+  window.addEventListener("popstate", (event) => {
+    const modalState = event.state?.[BIKE_MODAL_HISTORY_STATE_KEY];
+
+    if (modalState?.bikeId) {
+      openBikeModal(modalState.bikeId, { updateHistory: false });
+      return;
+    }
+
+    closeBikeModal({ updateHistory: false });
   });
 }
 
