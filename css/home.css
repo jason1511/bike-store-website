@@ -556,9 +556,13 @@ body.dark-theme .brand-marquee-item {
 }
 
 .brand-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 20px;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .brand-logo-card {
@@ -568,6 +572,8 @@ body.dark-theme .brand-marquee-item {
   --brand-glow: rgba(159, 184, 182, 0.18);
 
   position: relative;
+  flex: 0 1 185px;
+  width: 100%;
   overflow: hidden;
   min-height: 150px;
   padding: 24px;
@@ -1379,8 +1385,9 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
     text-align: center;
   }
 
-  .brand-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .brand-logo-card {
+    flex-basis: calc((100% - 40px) / 3);
+    max-width: 240px;
   }
 
   .ai-finder-card {
@@ -1470,11 +1477,9 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
     padding-bottom: 52px;
   }
 
-  .brand-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .brand-logo-card {
+    flex-basis: calc(50% - 10px);
+    max-width: 220px;
     min-height: 100px;
     padding: 16px;
   }
