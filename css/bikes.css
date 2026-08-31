@@ -2180,8 +2180,11 @@ body.dark-theme.catalogue-page .page-hero {
   flex-wrap: nowrap;
   gap: 0;
   overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  scrollbar-width: none;
+}
+
+.catalogue-page .bike-filters::-webkit-scrollbar {
+  display: none;
 }
 
 .catalogue-page .filter-btn,
@@ -2607,7 +2610,7 @@ body.catalogue-page:not(.dark-theme) .bike-empty-state {
   background: #f8f6f0;
 }
 
-@media (max-width: 1380px) {
+@media (max-width: 1180px) {
   .catalogue-page .bike-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -2629,6 +2632,9 @@ body.catalogue-page:not(.dark-theme) .bike-empty-state {
     top: auto;
   }
 
+}
+
+@media (max-width: 850px) {
   .catalogue-page .bike-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
