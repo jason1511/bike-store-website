@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="css/bikes.css" />
 </head>
 
-<body>
+<body class="home-page">
   <header>
     <nav class="navbar">
       <a href="/" class="logo">
@@ -54,33 +54,41 @@
   <main>
     <section class="hero">
       <div class="hero-text">
-        <p class="hero-tag">Pusat Sepeda Listrik Pilihan di Lumajang</p>
+        <p class="hero-tag">Electric Mobility · Lumajang</p>
 
-        <h1>Mobilitas Lebih Praktis Dimulai dari Sepeda yang Tepat</h1>
+        <h1>Tenaga listrik.<span>Untuk jalanan kita.</span></h1>
 
         <p>
-          Temukan sepeda listrik yang cocok untuk kerja, sekolah, belanja, dan
-          aktivitas keluarga. Jelajahi pilihan model, bandingkan keunggulannya,
-          lalu konsultasikan kebutuhan Anda langsung dengan tim showroom kami.
+          Pilih sepeda listrik untuk kerja, sekolah, belanja, atau usaha.
+          Periksa model aktif dan spesifikasinya sebelum datang ke showroom.
         </p>
 
         <div class="hero-points">
-          <span>3 Showroom di Lumajang</span>
-          <span>Pilihan Model untuk Berbagai Kebutuhan</span>
-          <span>Konsultasi Cepat via WhatsApp</span>
+          <span>3 showroom</span>
+          <span>Stok diperbarui</span>
+          <span>Konsultasi WhatsApp</span>
         </div>
 
         <div class="hero-buttons">
-          <a href="/bikes" class="btn-primary">Temukan Sepeda Saya</a>
-          <a href="/contact" class="btn-secondary">Konsultasi dengan Showroom</a>
+          <a href="/bikes" class="btn-primary">Lihat Unit Tersedia</a>
+          <a href="/contact" class="btn-secondary">Temukan Showroom <span aria-hidden="true">→</span></a>
         </div>
       </div>
 
       <div class="hero-featured-wrap">
-        <p class="hero-display-label">Pilihan Menarik untuk Anda</p>
+        <div class="hero-stage-heading">
+          <p class="hero-display-label">Unit Pilihan / <span id="heroSequence">01</span></p>
+          <span class="hero-live-indicator">Katalog Aktif</span>
+        </div>
 
         <div class="hero-featured" id="heroFeaturedBike">
           <!-- Random bike recommendation will be inserted here -->
+        </div>
+
+        <div class="hero-data-rail" aria-label="Ringkasan unit pilihan">
+          <div><strong id="heroRangeValue">—</strong><span>Jarak tempuh</span></div>
+          <div><strong id="heroMotorValue">—</strong><span>Motor</span></div>
+          <div><strong id="heroPriceValue">—</strong><span>Harga</span></div>
         </div>
       </div>
     </section>
@@ -95,12 +103,11 @@
 
     <section class="brand-strip">
       <div class="section-heading">
-        <p class="section-tag">Brand Pilihan Showroom</p>
-        <h2>Pilih Brand Favorit, Temukan Model yang Tepat</h2>
+        <p class="section-tag">Brand / Unit Aktif</p>
+        <h2>Mulai dari merek yang Anda kenal.</h2>
         <p>
-          Setiap brand menawarkan karakter, fitur, dan kenyamanan yang berbeda.
-          Pilih brand untuk melihat model aktif, warna tersedia, dan spesifikasi
-          yang paling sesuai dengan aktivitas Anda.
+          Setiap brand di bawah terhubung langsung ke unit yang sedang aktif di
+          katalog, termasuk pilihan warna dan spesifikasi terbaru.
         </p>
       </div>
 
@@ -112,18 +119,18 @@
 
     <section class="ai-finder">
       <div class="section-heading">
-        <p class="section-tag">Smart Bike Finder</p>
-        <h2>Temukan Rekomendasi yang Lebih Personal dalam Hitungan Detik</h2>
+        <p class="section-tag">Bike Finder / 60 detik</p>
+        <h2>Belum tahu harus mulai dari mana?</h2>
         <p>
-          Ceritakan prioritas utama Anda dan sistem akan mencocokkannya dengan
-          model aktif di katalog—lebih cepat, lebih mudah, dan lebih relevan.
+          Pilih kebutuhan utama Anda. Kami akan mencocokkannya dengan unit aktif
+          dan menjelaskan alasan pilihannya secara singkat.
         </p>
       </div>
 
       <div class="ai-finder-card">
         <form class="ai-finder-form" id="bikeFinderForm">
           <div class="ai-form-intro">
-            <h3>Apa yang Paling Penting untuk Anda?</h3>
+            <h3>Apa kebutuhan utama Anda?</h3>
             <p>
               Pilih satu prioritas utama untuk mendapatkan rekomendasi awal
               berdasarkan spesifikasi model yang tersedia di showroom.
@@ -143,12 +150,12 @@
           </div>
 
           <button type="submit" class="btn-primary">
-            Temukan Rekomendasi Saya
+            Cari Model yang Cocok
           </button>
         </form>
 
         <div class="ai-finder-result" id="bikeFinderResult">
-          <h3>Rekomendasi Personal Anda Akan Tampil di Sini</h3>
+          <h3>Rekomendasi akan tampil di sini.</h3>
           <p>
             Dapatkan pilihan model beserta alasan singkat, spesifikasi utama,
             dan akses cepat untuk berkonsultasi melalui WhatsApp.
@@ -159,18 +166,17 @@
 
     <section class="features">
       <div class="section-heading">
-        <p class="section-tag">Pengalaman Belanja yang Lebih Mudah</p>
-        <h2>Bukan Sekadar Melihat Produk—Temukan Pilihan yang Tepat</h2>
+        <p class="section-tag">Dari layar ke showroom</p>
+        <h2>Tiga langkah sebelum Anda berangkat.</h2>
         <p>
-          Dari eksplorasi model hingga konsultasi langsung, kami membantu Anda
-          mengambil keputusan dengan informasi yang jelas dan proses yang praktis.
+          Lihat unitnya, pastikan detailnya, lalu kunjungi lokasi yang paling dekat.
         </p>
       </div>
 
       <div class="feature-grid">
         <div class="feature-card">
           <span class="feature-icon">01</span>
-          <h3>Pilihan yang Terus Berkembang</h3>
+          <h3>Jelajahi unit aktif</h3>
           <p>
             Jelajahi brand dan model aktif untuk berbagai kebutuhan—mulai dari
             perjalanan harian hingga mobilitas keluarga dan usaha.
@@ -179,7 +185,7 @@
 
         <div class="feature-card">
           <span class="feature-icon">02</span>
-          <h3>Konsultasi Cepat, Tanpa Ribet</h3>
+          <h3>Pastikan stok dan warna</h3>
           <p>
             Tanyakan stok, warna, fitur, dan harga terbaru langsung kepada tim
             showroom melalui WhatsApp sebelum Anda berkunjung.
@@ -188,7 +194,7 @@
 
         <div class="feature-card">
           <span class="feature-icon">03</span>
-          <h3>Lihat Unit Langsung di Showroom</h3>
+          <h3>Coba langsung di showroom</h3>
           <p>
             Kunjungi salah satu showroom kami di Lumajang untuk melihat unit,
             mengenal fiturnya, dan menentukan pilihan dengan lebih yakin.
@@ -199,9 +205,9 @@
 
     <section class="showroom-cta">
       <div class="showroom-cta-content">
-        <p class="section-tag">Mulai Perjalanan Anda</p>
+        <p class="section-tag">Showroom · Lumajang</p>
 
-        <h2>Sepeda yang Tepat Bisa Membuat Aktivitas Harian Lebih Mudah</h2>
+        <h2>Siap melihat unitnya langsung?</h2>
 
         <p>
           Jelajahi katalog, bandingkan dua model pilihan, lalu hubungi showroom
