@@ -2848,3 +2848,283 @@ body.home-page.dark-theme .showroom-actions .btn-secondary {
     display: none;
   }
 }
+
+/* =========================================================
+   FINAL THEME PASS
+   Dark is the primary technical showroom. Light is a warm,
+   editorial counterpart rather than a washed-out dark theme.
+========================================================= */
+body.home-page.dark-theme .hero-bike-card,
+body.home-page.dark-theme .hero-bike-card:hover,
+body.home-page.dark-theme .hero-bike-info {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.home-page.dark-theme .hero-bike-info h3 {
+  color: #f3f5f1;
+}
+
+body.home-page.dark-theme .hero .btn-primary {
+  border: 0;
+  background: var(--hero-brand-main);
+  color: #061012;
+}
+
+body.home-page:not(.dark-theme) {
+  color-scheme: light;
+  --color-bg: #eeece5;
+  --color-surface: #f8f6f0;
+  --color-text: #131a1b;
+  --color-muted: #657071;
+  --color-border: #cbcfc9;
+  background: #eeece5;
+  color: #131a1b;
+}
+
+body.home-page:not(.dark-theme) header {
+  border-bottom-color: rgba(19, 26, 27, 0.16);
+  background: rgba(248, 246, 240, 0.94);
+}
+
+body.home-page:not(.dark-theme) .logo,
+body.home-page:not(.dark-theme) .nav-links a[aria-current="page"],
+body.home-page:not(.dark-theme) .nav-links a:hover {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .nav-links a {
+  color: rgba(17, 24, 25, 0.56);
+}
+
+body.home-page:not(.dark-theme) .theme-toggle {
+  border-color: rgba(17, 24, 25, 0.28);
+  color: rgba(17, 24, 25, 0.72);
+  background: transparent;
+}
+
+body.home-page:not(.dark-theme) .theme-toggle:hover {
+  background: rgba(17, 24, 25, 0.06);
+}
+
+body.home-page:not(.dark-theme) .hero {
+  color: #111819;
+  border-bottom-color: rgba(17, 24, 25, 0.16);
+  background: #eeece5;
+}
+
+body.home-page:not(.dark-theme) .hero::before {
+  opacity: 0.46;
+  background:
+    linear-gradient(90deg, rgba(17, 24, 25, 0.075) 1px, transparent 1px),
+    linear-gradient(rgba(17, 24, 25, 0.065) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+body.home-page:not(.dark-theme) .hero::after {
+  color: rgba(17, 24, 25, 0.28);
+}
+
+body.home-page:not(.dark-theme) .hero-text {
+  border-right-color: rgba(17, 24, 25, 0.14);
+}
+
+body.home-page:not(.dark-theme) .hero-text h1 {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .hero-text h1 span {
+  color: rgba(17, 24, 25, 0.38);
+}
+
+body.home-page:not(.dark-theme) .hero-text > p:not(.hero-tag) {
+  color: rgba(17, 24, 25, 0.67);
+}
+
+body.home-page:not(.dark-theme) .hero-points {
+  border-top-color: rgba(17, 24, 25, 0.15);
+  border-bottom-color: rgba(17, 24, 25, 0.15);
+}
+
+body.home-page:not(.dark-theme) .hero-points span {
+  border-right-color: rgba(17, 24, 25, 0.15);
+  color: rgba(17, 24, 25, 0.62);
+  background: transparent;
+}
+
+body.home-page:not(.dark-theme) .hero .btn-primary {
+  border: 0;
+  background: var(--hero-brand-main);
+  color: #071012;
+}
+
+body.home-page:not(.dark-theme) .hero .btn-secondary {
+  border-bottom-color: rgba(17, 24, 25, 0.38);
+  color: #111819;
+  background: transparent;
+}
+
+body.home-page:not(.dark-theme) .hero-featured-wrap {
+  background:
+    radial-gradient(circle at 62% 44%, var(--hero-brand-soft), transparent 35%),
+    rgba(255, 255, 255, 0.14);
+}
+
+body.home-page:not(.dark-theme) .hero-display-label,
+body.home-page:not(.dark-theme) .hero-live-indicator {
+  color: rgba(17, 24, 25, 0.56);
+}
+
+body.home-page:not(.dark-theme) .hero-featured::before {
+  border-color: color-mix(in srgb, var(--hero-brand-main), transparent 48%);
+  background: linear-gradient(145deg, var(--hero-brand-soft), rgba(255, 255, 255, 0.08) 62%);
+}
+
+body.home-page:not(.dark-theme) .hero-bike-card,
+body.home-page:not(.dark-theme) .hero-bike-card:hover,
+body.home-page:not(.dark-theme) .hero-bike-info {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.home-page:not(.dark-theme) .hero-bike-card::after {
+  border-bottom-color: rgba(17, 24, 25, 0.35);
+  color: rgba(17, 24, 25, 0.68);
+}
+
+body.home-page:not(.dark-theme) .hero-bike-info h3 {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .hero-data-rail {
+  border-top-color: rgba(17, 24, 25, 0.16);
+  border-bottom-color: rgba(17, 24, 25, 0.16);
+}
+
+body.home-page:not(.dark-theme) .hero-data-rail > div {
+  border-right-color: rgba(17, 24, 25, 0.14);
+}
+
+body.home-page:not(.dark-theme) .hero-data-rail strong {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .hero-data-rail span {
+  color: rgba(17, 24, 25, 0.46);
+}
+
+body.home-page:not(.dark-theme) .brand-marquee {
+  border-bottom-color: rgba(17, 24, 25, 0.15);
+  background: #e5e4de;
+}
+
+body.home-page:not(.dark-theme) .brand-marquee-item {
+  border-right-color: rgba(17, 24, 25, 0.14);
+  color: rgba(17, 24, 25, 0.72);
+  background: transparent;
+}
+
+body.home-page:not(.dark-theme) .brand-strip,
+body.home-page:not(.dark-theme) .features {
+  background: #f3f1eb;
+}
+
+body.home-page:not(.dark-theme) .section-heading h2,
+body.home-page:not(.dark-theme) .brand-strip .section-heading h2,
+body.home-page:not(.dark-theme) .ai-finder .section-heading h2,
+body.home-page:not(.dark-theme) .features .section-heading h2 {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .section-heading > p:last-child,
+body.home-page:not(.dark-theme) .brand-strip .section-heading p:last-child,
+body.home-page:not(.dark-theme) .ai-finder .section-heading p,
+body.home-page:not(.dark-theme) .features .section-heading p:last-child {
+  color: rgba(17, 24, 25, 0.62);
+}
+
+body.home-page:not(.dark-theme) .brand-grid,
+body.home-page:not(.dark-theme) .feature-grid {
+  border-color: rgba(17, 24, 25, 0.16);
+  background: rgba(17, 24, 25, 0.16);
+}
+
+body.home-page:not(.dark-theme) .brand-logo-card,
+body.home-page:not(.dark-theme) .feature-card {
+  background: #f8f6f0;
+}
+
+body.home-page:not(.dark-theme) .brand-logo-card:hover,
+body.home-page:not(.dark-theme) .feature-card:hover {
+  background: #ffffff;
+}
+
+body.home-page:not(.dark-theme) .brand-logo-card span,
+body.home-page:not(.dark-theme) .feature-card h3 {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .feature-card p {
+  color: rgba(17, 24, 25, 0.62);
+}
+
+body.home-page:not(.dark-theme) .ai-finder {
+  background:
+    linear-gradient(90deg, rgba(17, 24, 25, 0.05) 1px, transparent 1px),
+    #e7e6e0;
+  background-size: 48px 48px;
+}
+
+body.home-page:not(.dark-theme) .ai-finder-card {
+  border-color: rgba(17, 24, 25, 0.18);
+  background: rgba(17, 24, 25, 0.18);
+}
+
+body.home-page:not(.dark-theme) .ai-finder-form,
+body.home-page:not(.dark-theme) .ai-finder-result {
+  background: #f7f5ef;
+}
+
+body.home-page:not(.dark-theme) .ai-finder-result {
+  border-left-color: rgba(17, 24, 25, 0.13);
+  background:
+    linear-gradient(90deg, rgba(107, 233, 255, 0.1), transparent 34%),
+    #f7f5ef;
+}
+
+body.home-page:not(.dark-theme) .ai-form-intro h3,
+body.home-page:not(.dark-theme) .ai-finder-result h3,
+body.home-page:not(.dark-theme) .form-group label {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .ai-form-intro p,
+body.home-page:not(.dark-theme) .ai-finder-result p {
+  color: rgba(17, 24, 25, 0.62);
+}
+
+body.home-page:not(.dark-theme) .form-group select {
+  border-color: rgba(17, 24, 25, 0.24);
+  background: #ffffff;
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .footer {
+  border-top-color: rgba(255, 255, 255, 0.12);
+  background: #0a0f10;
+}
+
+@media (max-width: 1050px) {
+  body.home-page:not(.dark-theme) .hero-text {
+    border-bottom-color: rgba(17, 24, 25, 0.14);
+  }
+}
+
+@media (max-width: 960px) {
+  body.home-page:not(.dark-theme) .ai-finder-result {
+    border-top-color: rgba(17, 24, 25, 0.13);
+    border-left: 0;
+  }
+}
