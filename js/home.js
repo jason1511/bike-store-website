@@ -217,7 +217,7 @@ function setupBikeFinderForm() {
         throw new Error("Recommended bike not found");
       }
 
-      const brandTheme = getBrandTheme(bike.brand);
+      const brandTheme = getBrandTheme(bike);
 
 result.innerHTML = `
   <div class="ai-recommend-card ${brandTheme.className}">
@@ -286,23 +286,34 @@ function renderHeroFeaturedBike() {
   const featuredBikes = bikes.filter((bike) => bike.featured);
   const pool = featuredBikes.length > 0 ? featuredBikes : bikes;
   const randomBike = pool[Math.floor(Math.random() * pool.length)];
-  const brandTheme = getBrandTheme(randomBike.brand);
+  const brandTheme = getBrandTheme(randomBike);
   const heroSection = document.querySelector(".hero");
   const rangeValue = document.getElementById("heroRangeValue");
   const motorValue = document.getElementById("heroMotorValue");
   const priceValue = document.getElementById("heroPriceValue");
 
   if (heroSection) {
-    heroSection.classList.remove(
-      "hero-brand-exotic",
-      "hero-brand-pacific",
-      "hero-brand-larizz",
-      "hero-brand-saige",
-      "hero-brand-uwinfly",
-      "hero-brand-nuv"
-    );
+    Array.from(heroSection.classList)
+      .filter((className) => className.startsWith("hero-brand-"))
+      .forEach((className) => heroSection.classList.remove(className));
 
     heroSection.classList.add(`hero-${brandTheme.className}`);
+    heroSection.style.setProperty(
+      "--hero-brand-main",
+      getSafeBrandThemeValue(brandTheme.main, "#6be9ff")
+    );
+    heroSection.style.setProperty(
+      "--hero-brand-second",
+      getSafeBrandThemeValue(brandTheme.second, "#2a7c89")
+    );
+    heroSection.style.setProperty(
+      "--hero-brand-soft",
+      getSafeBrandThemeValue(brandTheme.soft, "rgba(107, 233, 255, 0.12)")
+    );
+    heroSection.style.setProperty(
+      "--hero-brand-glow",
+      getSafeBrandThemeValue(brandTheme.glow, "rgba(107, 233, 255, 0.16)")
+    );
   }
 
   if (rangeValue) {
