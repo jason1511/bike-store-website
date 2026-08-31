@@ -3128,3 +3128,83 @@ body.home-page:not(.dark-theme) .footer {
     border-left: 0;
   }
 }
+
+/* Light-mode closing sections */
+body.home-page:not(.dark-theme) .showroom-cta {
+  border-top-color: rgba(17, 24, 25, 0.16);
+  background:
+    linear-gradient(90deg, #eeece5 0%, rgba(238, 236, 229, 0.98) 39%, rgba(238, 236, 229, 0.48) 100%),
+    url("../images/bikes/pacific_luxor.jpeg") right 48% / 62% auto no-repeat,
+    #eeece5;
+}
+
+body.home-page:not(.dark-theme) .showroom-cta h2 {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .showroom-cta p {
+  color: rgba(17, 24, 25, 0.7);
+}
+
+body.home-page:not(.dark-theme) .showroom-cta-points span {
+  border-left-color: #188da0;
+  background: rgba(255, 255, 255, 0.32);
+  color: rgba(17, 24, 25, 0.72);
+}
+
+body.home-page:not(.dark-theme) .showroom-actions .btn-primary {
+  border: 0;
+  background: #111819;
+  color: #ffffff;
+}
+
+body.home-page:not(.dark-theme) .showroom-actions .btn-primary:hover {
+  background: #263334;
+  color: #ffffff;
+}
+
+body.home-page:not(.dark-theme) .showroom-actions .btn-secondary {
+  border-color: rgba(17, 24, 25, 0.5);
+  background: rgba(248, 246, 240, 0.62);
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .showroom-actions .btn-secondary:hover {
+  background: #ffffff;
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .footer {
+  border-top-color: rgba(17, 24, 25, 0.16);
+  background: #dfded8;
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .footer-logo span,
+body.home-page:not(.dark-theme) .footer-links a {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .footer-brand p,
+body.home-page:not(.dark-theme) .footer-bottom {
+  color: rgba(17, 24, 25, 0.68);
+}
+
+body.home-page:not(.dark-theme) .footer-bottom {
+  border-top-color: rgba(17, 24, 25, 0.18);
+}
+
+body.home-page:not(.dark-theme) .footer-logo img {
+  border: 1px solid rgba(17, 24, 25, 0.13);
+  background: #ffffff;
+  box-shadow: none;
+}
+
+@media (max-width: 960px) {
+  body.home-page:not(.dark-theme) .showroom-cta {
+    background:
+      linear-gradient(90deg, rgba(238, 236, 229, 0.98), rgba(238, 236, 229, 0.7)),
+      url("../images/bikes/pacific_luxor.jpeg") center / cover no-repeat,
+      #eeece5;
+  }
+}
