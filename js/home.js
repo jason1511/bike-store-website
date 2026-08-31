@@ -288,6 +288,9 @@ function renderHeroFeaturedBike() {
   const randomBike = pool[Math.floor(Math.random() * pool.length)];
   const brandTheme = getBrandTheme(randomBike.brand);
   const heroSection = document.querySelector(".hero");
+  const rangeValue = document.getElementById("heroRangeValue");
+  const motorValue = document.getElementById("heroMotorValue");
+  const priceValue = document.getElementById("heroPriceValue");
 
   if (heroSection) {
     heroSection.classList.remove(
@@ -302,15 +305,29 @@ function renderHeroFeaturedBike() {
     heroSection.classList.add(`hero-${brandTheme.className}`);
   }
 
+  if (rangeValue) {
+    rangeValue.textContent = randomBike.range || "—";
+  }
+
+  if (motorValue) {
+    motorValue.textContent = randomBike.motor || "—";
+  }
+
+  if (priceValue) {
+    priceValue.textContent = Number(randomBike.price || 0)
+      ? `Rp ${(Number(randomBike.price) / 1000000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} jt`
+      : "Hubungi";
+  }
+
   heroFeaturedBike.innerHTML = `
     <div class="hero-bike-card ${brandTheme.className}" data-bike-id="${randomBike.id}" tabindex="0" role="button">
       <img src="${randomBike.image}" alt="${randomBike.alt}">
 
       <div class="hero-bike-info">
-        <p class="hero-bike-label">Pilihan Hari Ini</p>
+        <p class="hero-bike-label">${randomBike.brand} / Electric Series</p>
         <p class="hero-bike-brand">${randomBike.brand}</p>
         <h3>${randomBike.name}</h3>
-        <p>Jarak tempuh ${randomBike.range || "-"}</p>
+        <p>Unit pilihan dari katalog aktif showroom.</p>
 
         <a 
           href="${getWhatsAppLink(randomBike)}" 
