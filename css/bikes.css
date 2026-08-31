@@ -2012,6 +2012,668 @@ body.dark-theme .bike-card-title-link {
   color: #ffffff;
 }
 
+/* =========================================================
+   FUTURISTIC CATALOGUE PREVIEW
+========================================================= */
+.catalogue-page {
+  background: #080d0f;
+  color: #f3f5f1;
+}
+
+.catalogue-page .page-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  padding: clamp(64px, 7vw, 100px) clamp(22px, 5vw, 76px);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: #080d0f;
+}
+
+body.dark-theme.catalogue-page .page-hero {
+  background: #080d0f;
+}
+
+.catalogue-page .page-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.34;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, #000, transparent 96%);
+  pointer-events: none;
+}
+
+.catalogue-page .page-hero::after {
+  content: "CATALOGUE / LUMAJANG";
+  position: absolute;
+  right: clamp(22px, 5vw, 76px);
+  bottom: 24px;
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+}
+
+.catalogue-page .page-hero-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.65fr);
+  align-items: end;
+  gap: clamp(44px, 8vw, 150px);
+}
+
+.catalogue-page .catalogue-hero-title .section-tag {
+  margin-bottom: 20px;
+  color: #6be9ff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .page-hero h1 {
+  max-width: 900px;
+  margin: 0;
+  color: #f3f5f1;
+  font-size: clamp(3.4rem, 6vw, 6.8rem);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+}
+
+.catalogue-page .page-hero h1 span {
+  display: block;
+  color: rgba(243, 245, 241, 0.34);
+}
+
+.catalogue-page .catalogue-hero-intro > p {
+  margin: 0;
+  color: rgba(243, 245, 241, 0.62);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.catalogue-page .page-hero-actions {
+  margin-top: 26px;
+  gap: 18px;
+}
+
+.catalogue-page .page-hero-actions .btn-primary,
+.catalogue-page .page-hero-actions .btn-secondary {
+  min-height: 48px;
+  border-radius: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .page-hero-actions .btn-primary {
+  border: 0;
+  background: #6be9ff;
+  color: #061012;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.catalogue-page .page-hero-actions .btn-secondary {
+  padding-right: 0;
+  padding-left: 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.38);
+  background: transparent;
+  color: #f3f5f1;
+}
+
+.catalogue-page .bike-listing {
+  padding: 0 clamp(20px, 4vw, 60px) clamp(74px, 8vw, 120px);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    #080d0f;
+  background-size: 48px 48px;
+}
+
+.catalogue-page .bike-toolbar {
+  position: sticky;
+  top: 72px;
+  z-index: 20;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto 28px;
+  padding: 22px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(10, 16, 18, 0.94);
+  backdrop-filter: blur(16px);
+}
+
+.catalogue-page .filter-panel {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.catalogue-page .filter-label,
+.catalogue-page .bike-search label,
+.catalogue-page .bike-sort label {
+  color: rgba(243, 245, 241, 0.44);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .bike-filters {
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.catalogue-page .filter-btn,
+body.dark-theme.catalogue-page .filter-btn {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 46px;
+  padding: 9px 18px;
+  gap: 9px;
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(243, 245, 241, 0.58);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .filter-btn::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 2px;
+  background: #6be9ff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+
+.catalogue-page .filter-btn:hover,
+.catalogue-page .filter-btn.active,
+body.dark-theme.catalogue-page .filter-btn:hover,
+body.dark-theme.catalogue-page .filter-btn.active {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+  color: #ffffff;
+  transform: none;
+}
+
+.catalogue-page .filter-btn.active::after {
+  transform: scaleX(1);
+}
+
+.catalogue-page .filter-btn img {
+  height: 24px;
+  max-width: 58px;
+  padding: 3px 5px;
+  border-radius: 2px;
+}
+
+.catalogue-page .bike-toolbar-right {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(250px, 1fr) minmax(230px, 300px) auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.catalogue-page .bike-search input,
+.catalogue-page .bike-sort select,
+body.dark-theme.catalogue-page .bike-search input,
+body.dark-theme.catalogue-page .bike-sort select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0;
+  background: #080d0f;
+  color: #f3f5f1;
+}
+
+.catalogue-page .bike-search input:focus,
+.catalogue-page .bike-sort select:focus {
+  border-color: #6be9ff;
+}
+
+.catalogue-page .clear-btn,
+body.dark-theme.catalogue-page .clear-btn {
+  min-height: 48px;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(243, 245, 241, 0.74);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .clear-btn:hover,
+body.dark-theme.catalogue-page .clear-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.catalogue-page .bike-status {
+  max-width: 1600px;
+  margin: 0 auto 22px;
+  color: rgba(243, 245, 241, 0.46);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .bike-status strong,
+body.dark-theme.catalogue-page .bike-status strong {
+  color: #f3f5f1;
+  font-weight: 600;
+}
+
+.catalogue-page .bike-grid {
+  max-width: 1600px;
+  margin: 0 auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.catalogue-page .bike-card,
+body.dark-theme.catalogue-page .bike-card {
+  min-height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 0;
+  background: #0c1315;
+  color: #f3f5f1;
+  box-shadow: none;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+
+.catalogue-page .bike-card::before {
+  height: 3px;
+  background: var(--card-brand-main);
+}
+
+.catalogue-page .bike-card::after {
+  content: "Buka detail +";
+  top: 18px;
+  right: 16px;
+  padding: 0 0 5px;
+  border-bottom: 1px solid rgba(17, 24, 25, 0.35);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(17, 24, 25, 0.66);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .bike-card:hover,
+.catalogue-page .bike-card:focus-visible,
+body.dark-theme.catalogue-page .bike-card:hover,
+body.dark-theme.catalogue-page .bike-card:focus-visible {
+  border-color: var(--card-brand-main);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.24);
+}
+
+.catalogue-page .bike-card-image-wrap {
+  min-height: 290px;
+  padding: 24px 18px 16px;
+  background: #eceeea;
+}
+
+.catalogue-page .bike-card-image,
+.catalogue-page .bike-card-image-wrap img,
+.catalogue-page .bike-card img.bike-card-image {
+  max-width: 330px;
+  height: 255px;
+}
+
+.catalogue-page .bike-availability-badge,
+body.dark-theme.catalogue-page .bike-availability-badge {
+  min-height: 28px;
+  padding: 6px 10px;
+  border-radius: 0;
+  background: rgba(248, 246, 240, 0.92);
+  box-shadow: none;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .bike-info,
+body.dark-theme.catalogue-page .bike-info {
+  padding: 22px;
+  background:
+    linear-gradient(145deg, var(--card-brand-soft), transparent 34%),
+    #0c1315;
+}
+
+.catalogue-page .bike-brand,
+.catalogue-page .bike-card .bike-brand {
+  margin-bottom: 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+}
+
+.catalogue-page .bike-card h3,
+body.dark-theme.catalogue-page .bike-card h3 {
+  margin-bottom: 10px;
+  color: #f3f5f1;
+  font-size: clamp(1.25rem, 1.6vw, 1.65rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.catalogue-page .bike-color-label,
+body.dark-theme.catalogue-page .bike-color-label {
+  color: rgba(243, 245, 241, 0.58);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.catalogue-page .bike-color-dot {
+  width: 24px;
+  height: 24px;
+  border-width: 1px;
+}
+
+.catalogue-page .bike-spec,
+.catalogue-page .bike-card .bike-spec,
+.catalogue-page .bike-card-description,
+body.dark-theme.catalogue-page .bike-spec,
+body.dark-theme.catalogue-page .bike-card-description {
+  color: rgba(243, 245, 241, 0.54);
+  font-size: 0.82rem;
+}
+
+.catalogue-page .bike-card-description {
+  -webkit-line-clamp: 2;
+}
+
+.catalogue-page .bike-card-badges span,
+body.dark-theme.catalogue-page .bike-card-badges span {
+  padding: 5px 8px;
+  border-color: rgba(255, 255, 255, 0.18);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(243, 245, 241, 0.62);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.catalogue-page .bike-price,
+.catalogue-page .bike-card .bike-price,
+body.dark-theme.catalogue-page .bike-price,
+body.dark-theme.catalogue-page .bike-card .bike-price {
+  color: #f3f5f1;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.catalogue-page .bike-detail-page-link,
+body.dark-theme.catalogue-page .bike-detail-page-link {
+  min-height: 42px;
+  border-radius: 0;
+  color: #f3f5f1;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .bike-card .bike-whatsapp-btn {
+  min-height: 42px;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.catalogue-page .bike-empty-state {
+  border-radius: 0;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: #0c1315;
+}
+
+body.catalogue-page:not(.dark-theme) {
+  --color-bg: #eeece5;
+  --color-surface: #f8f6f0;
+  --color-text: #111819;
+  --color-muted: #657071;
+  --color-border: #cbcfc9;
+  background: #eeece5;
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .page-hero {
+  border-bottom-color: rgba(17, 24, 25, 0.16);
+  background: #eeece5;
+}
+
+body.catalogue-page:not(.dark-theme) .page-hero::before {
+  opacity: 0.45;
+  background:
+    linear-gradient(90deg, rgba(17, 24, 25, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(17, 24, 25, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+body.catalogue-page:not(.dark-theme) .page-hero::after {
+  color: rgba(17, 24, 25, 0.26);
+}
+
+body.catalogue-page:not(.dark-theme) .page-hero h1 {
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .page-hero h1 span {
+  color: rgba(17, 24, 25, 0.38);
+}
+
+body.catalogue-page:not(.dark-theme) .catalogue-hero-intro > p {
+  color: rgba(17, 24, 25, 0.66);
+}
+
+body.catalogue-page:not(.dark-theme) .page-hero-actions .btn-secondary {
+  border-bottom-color: rgba(17, 24, 25, 0.38);
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-listing {
+  background:
+    linear-gradient(90deg, rgba(17, 24, 25, 0.04) 1px, transparent 1px),
+    #eeece5;
+  background-size: 48px 48px;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-toolbar {
+  border-bottom-color: rgba(17, 24, 25, 0.15);
+  background: rgba(243, 241, 235, 0.95);
+}
+
+body.catalogue-page:not(.dark-theme) .filter-label,
+body.catalogue-page:not(.dark-theme) .bike-search label,
+body.catalogue-page:not(.dark-theme) .bike-sort label {
+  color: rgba(17, 24, 25, 0.52);
+}
+
+body.catalogue-page:not(.dark-theme) .filter-btn {
+  border-right-color: rgba(17, 24, 25, 0.14);
+  color: rgba(17, 24, 25, 0.58);
+}
+
+body.catalogue-page:not(.dark-theme) .filter-btn:hover,
+body.catalogue-page:not(.dark-theme) .filter-btn.active {
+  border-color: rgba(17, 24, 25, 0.14);
+  background: rgba(17, 24, 25, 0.04);
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .filter-btn::after {
+  background: #188da0;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-search input,
+body.catalogue-page:not(.dark-theme) .bike-sort select {
+  border-color: rgba(17, 24, 25, 0.2);
+  background: #ffffff;
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .clear-btn {
+  border-color: rgba(17, 24, 25, 0.3);
+  color: rgba(17, 24, 25, 0.7);
+}
+
+body.catalogue-page:not(.dark-theme) .clear-btn:hover {
+  background: rgba(17, 24, 25, 0.05);
+}
+
+body.catalogue-page:not(.dark-theme) .bike-status {
+  color: rgba(17, 24, 25, 0.52);
+}
+
+body.catalogue-page:not(.dark-theme) .bike-status strong {
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-card {
+  border-color: rgba(17, 24, 25, 0.16);
+  background: #f8f6f0;
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-info {
+  background:
+    linear-gradient(145deg, var(--card-brand-soft), transparent 34%),
+    #f8f6f0;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-card h3,
+body.catalogue-page:not(.dark-theme) .bike-price,
+body.catalogue-page:not(.dark-theme) .bike-card .bike-price {
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-color-label,
+body.catalogue-page:not(.dark-theme) .bike-spec,
+body.catalogue-page:not(.dark-theme) .bike-card-description {
+  color: rgba(17, 24, 25, 0.6);
+}
+
+body.catalogue-page:not(.dark-theme) .bike-card-badges span {
+  border-color: rgba(17, 24, 25, 0.18);
+  color: rgba(17, 24, 25, 0.66);
+}
+
+body.catalogue-page:not(.dark-theme) .bike-detail-page-link {
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .bike-empty-state {
+  border-color: rgba(17, 24, 25, 0.16);
+  background: #f8f6f0;
+}
+
+@media (max-width: 1380px) {
+  .catalogue-page .bike-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1050px) {
+  .catalogue-page .page-hero-content {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 30px;
+  }
+
+  .catalogue-page .catalogue-hero-intro {
+    max-width: 640px;
+  }
+
+  .catalogue-page .bike-toolbar {
+    position: relative;
+    top: auto;
+  }
+
+  .catalogue-page .bike-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .catalogue-page .page-hero {
+    min-height: 0;
+    padding: 58px 20px 46px;
+  }
+
+  .catalogue-page .page-hero h1 {
+    font-size: clamp(3.2rem, 14vw, 5rem);
+  }
+
+  .catalogue-page .bike-listing {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .catalogue-page .bike-toolbar {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 18px;
+  }
+
+  .catalogue-page .filter-panel {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .catalogue-page .bike-toolbar-right {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue-page .bike-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue-page .bike-card-image-wrap {
+    min-height: 265px;
+  }
+}
+
 /* =========================
    PRODUCT DETAIL PAGE
 ========================= */
@@ -2362,4 +3024,3 @@ body.dark-theme .product-colour {
     grid-template-columns: 1fr;
   }
 }
-
