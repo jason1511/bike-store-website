@@ -2626,3 +2626,225 @@ body.dark-theme .showroom-cta .btn-secondary:hover {
     animation: none;
   }
 }
+
+/* =========================================================
+   PREVIEW REFINEMENT: DENSER CONTENT + CONSISTENT CONTROLS
+========================================================= */
+.home-page .brand-strip,
+.home-page .ai-finder,
+.home-page .features {
+  padding-top: clamp(62px, 6vw, 92px);
+  padding-bottom: clamp(62px, 6vw, 92px);
+}
+
+.home-page .section-heading {
+  margin-bottom: clamp(32px, 4vw, 46px);
+}
+
+.home-page .section-heading h2,
+.home-page .brand-strip .section-heading h2,
+.home-page .ai-finder .section-heading h2,
+.home-page .features .section-heading h2 {
+  font-size: clamp(2rem, 3.35vw, 3.75rem);
+}
+
+.home-page .ai-finder-card {
+  grid-template-columns: minmax(310px, 0.72fr) minmax(0, 1.28fr);
+  align-items: stretch;
+}
+
+.home-page .ai-finder-form,
+.home-page .ai-finder-result {
+  min-height: 0;
+  padding: clamp(26px, 3vw, 42px);
+}
+
+.home-page .ai-finder-form {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 18px 20px;
+}
+
+.home-page .ai-form-intro {
+  grid-column: 1 / -1;
+}
+
+.home-page .ai-form-intro h3,
+.home-page .ai-finder-result h3 {
+  font-size: clamp(1.35rem, 2vw, 2rem);
+}
+
+.home-page .ai-form-intro p {
+  max-width: 520px;
+}
+
+.home-page .ai-finder-form .form-group {
+  min-width: 0;
+}
+
+.home-page .ai-finder-form .btn-primary,
+body.home-page.dark-theme .ai-finder-form .btn-primary {
+  min-height: 54px;
+  margin: 0;
+  padding: 13px 20px;
+  border: 0;
+  background: #6be9ff;
+  color: #061012;
+  opacity: 1;
+  white-space: nowrap;
+}
+
+.home-page .ai-finder-form .btn-primary:hover,
+body.home-page.dark-theme .ai-finder-form .btn-primary:hover {
+  border: 0;
+  background: #9af1ff;
+  color: #061012;
+}
+
+.home-page .ai-finder-result {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(90deg, rgba(107, 233, 255, 0.055), transparent 34%),
+    #0d1416;
+}
+
+.home-page .ai-finder-result > p {
+  max-width: 720px;
+}
+
+.home-page .ai-recommend-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.home-page .feature-grid {
+  align-items: stretch;
+}
+
+.home-page .feature-card {
+  min-height: 235px;
+  padding: clamp(26px, 3vw, 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+.home-page .feature-icon {
+  margin-bottom: clamp(30px, 3vw, 44px);
+}
+
+.home-page .feature-card h3 {
+  margin-bottom: 12px;
+}
+
+.home-page .feature-card p {
+  max-width: 440px;
+  margin-top: auto;
+}
+
+.home-page .showroom-cta,
+body.home-page.dark-theme .showroom-cta {
+  min-height: 500px;
+  padding: clamp(72px, 7vw, 106px) clamp(22px, 7vw, 110px);
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(90deg, #080d0f 0%, rgba(8, 13, 15, 0.96) 38%, rgba(8, 13, 15, 0.42) 100%),
+    url("../images/bikes/pacific_luxor.jpeg") right 48% / 62% auto no-repeat,
+    #080d0f;
+}
+
+.home-page .showroom-cta-content,
+body.home-page.dark-theme .showroom-cta-content {
+  width: min(100%, 760px);
+  max-width: 760px;
+}
+
+.home-page .showroom-cta h2,
+body.home-page.dark-theme .showroom-cta h2 {
+  max-width: 660px;
+  margin-bottom: 18px;
+  color: #f3f5f1;
+  font-size: clamp(2.8rem, 5vw, 5.2rem);
+}
+
+.home-page .showroom-cta p,
+body.home-page.dark-theme .showroom-cta p {
+  margin-bottom: 20px;
+  color: rgba(243, 245, 241, 0.66);
+}
+
+.home-page .showroom-cta-points,
+body.home-page.dark-theme .showroom-cta-points {
+  margin-bottom: 24px;
+}
+
+.home-page .showroom-actions .btn-primary,
+body.home-page.dark-theme .showroom-actions .btn-primary {
+  border: 0;
+  background: #6be9ff;
+  color: #061012;
+  opacity: 1;
+}
+
+.home-page .showroom-actions .btn-primary:hover,
+body.home-page.dark-theme .showroom-actions .btn-primary:hover {
+  background: #9af1ff;
+  color: #061012;
+}
+
+.home-page .showroom-actions .btn-secondary,
+body.home-page.dark-theme .showroom-actions .btn-secondary {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(8, 13, 15, 0.52);
+  color: #f3f5f1;
+}
+
+@media (max-width: 960px) {
+  .home-page .ai-finder-card {
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .ai-finder-result {
+    min-height: 190px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 0;
+  }
+
+  .home-page .showroom-cta,
+  body.home-page.dark-theme .showroom-cta {
+    min-height: 470px;
+    background:
+      linear-gradient(90deg, rgba(8, 13, 15, 0.98), rgba(8, 13, 15, 0.62)),
+      url("../images/bikes/pacific_luxor.jpeg") center / cover no-repeat,
+      #080d0f;
+  }
+}
+
+@media (max-width: 620px) {
+  .home-page .ai-finder-form {
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .ai-finder-form .btn-primary {
+    width: 100%;
+  }
+
+  .home-page .feature-card {
+    min-height: 205px;
+  }
+
+  .home-page .showroom-cta,
+  body.home-page.dark-theme .showroom-cta {
+    min-height: 440px;
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
+  .home-page .showroom-cta-points {
+    display: none;
+  }
+}
