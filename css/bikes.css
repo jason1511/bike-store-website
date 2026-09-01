@@ -3059,7 +3059,7 @@ body.dark-theme.catalogue-page .bike-modal-content {
   inset: 0 0 auto;
   z-index: 2;
   height: 3px;
-  background: var(--brand-main, #6be9ff);
+  background: var(--modal-brand-main, #6be9ff);
   pointer-events: none;
 }
 
@@ -3071,6 +3071,7 @@ body.dark-theme.catalogue-page .bike-modal-content {
   grid-template-columns: minmax(0, 1.06fr) minmax(430px, 0.94fr);
   gap: 0;
   min-height: 650px;
+  align-items: stretch;
 }
 
 .catalogue-page .bike-brand-theme .bike-modal-image {
@@ -3245,6 +3246,10 @@ body.dark-theme.catalogue-page .bike-brand-theme .bike-modal-spec {
   font-size: 0.6rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
+}
+
+.catalogue-page .bike-modal-spec:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .catalogue-page .bike-brand-theme .bike-modal-price {
