@@ -449,6 +449,65 @@ function configureAdminNavigationForRole() {
   });
 }
 
+function closeAdminMobileNavigation() {
+  const navbar = document.querySelector(".admin-navbar");
+  const toggle = document.getElementById("adminMobileMenuToggle");
+
+  if (!navbar || !toggle) {
+    return;
+  }
+
+  navbar.classList.remove("is-menu-open");
+  toggle.setAttribute("aria-expanded", "false");
+}
+
+function updateAdminMobileViewLabel(viewId) {
+  const label = document.getElementById("adminMobileViewLabel");
+  const activeButton = document.querySelector(
+    `[data-admin-view-target="${viewId}"]`
+  );
+
+  if (label && activeButton) {
+    label.textContent = activeButton.textContent.trim();
+  }
+}
+
+function setupAdminMobileNavigation() {
+  const navbar = document.querySelector(".admin-navbar");
+  const toggle = document.getElementById("adminMobileMenuToggle");
+  const links = document.getElementById("adminNavbarLinks");
+
+  if (!navbar || !toggle || !links || toggle.dataset.adminMobileMenuBound) {
+    return;
+  }
+
+  toggle.dataset.adminMobileMenuBound = "true";
+  navbar.classList.add("has-mobile-menu");
+
+  toggle.addEventListener("click", () => {
+    const isOpen = navbar.classList.toggle("is-menu-open");
+    toggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  links.addEventListener("click", (event) => {
+    if (event.target.closest("a, button")) {
+      closeAdminMobileNavigation();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeAdminMobileNavigation();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 900) {
+      closeAdminMobileNavigation();
+    }
+  });
+}
+
 function showAdminView(viewId) {
   const isAdmin = isCurrentUserAdmin();
   const targetView = document.getElementById(viewId);
@@ -470,6 +529,9 @@ function showAdminView(viewId) {
   document.querySelectorAll("[data-admin-view-target]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.adminViewTarget === viewId);
   });
+
+  updateAdminMobileViewLabel(viewId);
+  closeAdminMobileNavigation();
 
   if (viewId === "adminCatalogueView" && typeof loadAdminBikes === "function") {
     loadAdminBikes();
