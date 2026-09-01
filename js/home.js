@@ -278,7 +278,6 @@ result.innerHTML = `
 
 let heroDeckBikes = [];
 let heroDeckActiveIndex = 0;
-let heroDeckTimer = null;
 let heroDeckSuppressOpen = false;
 
 function getHeroDailySeed() {
@@ -396,7 +395,7 @@ function updateHeroDeck() {
   const total = heroDeckBikes.length;
 
   if (sequenceValue) {
-    sequenceValue.textContent = `${heroDeckActiveIndex + 1}—${total}`;
+    sequenceValue.textContent = `${heroDeckActiveIndex + 1} dari ${total}`;
   }
 
   if (rangeValue) {
@@ -424,14 +423,6 @@ function updateHeroDeck() {
   });
 }
 
-function resetHeroDeckTimer() {
-  window.clearTimeout(heroDeckTimer);
-
-  if (heroDeckBikes.length > 1 && !document.hidden) {
-    heroDeckTimer = window.setTimeout(() => moveHeroDeck(1, false), 9000);
-  }
-}
-
 function moveHeroDeck(direction = 1, userInitiated = true) {
   const heroFeaturedBike = document.getElementById("heroFeaturedBike");
   const activeCard = heroFeaturedBike?.querySelector('.hero-deck-card[data-depth="0"]');
@@ -448,7 +439,6 @@ function moveHeroDeck(direction = 1, userInitiated = true) {
     activeCard?.classList.remove("is-discarding", "is-returning");
     heroFeaturedBike.classList.remove("is-moving");
     updateHeroDeck();
-    resetHeroDeckTimer();
   }, userInitiated ? 280 : 360);
 }
 
@@ -535,9 +525,7 @@ function renderHeroFeaturedBike() {
     }
   });
 
-  document.addEventListener("visibilitychange", resetHeroDeckTimer);
   updateHeroDeck();
-  resetHeroDeckTimer();
 }
 
 async function initializeHomePage() {
