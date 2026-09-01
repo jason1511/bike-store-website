@@ -3200,6 +3200,185 @@ body.home-page:not(.dark-theme) .footer-logo img {
   box-shadow: none;
 }
 
+/* =========================================================
+   TABLET + PHONE RESPONSIVE PASS
+========================================================= */
+@media (max-width: 1024px) {
+  .home-page .hero-text {
+    padding: 64px 34px 50px;
+  }
+
+  .home-page .hero-featured-wrap {
+    min-height: 520px;
+    padding: 30px;
+  }
+
+  .home-page .brand-strip,
+  .home-page .ai-finder,
+  .home-page .features {
+    padding: 62px 30px;
+  }
+
+  .home-page .brand-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page .hero-text {
+    padding: 48px 18px 36px;
+  }
+
+  .home-page .hero-text h1 {
+    max-width: 9ch;
+    font-size: clamp(3rem, 12.5vw, 4.8rem);
+  }
+
+  .home-page .hero-text > p:not(.hero-tag) {
+    max-width: 34rem;
+    font-size: 0.98rem;
+  }
+
+  .home-page .hero-points {
+    margin-top: 22px;
+  }
+
+  .home-page .hero-points span {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .home-page .hero-featured-wrap {
+    min-height: 430px;
+    padding: 22px 16px;
+  }
+
+  .home-page .hero-featured,
+  .home-page .hero-bike-card {
+    min-height: 290px;
+  }
+
+  .home-page .hero-bike-card {
+    grid-template-rows: 215px auto;
+  }
+
+  .home-page .hero-bike-card > img {
+    height: 230px;
+  }
+
+  .home-page .hero-data-rail strong {
+    font-size: 0.9rem;
+  }
+
+  .home-page .brand-marquee-item {
+    min-width: 158px;
+    min-height: 66px;
+    padding: 10px 18px;
+  }
+
+  .home-page .brand-strip,
+  .home-page .ai-finder,
+  .home-page .features {
+    padding: 50px 16px;
+  }
+
+  .home-page .section-heading {
+    margin-bottom: 30px;
+  }
+
+  .home-page .section-heading h2,
+  .home-page .brand-strip .section-heading h2,
+  .home-page .ai-finder .section-heading h2,
+  .home-page .features .section-heading h2 {
+    font-size: clamp(2rem, 9vw, 3.2rem);
+  }
+
+  .home-page .brand-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-page .brand-logo-card {
+    min-height: 132px;
+    padding: 18px 12px;
+    gap: 10px;
+  }
+
+  .home-page .brand-logo-card img {
+    height: 46px;
+    max-width: 118px;
+  }
+
+  .home-page .ai-finder-form,
+  .home-page .ai-finder-result {
+    padding: 24px 20px;
+  }
+
+  .home-page .ai-finder-result {
+    min-height: 165px;
+  }
+
+  .home-page .form-group select {
+    font-size: 16px;
+  }
+
+  .home-page .feature-card {
+    min-height: 190px;
+    padding: 24px 20px;
+  }
+
+  .home-page .feature-icon {
+    margin-bottom: 28px;
+  }
+
+  .home-page .showroom-cta,
+  body.home-page.dark-theme .showroom-cta,
+  body.home-page:not(.dark-theme) .showroom-cta {
+    min-height: 410px;
+    padding: 54px 18px;
+    background-position: 60% center;
+  }
+
+  .home-page .showroom-cta h2,
+  body.home-page.dark-theme .showroom-cta h2 {
+    max-width: 9ch;
+    font-size: clamp(2.7rem, 11.5vw, 4.2rem);
+  }
+}
+
+@media (max-width: 430px) {
+  .home-page .hero-text h1 {
+    font-size: clamp(2.75rem, 13vw, 3.65rem);
+  }
+
+  .home-page .hero-featured-wrap {
+    min-height: 390px;
+  }
+
+  .home-page .hero-stage-heading {
+    gap: 10px;
+  }
+
+  .home-page .hero-bike-card > img {
+    height: 210px;
+  }
+
+  .home-page .hero-data-rail span {
+    letter-spacing: 0.08em;
+  }
+
+  .home-page .showroom-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 350px) {
+  .home-page .brand-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 960px) {
   body.home-page:not(.dark-theme) .showroom-cta {
     background:
