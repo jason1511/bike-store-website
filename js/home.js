@@ -276,6 +276,182 @@ result.innerHTML = `
   });
 }
 
+let heroDeckBikes = [];
+let heroDeckActiveIndex = 0;
+let heroDeckTimer = null;
+let heroDeckSuppressOpen = false;
+
+function getHeroDailySeed() {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date());
+  } catch (error) {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
+
+function createSeededHeroRandom(seedText) {
+  let seed = Array.from(String(seedText)).reduce(
+    (total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0,
+    2166136261
+  );
+
+  return () => {
+    seed += 0x6d2b79f5;
+    let value = seed;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleHeroBikes(items, random) {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const targetIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[targetIndex]] = [shuffled[targetIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
+
+function selectDailyHeroBikes(limit = 5) {
+  const random = createSeededHeroRandom(getHeroDailySeed());
+  const featured = shuffleHeroBikes(bikes.filter((bike) => bike.featured), random);
+  const remaining = shuffleHeroBikes(bikes.filter((bike) => !bike.featured), random);
+  const orderedPool = [...featured, ...remaining];
+  const selected = [];
+  const selectedIds = new Set();
+  const selectedBrands = new Set();
+
+  orderedPool.forEach((bike) => {
+    const brandKey = String(bike.brand || "").toLowerCase();
+
+    if (selected.length < limit && !selectedBrands.has(brandKey)) {
+      selected.push(bike);
+      selectedIds.add(bike.id);
+      selectedBrands.add(brandKey);
+    }
+  });
+
+  orderedPool.forEach((bike) => {
+    if (selected.length < limit && !selectedIds.has(bike.id)) {
+      selected.push(bike);
+      selectedIds.add(bike.id);
+    }
+  });
+
+  return selected;
+}
+
+function getHeroBikeReason(bike) {
+  const range = Number.parseFloat(String(bike.range || "").replace(",", ".")) || 0;
+  const motor = Number.parseFloat(String(bike.motor || "").replace(/[^0-9.]/g, "")) || 0;
+
+  if (range >= 60) return "Pilihan perjalanan lebih jauh";
+  if (motor >= 1000) return "Tenaga untuk kebutuhan lebih";
+  if (bike.comfort === "high") return "Nyaman untuk aktivitas harian";
+  return "Pilihan mobilitas harian";
+}
+
+function applyHeroBikeTheme(bike) {
+  const brandTheme = getBrandTheme(bike);
+  const heroSection = document.querySelector(".hero");
+
+  if (!heroSection) {
+    return brandTheme;
+  }
+
+  Array.from(heroSection.classList)
+    .filter((className) => className.startsWith("hero-brand-"))
+    .forEach((className) => heroSection.classList.remove(className));
+
+  heroSection.classList.add(`hero-${brandTheme.className}`);
+  heroSection.style.setProperty("--hero-brand-main", getSafeBrandThemeValue(brandTheme.main, "#6be9ff"));
+  heroSection.style.setProperty("--hero-brand-second", getSafeBrandThemeValue(brandTheme.second, "#2a7c89"));
+  heroSection.style.setProperty("--hero-brand-soft", getSafeBrandThemeValue(brandTheme.soft, "rgba(107, 233, 255, 0.12)"));
+  heroSection.style.setProperty("--hero-brand-glow", getSafeBrandThemeValue(brandTheme.glow, "rgba(107, 233, 255, 0.16)"));
+
+  return brandTheme;
+}
+
+function updateHeroDeck() {
+  const heroFeaturedBike = document.getElementById("heroFeaturedBike");
+  const activeBike = heroDeckBikes[heroDeckActiveIndex];
+
+  if (!heroFeaturedBike || !activeBike) {
+    return;
+  }
+
+  applyHeroBikeTheme(activeBike);
+  const rangeValue = document.getElementById("heroRangeValue");
+  const motorValue = document.getElementById("heroMotorValue");
+  const priceValue = document.getElementById("heroPriceValue");
+  const sequenceValue = document.getElementById("heroSequence");
+  const total = heroDeckBikes.length;
+
+  if (sequenceValue) {
+    sequenceValue.textContent = `${heroDeckActiveIndex + 1}—${total}`;
+  }
+
+  if (rangeValue) {
+    rangeValue.textContent = activeBike.range || "—";
+  }
+
+  if (motorValue) {
+    motorValue.textContent = activeBike.motor || "—";
+  }
+
+  if (priceValue) {
+    priceValue.textContent = Number(activeBike.price || 0)
+      ? `Rp ${(Number(activeBike.price) / 1000000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} jt`
+      : "Hubungi";
+  }
+
+  heroFeaturedBike.querySelectorAll(".hero-deck-card").forEach((card, cardIndex) => {
+    const depth = (cardIndex - heroDeckActiveIndex + total) % total;
+    const isActive = depth === 0;
+
+    card.dataset.depth = String(depth);
+    card.classList.toggle("is-active", isActive);
+    card.setAttribute("aria-hidden", isActive ? "false" : "true");
+    card.tabIndex = isActive ? 0 : -1;
+  });
+}
+
+function resetHeroDeckTimer() {
+  window.clearTimeout(heroDeckTimer);
+
+  if (heroDeckBikes.length > 1 && !document.hidden) {
+    heroDeckTimer = window.setTimeout(() => moveHeroDeck(1, false), 9000);
+  }
+}
+
+function moveHeroDeck(direction = 1, userInitiated = true) {
+  const heroFeaturedBike = document.getElementById("heroFeaturedBike");
+  const activeCard = heroFeaturedBike?.querySelector('.hero-deck-card[data-depth="0"]');
+
+  if (!heroFeaturedBike || heroDeckBikes.length < 2 || heroFeaturedBike.classList.contains("is-moving")) {
+    return;
+  }
+
+  heroFeaturedBike.classList.add("is-moving");
+  activeCard?.classList.add(direction > 0 ? "is-discarding" : "is-returning");
+
+  window.setTimeout(() => {
+    heroDeckActiveIndex = (heroDeckActiveIndex + direction + heroDeckBikes.length) % heroDeckBikes.length;
+    activeCard?.classList.remove("is-discarding", "is-returning");
+    heroFeaturedBike.classList.remove("is-moving");
+    updateHeroDeck();
+    resetHeroDeckTimer();
+  }, userInitiated ? 280 : 360);
+}
+
 function renderHeroFeaturedBike() {
   const heroFeaturedBike = document.getElementById("heroFeaturedBike");
 
@@ -283,99 +459,85 @@ function renderHeroFeaturedBike() {
     return;
   }
 
-  const featuredBikes = bikes.filter((bike) => bike.featured);
-  const pool = featuredBikes.length > 0 ? featuredBikes : bikes;
-  const randomBike = pool[Math.floor(Math.random() * pool.length)];
-  const brandTheme = getBrandTheme(randomBike);
-  const heroSection = document.querySelector(".hero");
-  const rangeValue = document.getElementById("heroRangeValue");
-  const motorValue = document.getElementById("heroMotorValue");
-  const priceValue = document.getElementById("heroPriceValue");
+  heroDeckBikes = selectDailyHeroBikes(5);
+  heroDeckActiveIndex = 0;
+  const jitterRandom = createSeededHeroRandom(`${getHeroDailySeed()}-deck-position`);
 
-  if (heroSection) {
-    Array.from(heroSection.classList)
-      .filter((className) => className.startsWith("hero-brand-"))
-      .forEach((className) => heroSection.classList.remove(className));
+  heroFeaturedBike.innerHTML = heroDeckBikes
+    .map((bike, index) => {
+      const brandTheme = getBrandTheme(bike);
+      const jitterX = Math.round((jitterRandom() - 0.5) * 16);
+      const jitterY = Math.round(jitterRandom() * 10);
+      const jitterRotate = ((jitterRandom() - 0.5) * 2.4).toFixed(2);
 
-    heroSection.classList.add(`hero-${brandTheme.className}`);
-    heroSection.style.setProperty(
-      "--hero-brand-main",
-      getSafeBrandThemeValue(brandTheme.main, "#6be9ff")
-    );
-    heroSection.style.setProperty(
-      "--hero-brand-second",
-      getSafeBrandThemeValue(brandTheme.second, "#2a7c89")
-    );
-    heroSection.style.setProperty(
-      "--hero-brand-soft",
-      getSafeBrandThemeValue(brandTheme.soft, "rgba(107, 233, 255, 0.12)")
-    );
-    heroSection.style.setProperty(
-      "--hero-brand-glow",
-      getSafeBrandThemeValue(brandTheme.glow, "rgba(107, 233, 255, 0.16)")
-    );
-  }
-
-  if (rangeValue) {
-    rangeValue.textContent = randomBike.range || "—";
-  }
-
-  if (motorValue) {
-    motorValue.textContent = randomBike.motor || "—";
-  }
-
-  if (priceValue) {
-    priceValue.textContent = Number(randomBike.price || 0)
-      ? `Rp ${(Number(randomBike.price) / 1000000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} jt`
-      : "Hubungi";
-  }
-
-  heroFeaturedBike.innerHTML = `
-    <div class="hero-bike-card ${brandTheme.className}" data-bike-id="${randomBike.id}" tabindex="0" role="button">
-      <img src="${randomBike.image}" alt="${randomBike.alt}">
-
-      <div class="hero-bike-info">
-        <p class="hero-bike-label">${randomBike.brand} / Electric Series</p>
-        <p class="hero-bike-brand">${randomBike.brand}</p>
-        <h3>${randomBike.name}</h3>
-        <p>Unit pilihan dari katalog aktif showroom.</p>
-
-        <a 
-          href="${getWhatsAppLink(randomBike)}" 
-          class="bike-whatsapp-btn"
-          target="_blank"
-          rel="noopener"
-          onclick="event.stopPropagation();"
+      return `
+        <div
+          class="hero-bike-card hero-deck-card ${brandTheme.className}"
+          data-bike-id="${escapeHtml(bike.id)}"
+          data-depth="${index}"
+          style="--deck-x: ${jitterX}px; --deck-y: ${jitterY}px; --deck-rotate: ${jitterRotate}deg; --deck-brand-main: ${getSafeBrandThemeValue(brandTheme.main, "#6be9ff")}; --deck-brand-soft: ${getSafeBrandThemeValue(brandTheme.soft, "rgba(107, 233, 255, 0.12)")};"
+          tabindex="${index === 0 ? "0" : "-1"}"
+          role="button"
+          aria-hidden="${index === 0 ? "false" : "true"}"
+          aria-label="Buka detail ${escapeHtml(bike.brand)} ${escapeHtml(bike.name)}"
         >
-          <span class="wa-btn-content">
-            <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
-              alt="WhatsApp" 
-              class="wa-icon"
-            >
-            <span>Tanya WhatsApp</span>
-          </span>
-        </a>
-      </div>
-    </div>
-  `;
+          <div class="hero-deck-image">
+            <img src="${escapeHtml(getBikeDisplayImage(bike))}" alt="${escapeHtml(bike.alt || `Sepeda listrik ${bike.brand} ${bike.name}`)}" ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
+          </div>
 
-  const heroCard = heroFeaturedBike.querySelector(".hero-bike-card");
+          <div class="hero-bike-info">
+            <p class="hero-bike-label">${escapeHtml(bike.brand)} / Electric Series</p>
+            <h3>${escapeHtml(bike.name)}</h3>
+            <p class="hero-bike-reason">${escapeHtml(getHeroBikeReason(bike))}</p>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
 
-  if (!heroCard) {
-    return;
-  }
+  heroFeaturedBike.querySelectorAll(".hero-deck-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      if (card.dataset.depth === "0" && !heroDeckSuppressOpen) {
+        openBikeModal(card.dataset.bikeId);
+      }
+    });
 
-  heroCard.addEventListener("click", () => {
-    openBikeModal(randomBike.id);
+    card.addEventListener("keydown", (event) => {
+      if ((event.key === "Enter" || event.key === " ") && card.dataset.depth === "0") {
+        event.preventDefault();
+        openBikeModal(card.dataset.bikeId);
+      }
+    });
   });
 
-  heroCard.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openBikeModal(randomBike.id);
+  document.getElementById("heroDeckPrev")?.addEventListener("click", () => moveHeroDeck(-1));
+  document.getElementById("heroDeckNext")?.addEventListener("click", () => moveHeroDeck(1));
+
+  let pointerStartX = 0;
+  let pointerStartY = 0;
+
+  heroFeaturedBike.addEventListener("pointerdown", (event) => {
+    pointerStartX = event.clientX;
+    pointerStartY = event.clientY;
+    heroDeckSuppressOpen = false;
+  });
+
+  heroFeaturedBike.addEventListener("pointerup", (event) => {
+    const distanceX = event.clientX - pointerStartX;
+    const distanceY = event.clientY - pointerStartY;
+
+    if (Math.abs(distanceX) > 44 && Math.abs(distanceX) > Math.abs(distanceY)) {
+      heroDeckSuppressOpen = true;
+      moveHeroDeck(distanceX < 0 ? 1 : -1);
+      window.setTimeout(() => {
+        heroDeckSuppressOpen = false;
+      }, 400);
     }
   });
+
+  document.addEventListener("visibilitychange", resetHeroDeckTimer);
+  updateHeroDeck();
+  resetHeroDeckTimer();
 }
 
 async function initializeHomePage() {
