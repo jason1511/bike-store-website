@@ -3848,3 +3848,190 @@ body.catalogue-page:not(.dark-theme) .catalogue-data-rail::after {
     display: none;
   }
 }
+
+/* =========================
+   TABLET + PHONE RESPONSIVE PASS
+========================= */
+@media (max-width: 1024px) {
+  .catalogue-page .page-hero {
+    padding: 58px 30px 44px;
+  }
+
+  .catalogue-page .bike-listing {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .catalogue-page .bike-toolbar {
+    padding: 18px;
+  }
+
+  .catalogue-page .bike-filters {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .catalogue-page .filter-btn {
+    flex: 0 0 auto;
+    min-height: 44px;
+    scroll-snap-align: start;
+  }
+
+  .catalogue-page .bike-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .catalogue-page .page-hero {
+    display: block;
+    padding: 42px 16px 34px;
+  }
+
+  .catalogue-page .page-hero-content {
+    gap: 22px;
+  }
+
+  .catalogue-page .page-hero h1 {
+    max-width: 9ch;
+    font-size: clamp(2.85rem, 12vw, 4.35rem);
+    line-height: 0.94;
+  }
+
+  .catalogue-page .catalogue-hero-intro > p {
+    max-width: 31rem;
+    font-size: 0.98rem;
+    line-height: 1.62;
+  }
+
+  .catalogue-page .page-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .catalogue-page .page-hero-actions a {
+    width: 100%;
+  }
+
+  .catalogue-page .catalogue-data-rail {
+    margin-top: 18px;
+  }
+
+  .catalogue-page .bike-listing {
+    padding: 0 14px 58px;
+  }
+
+  .catalogue-page .bike-toolbar {
+    padding: 14px;
+    margin-bottom: 20px;
+  }
+
+  .catalogue-page .bike-filters {
+    margin-right: -14px;
+    padding-right: 14px;
+  }
+
+  .catalogue-page .bike-search input,
+  .catalogue-page .bike-sort select {
+    min-height: 50px;
+    font-size: 16px;
+  }
+
+  .catalogue-page .clear-btn {
+    min-height: 48px;
+  }
+
+  .catalogue-page .bike-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .catalogue-page .bike-card-image-wrap {
+    min-height: clamp(250px, 75vw, 340px);
+  }
+
+  .catalogue-page .bike-card-image,
+  .catalogue-page .bike-card-image-wrap img,
+  .catalogue-page .bike-card img.bike-card-image {
+    width: 100%;
+    max-width: 360px;
+    height: clamp(235px, 70vw, 315px);
+  }
+
+  .catalogue-page .bike-info {
+    padding: 20px 18px;
+  }
+
+  .catalogue-page .bike-card::after {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .catalogue-page .bike-detail-page-link,
+  .catalogue-page .bike-card .bike-whatsapp-btn {
+    min-height: 46px;
+  }
+
+  .catalogue-page .bike-modal-content,
+  body.dark-theme.catalogue-page .bike-modal-content {
+    width: 100%;
+    max-height: 100dvh;
+    margin: 0;
+    clip-path: none;
+  }
+
+  .catalogue-page .bike-modal-close {
+    top: max(10px, env(safe-area-inset-top));
+    right: max(10px, env(safe-area-inset-right));
+    width: 46px;
+    height: 46px;
+  }
+
+  .catalogue-page .bike-brand-theme .bike-modal-image {
+    min-height: 245px;
+    padding: 18px;
+  }
+
+  .catalogue-page .bike-modal-details {
+    padding: 24px 18px max(30px, env(safe-area-inset-bottom));
+  }
+
+  .compare-page-modal {
+    padding: 0;
+  }
+
+  .compare-page-shell {
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .compare-page-header {
+    padding: 18px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .catalogue-page .page-hero h1 {
+    font-size: clamp(2.7rem, 12.5vw, 3.45rem);
+  }
+
+  .catalogue-page .catalogue-data-rail::after {
+    display: none;
+  }
+
+  .catalogue-page .catalogue-data-rail {
+    flex-wrap: wrap;
+    font-size: 0.54rem;
+  }
+
+  .catalogue-page .page-hero::after {
+    right: 16px;
+    bottom: 12px;
+    font-size: 0.52rem;
+  }
+}
