@@ -3639,3 +3639,212 @@ body:is(.catalogue-page, .home-page):not(.dark-theme) .bike-modal-content:has(.b
     grid-column: auto;
   }
 }
+
+/* =========================
+   CATALOGUE SIGNAL DETAILS
+   Restrained motion and reactive brand accents.
+========================= */
+.catalogue-page .catalogue-data-rail {
+  position: absolute;
+  z-index: 2;
+  top: 28px;
+  right: clamp(22px, 5vw, 76px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(243, 245, 241, 0.54);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.catalogue-page .catalogue-data-rail::after {
+  content: "";
+  width: 72px;
+  height: 1px;
+  margin-left: 4px;
+  background: linear-gradient(90deg, #6be9ff, transparent);
+  transform-origin: left;
+  animation: catalogue-line-signal 2.8s ease-in-out infinite;
+}
+
+.catalogue-page .catalogue-data-rail strong {
+  color: #f3f5f1;
+  font-weight: 700;
+}
+
+.catalogue-page .catalogue-signal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8dea45;
+  box-shadow: 0 0 0 4px rgba(141, 234, 69, 0.1), 0 0 14px rgba(141, 234, 69, 0.72);
+  animation: catalogue-dot-signal 2s ease-in-out infinite;
+}
+
+.catalogue-page .bike-toolbar {
+  overflow: hidden;
+}
+
+.catalogue-page .bike-toolbar::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: -22%;
+  width: 22%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #6be9ff, transparent);
+  animation: catalogue-toolbar-scan 7s linear infinite;
+  pointer-events: none;
+}
+
+.catalogue-page .filter-btn.active,
+body.dark-theme.catalogue-page .filter-btn.active {
+  box-shadow: inset 0 -9px 18px -16px #6be9ff;
+  text-shadow: 0 0 16px rgba(107, 233, 255, 0.36);
+}
+
+.catalogue-page .bike-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.catalogue-page .bike-status::before {
+  content: "";
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6be9ff;
+  box-shadow: 0 0 11px rgba(107, 233, 255, 0.72);
+}
+
+.catalogue-page .bike-card {
+  isolation: isolate;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.catalogue-page .bike-card:hover,
+.catalogue-page .bike-card:focus-visible,
+body.dark-theme.catalogue-page .bike-card:hover,
+body.dark-theme.catalogue-page .bike-card:focus-visible {
+  box-shadow:
+    0 24px 46px rgba(0, 0, 0, 0.24),
+    0 0 34px color-mix(in srgb, var(--card-brand-main) 18%, transparent);
+}
+
+.catalogue-page .bike-card-image-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.catalogue-page .bike-card-image-wrap::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: -35%;
+  bottom: -35%;
+  left: -38%;
+  width: 22%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+  opacity: 0;
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+
+.catalogue-page .bike-card:hover .bike-card-image-wrap::after,
+.catalogue-page .bike-card:focus-visible .bike-card-image-wrap::after {
+  opacity: 1;
+  animation: catalogue-image-scan 850ms ease-out both;
+}
+
+.catalogue-page .bike-info {
+  position: relative;
+  border-top: 1px solid color-mix(in srgb, var(--card-brand-main) 42%, transparent);
+}
+
+.catalogue-page .bike-availability-badge.is-available::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: #69eba4;
+  box-shadow: 0 0 10px rgba(105, 235, 164, 0.72);
+  animation: catalogue-dot-signal 2s ease-in-out infinite;
+}
+
+.catalogue-page .bike-availability-badge.is-available {
+  display: inline-flex;
+  align-items: center;
+}
+
+body.catalogue-page:not(.dark-theme) .catalogue-data-rail {
+  color: rgba(17, 24, 25, 0.54);
+}
+
+body.catalogue-page:not(.dark-theme) .catalogue-data-rail strong {
+  color: #111819;
+}
+
+body.catalogue-page:not(.dark-theme) .catalogue-data-rail::after {
+  background: linear-gradient(90deg, #188da0, transparent);
+}
+
+@keyframes catalogue-toolbar-scan {
+  from { left: -22%; }
+  to { left: 110%; }
+}
+
+@keyframes catalogue-line-signal {
+  0%, 100% { opacity: 0.35; transform: scaleX(0.45); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes catalogue-dot-signal {
+  0%, 100% { opacity: 0.58; }
+  50% { opacity: 1; }
+}
+
+@keyframes catalogue-image-scan {
+  from { left: -38%; }
+  to { left: 116%; }
+}
+
+@media (max-width: 768px) {
+  .catalogue-page .catalogue-data-rail {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    margin-top: 30px;
+  }
+
+  .catalogue-page .catalogue-data-rail::after {
+    flex: 1;
+  }
+}
+
+@media (hover: none) {
+  .catalogue-page .bike-card-image-wrap::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalogue-page .catalogue-data-rail::after,
+  .catalogue-page .catalogue-signal-dot,
+  .catalogue-page .bike-toolbar::before,
+  .catalogue-page .bike-availability-badge.is-available::before,
+  .catalogue-page .bike-card-image-wrap::after {
+    animation: none;
+  }
+
+  .catalogue-page .bike-toolbar::before,
+  .catalogue-page .bike-card-image-wrap::after {
+    display: none;
+  }
+}
