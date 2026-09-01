@@ -88,6 +88,13 @@ function openBikeModal(bikeId, options = {}) {
   }
 
   const brandTheme = getBrandTheme(bike);
+  const bikeModalContent = bikeModal.querySelector(".bike-modal-content");
+
+  if (bikeModalContent) {
+    bikeModalContent.style.setProperty("--modal-brand-main", brandTheme.main);
+    bikeModalContent.style.setProperty("--modal-brand-glow", brandTheme.glow);
+  }
+
   const highlights = getHighlights(bike);
   const recommendedUses = getRecommendedUses(bike);
   const colorVariants = getBikeColors(bike);
