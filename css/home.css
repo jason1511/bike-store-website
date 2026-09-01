@@ -3387,3 +3387,395 @@ body.home-page:not(.dark-theme) .footer-logo img {
       #eeece5;
   }
 }
+
+/* =========================================================
+   DAILY SHOWROOM CARD DECK
+   Five deterministic daily picks presented as a loose stack.
+========================================================= */
+.home-page .hero-featured-wrap {
+  grid-template-rows: auto minmax(440px, 1fr) auto auto;
+}
+
+.home-page .hero-featured {
+  min-height: 440px;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.home-page .hero-featured:active {
+  cursor: grabbing;
+}
+
+.home-page .hero-deck-card,
+body.home-page.dark-theme .hero-deck-card,
+body.home-page:not(.dark-theme) .hero-deck-card {
+  --deck-x: 0px;
+  --deck-y: 0px;
+  --deck-rotate: 0deg;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(72%, 520px);
+  min-height: 390px;
+  padding: 10px;
+  display: grid;
+  grid-template-rows: minmax(278px, 1fr) auto;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--deck-brand-main, var(--hero-brand-main)), transparent 48%);
+  border-radius: 0;
+  background: #0b1214;
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.3);
+  transform-origin: 50% 92%;
+  transition:
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.35s ease,
+    filter 0.35s ease,
+    box-shadow 0.35s ease;
+  will-change: transform, opacity;
+}
+
+.home-page .hero-deck-card::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: var(--deck-brand-main, var(--hero-brand-main));
+}
+
+.home-page .hero-deck-card::after {
+  content: "Buka detail +";
+  position: absolute;
+  z-index: 4;
+  right: 18px;
+  bottom: 18px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid currentColor;
+  color: rgba(243, 245, 241, 0.74);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.home-page .hero-deck-image {
+  min-height: 278px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(226, 232, 228, 0.94)),
+    var(--deck-brand-soft, var(--hero-brand-soft));
+}
+
+.home-page .hero-deck-image img {
+  width: 100%;
+  height: 100%;
+  max-height: 292px;
+  padding: 12px;
+  display: block;
+  object-fit: contain;
+  filter: saturate(0.96) contrast(1.02);
+}
+
+.home-page .hero-deck-card .hero-bike-info,
+body.home-page.dark-theme .hero-deck-card .hero-bike-info,
+body.home-page:not(.dark-theme) .hero-deck-card .hero-bike-info {
+  min-width: 0;
+  padding: 15px 150px 14px 8px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.home-page .hero-deck-card .hero-bike-label {
+  margin: 0 0 5px;
+  color: var(--deck-brand-main, var(--hero-brand-main));
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.home-page .hero-deck-card .hero-bike-info h3,
+body.home-page.dark-theme .hero-deck-card .hero-bike-info h3,
+body.home-page:not(.dark-theme) .hero-deck-card .hero-bike-info h3 {
+  margin: 0;
+  overflow: hidden;
+  color: #f3f5f1;
+  font-size: clamp(1.25rem, 2.3vw, 2rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-page .hero-deck-card .hero-bike-reason,
+.home-page .hero-deck-card .hero-bike-info > p.hero-bike-reason {
+  margin: 6px 0 0;
+  display: block !important;
+  overflow: hidden;
+  color: rgba(243, 245, 241, 0.5);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-page .hero-deck-card[data-depth="0"] {
+  z-index: 10;
+  pointer-events: auto;
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
+}
+
+.home-page .hero-deck-card[data-depth="0"]::after {
+  opacity: 1;
+}
+
+.home-page .hero-deck-card[data-depth="1"] {
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0.86;
+  filter: brightness(0.84) saturate(0.82);
+  transform: translate(calc(-50% - 18px + var(--deck-x)), calc(-50% + 14px + var(--deck-y))) rotate(calc(-3deg + var(--deck-rotate))) scale(0.982);
+}
+
+.home-page .hero-deck-card[data-depth="2"] {
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0.72;
+  filter: brightness(0.73) saturate(0.75);
+  transform: translate(calc(-50% + 24px + var(--deck-x)), calc(-50% + 24px + var(--deck-y))) rotate(calc(3.4deg + var(--deck-rotate))) scale(0.965);
+}
+
+.home-page .hero-deck-card[data-depth="3"] {
+  z-index: 7;
+  pointer-events: none;
+  opacity: 0.58;
+  filter: brightness(0.64) saturate(0.68);
+  transform: translate(calc(-50% - 10px + var(--deck-x)), calc(-50% + 35px + var(--deck-y))) rotate(calc(-1.8deg + var(--deck-rotate))) scale(0.947);
+}
+
+.home-page .hero-deck-card[data-depth="4"] {
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0.44;
+  filter: brightness(0.56) saturate(0.62);
+  transform: translate(calc(-50% + 16px + var(--deck-x)), calc(-50% + 45px + var(--deck-y))) rotate(calc(2.2deg + var(--deck-rotate))) scale(0.93);
+}
+
+.home-page .hero-deck-card.is-discarding {
+  transform: translate(calc(-50% + 112%), calc(-50% - 12px)) rotate(13deg) scale(0.96) !important;
+  opacity: 0 !important;
+}
+
+.home-page .hero-deck-card.is-returning {
+  transform: translate(calc(-50% - 112%), calc(-50% - 12px)) rotate(-13deg) scale(0.96) !important;
+  opacity: 0 !important;
+}
+
+.home-page .hero-deck-nav {
+  width: 100%;
+  margin: 2px auto 15px;
+  display: grid;
+  grid-template-columns: 44px auto 44px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: rgba(243, 245, 241, 0.48);
+}
+
+.home-page .hero-deck-nav button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0;
+  background: rgba(8, 13, 15, 0.54);
+  color: #f3f5f1;
+  font: inherit;
+  font-size: 1.15rem;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.home-page .hero-deck-nav button:hover,
+.home-page .hero-deck-nav button:focus-visible {
+  border-color: var(--hero-brand-main);
+  background: var(--hero-brand-main);
+  color: #071012;
+  outline: none;
+}
+
+.home-page .hero-deck-nav span {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+body.home-page:not(.dark-theme) .hero-deck-card {
+  border-color: color-mix(in srgb, var(--deck-brand-main, var(--hero-brand-main)), #657071 48%);
+  background: #f7f5ef;
+  box-shadow: 0 22px 42px rgba(30, 39, 39, 0.18);
+}
+
+body.home-page:not(.dark-theme) .hero-deck-card .hero-bike-info h3 {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .hero-deck-card .hero-bike-reason {
+  color: rgba(17, 24, 25, 0.58);
+}
+
+body.home-page:not(.dark-theme) .hero-deck-card::after {
+  color: rgba(17, 24, 25, 0.7);
+}
+
+body.home-page:not(.dark-theme) .hero-deck-nav {
+  color: rgba(17, 24, 25, 0.52);
+}
+
+body.home-page:not(.dark-theme) .hero-deck-nav button {
+  border-color: rgba(17, 24, 25, 0.25);
+  background: rgba(248, 246, 240, 0.72);
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .hero-deck-nav button:hover,
+body.home-page:not(.dark-theme) .hero-deck-nav button:focus-visible {
+  border-color: var(--hero-brand-main);
+  background: var(--hero-brand-main);
+  color: #071012;
+}
+
+@media (max-width: 768px) {
+  .home-page .hero-featured-wrap {
+    min-height: 510px;
+    grid-template-rows: auto minmax(360px, 1fr) auto auto;
+  }
+
+  .home-page .hero-featured {
+    min-height: 360px;
+  }
+
+  .home-page .hero-deck-card,
+  body.home-page.dark-theme .hero-deck-card,
+  body.home-page:not(.dark-theme) .hero-deck-card {
+    width: min(80vw, 365px);
+    min-height: 322px;
+    grid-template-rows: minmax(222px, 1fr) auto;
+    padding: 8px;
+  }
+
+  .home-page .hero-deck-image {
+    min-height: 222px;
+  }
+
+  .home-page .hero-deck-image img {
+    max-height: 236px;
+    padding: 8px;
+  }
+
+  .home-page .hero-deck-card .hero-bike-info,
+  body.home-page.dark-theme .hero-deck-card .hero-bike-info,
+  body.home-page:not(.dark-theme) .hero-deck-card .hero-bike-info {
+    padding: 12px 112px 11px 7px;
+  }
+
+  .home-page .hero-deck-card::after {
+    right: 13px;
+    bottom: 15px;
+    font-size: 0.52rem;
+  }
+
+  .home-page .hero-deck-card[data-depth="1"] {
+    transform: translate(calc(-50% - 10px + var(--deck-x)), calc(-50% + 9px + var(--deck-y))) rotate(calc(-2.7deg + var(--deck-rotate))) scale(0.982);
+  }
+
+  .home-page .hero-deck-card[data-depth="2"] {
+    transform: translate(calc(-50% + 13px + var(--deck-x)), calc(-50% + 16px + var(--deck-y))) rotate(calc(3deg + var(--deck-rotate))) scale(0.963);
+  }
+
+  .home-page .hero-deck-card[data-depth="3"] {
+    transform: translate(calc(-50% - 6px + var(--deck-x)), calc(-50% + 23px + var(--deck-y))) rotate(calc(-1.5deg + var(--deck-rotate))) scale(0.944);
+  }
+
+  .home-page .hero-deck-card[data-depth="4"] {
+    transform: translate(calc(-50% + 9px + var(--deck-x)), calc(-50% + 30px + var(--deck-y))) rotate(calc(2deg + var(--deck-rotate))) scale(0.925);
+  }
+}
+
+@media (max-width: 430px) {
+  .home-page .hero-featured-wrap {
+    min-height: 480px;
+    grid-template-rows: auto minmax(340px, 1fr) auto auto;
+  }
+
+  .home-page .hero-featured {
+    min-height: 340px;
+  }
+
+  .home-page .hero-deck-card,
+  body.home-page.dark-theme .hero-deck-card,
+  body.home-page:not(.dark-theme) .hero-deck-card {
+    width: min(78vw, 320px);
+    min-height: 304px;
+    grid-template-rows: minmax(204px, 1fr) auto;
+  }
+
+  .home-page .hero-deck-image {
+    min-height: 204px;
+  }
+
+  .home-page .hero-deck-image img {
+    max-height: 216px;
+  }
+
+  .home-page .hero-deck-card .hero-bike-info,
+  body.home-page.dark-theme .hero-deck-card .hero-bike-info,
+  body.home-page:not(.dark-theme) .hero-deck-card .hero-bike-info {
+    padding-right: 98px;
+  }
+
+  .home-page .hero-deck-card .hero-bike-info h3,
+  body.home-page.dark-theme .hero-deck-card .hero-bike-info h3,
+  body.home-page:not(.dark-theme) .hero-deck-card .hero-bike-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .home-page .hero-deck-nav {
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    gap: 8px;
+  }
+
+  .home-page .hero-deck-nav button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .home-page .hero-deck-nav span {
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .hero-deck-card {
+    transition: opacity 0.01ms linear;
+  }
+}
