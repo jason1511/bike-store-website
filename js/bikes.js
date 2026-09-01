@@ -225,6 +225,7 @@ function renderBikes() {
 
 function updateBikeStatus() {
   const bikeStatus = document.getElementById("bikeStatus");
+  const catalogueSignalCount = document.getElementById("catalogueSignalCount");
 
   if (!bikeStatus) {
     return;
@@ -235,6 +236,10 @@ function updateBikeStatus() {
     search: String(currentSearch || ""),
     sort: currentSort || "default"
   }).length;
+
+  if (catalogueSignalCount) {
+    catalogueSignalCount.textContent = `${visibleCount} unit`;
+  }
 
   const brandLabel = currentBrand === "all" ? "semua brand" : currentBrand;
   const safeSearch = String(currentSearch || "").trim();
