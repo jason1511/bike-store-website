@@ -827,7 +827,7 @@ function populateStockReceiveModal(bike, options = {}) {
   document.getElementById("stockReceiveNewColorNameInput").value = "";
   document.getElementById("stockReceiveNewColorHexInput").value = "#cccccc";
   document.getElementById("stockReceiveNewColorImageInput").value = "";
-  document.getElementById("stockReceiveQuantityInput").value = "1";
+  document.getElementById("stockReceiveQuantityInput").value = "0";
   document.getElementById("stockReceiveNoteInput").value = "";
 
   updateStockReceiveMode();
