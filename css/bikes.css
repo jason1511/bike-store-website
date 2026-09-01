@@ -3421,6 +3421,16 @@ body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-close {
   color: #111819;
 }
 
+body.dark-theme.home-page .bike-modal.catalogue-page .bike-modal-spec {
+  border: 0;
+  background: #0c1315;
+  color: rgba(243, 245, 241, 0.7);
+}
+
+body.dark-theme.home-page .bike-modal.catalogue-page .bike-modal-spec strong {
+  color: #f3f5f1;
+}
+
 @media (max-width: 900px) {
   .catalogue-page .bike-modal-content,
   body.dark-theme.catalogue-page .bike-modal-content {
