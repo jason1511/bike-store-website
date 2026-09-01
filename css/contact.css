@@ -676,3 +676,147 @@
     transition: none;
   }
 }
+
+/* =========================
+   TABLET + PHONE RESPONSIVE PASS
+========================= */
+.contact-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .contact-hero {
+    padding: 56px 30px 0;
+  }
+
+  .contact-hero-grid {
+    gap: 30px;
+    padding-bottom: 40px;
+  }
+
+  .showroom-directory {
+    padding: 52px 28px 70px;
+  }
+
+  .store-card {
+    min-height: 0;
+  }
+
+  .contact-action,
+  .store-whatsapp-link,
+  .store-map-actions a {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 760px) {
+  .contact-hero {
+    padding: 40px 16px 0;
+  }
+
+  .contact-hero-grid {
+    gap: 24px;
+    padding-bottom: 32px;
+  }
+
+  .contact-hero-copy h1 {
+    max-width: 10ch;
+    margin-top: 14px;
+    font-size: clamp(2.75rem, 12vw, 4.25rem);
+    line-height: 0.94;
+  }
+
+  .contact-hero-intro > p {
+    font-size: 0.98rem;
+    line-height: 1.62;
+  }
+
+  .contact-quick-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-top: 20px;
+  }
+
+  .contact-action {
+    width: 100%;
+  }
+
+  .contact-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-summary > span {
+    min-height: 54px;
+    padding: 14px 18px;
+  }
+
+  .showroom-directory {
+    padding: 44px 14px 58px;
+  }
+
+  .directory-heading {
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+
+  .directory-heading h2 {
+    font-size: clamp(2.4rem, 10.5vw, 3.4rem);
+  }
+
+  .directory-heading > p {
+    font-size: 0.94rem;
+    line-height: 1.62;
+  }
+
+  .store-grid {
+    gap: 14px;
+  }
+
+  .store-card,
+  .store-card:first-child {
+    padding: 22px 18px;
+  }
+
+  .store-card h3 {
+    font-size: clamp(1.65rem, 8vw, 2.25rem);
+  }
+
+  .store-card address {
+    font-size: 0.9rem;
+    line-height: 1.62;
+  }
+
+  .store-card::after {
+    top: 30px;
+    right: 20px;
+  }
+
+  .store-map-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-note {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 430px) {
+  .contact-hero-copy h1 {
+    font-size: clamp(2.65rem, 12.6vw, 3.35rem);
+  }
+
+  .store-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .store-detail-grid > div + div {
+    padding-top: 12px;
+    padding-left: 0;
+    border-top: 1px solid var(--contact-line);
+    border-left: 0;
+  }
+
+  .store-brand-logos {
+    flex-wrap: wrap;
+  }
+}
