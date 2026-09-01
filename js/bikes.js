@@ -475,12 +475,12 @@ function setupCompareBikeDropdowns() {
     .join("");
 
   bikeOne.innerHTML = `
-    <option value="">Pilih model pertama</option>
+    <option value="">Pilih unit pertama</option>
     ${bikeOptions}
   `;
 
   bikeTwo.innerHTML = `
-    <option value="">Pilih model pembanding</option>
+    <option value="">Pilih unit pembanding</option>
     ${bikeOptions}
   `;
 }
