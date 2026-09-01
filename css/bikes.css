@@ -3360,6 +3360,67 @@ body.catalogue-page:not(.dark-theme) .bike-modal-content:has(.bike-brand-theme) 
   color: #111819;
 }
 
+/* Homepage reuses the catalogue modal component without inheriting catalogue-page layout. */
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-content {
+  border-color: rgba(17, 24, 25, 0.2);
+  background: #f8f6f0;
+  color: #111819;
+  box-shadow: 0 30px 90px rgba(17, 24, 25, 0.24);
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-details {
+  background:
+    linear-gradient(145deg, var(--brand-soft), transparent 34%),
+    #f8f6f0;
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-brand-row {
+  border-bottom-color: rgba(17, 24, 25, 0.16);
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-details h2,
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-description,
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-recommended h3,
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-price,
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-color {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-description {
+  color: rgba(17, 24, 25, 0.62);
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .highlight-badge,
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .recommended-tags span {
+  border-color: rgba(17, 24, 25, 0.18);
+  color: rgba(17, 24, 25, 0.68);
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-specs {
+  border-color: rgba(17, 24, 25, 0.14);
+  background: rgba(17, 24, 25, 0.14);
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-spec {
+  background: #f8f6f0;
+  color: rgba(17, 24, 25, 0.68);
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-spec strong {
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .btn-secondary {
+  border-color: rgba(17, 24, 25, 0.3);
+  color: #111819;
+}
+
+body.home-page:not(.dark-theme) .bike-modal.catalogue-page .bike-modal-close {
+  border-color: rgba(17, 24, 25, 0.24);
+  background: #f8f6f0;
+  color: #111819;
+}
+
 @media (max-width: 900px) {
   .catalogue-page .bike-modal-content,
   body.dark-theme.catalogue-page .bike-modal-content {
