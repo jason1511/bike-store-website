@@ -265,6 +265,10 @@ setupPasswordVisibilityToggles();
    ADMIN STARTUP
 ========================= */
 async function initializeAdmin() {
+  if (typeof setupAdminMobileNavigation === "function") {
+    setupAdminMobileNavigation();
+  }
+
   if (typeof setupAdminLogin === "function") {
     setupAdminLogin();
   }
