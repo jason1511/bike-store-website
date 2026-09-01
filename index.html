@@ -78,12 +78,18 @@
 
       <div class="hero-featured-wrap">
         <div class="hero-stage-heading">
-          <p class="hero-display-label">Unit Pilihan / <span id="heroSequence">01</span></p>
+          <p class="hero-display-label">Unit Pilihan / <span id="heroSequence">1—5</span></p>
           <span class="hero-live-indicator">Katalog Aktif</span>
         </div>
 
-        <div class="hero-featured" id="heroFeaturedBike">
-          <!-- Random bike recommendation will be inserted here -->
+        <div class="hero-featured" id="heroFeaturedBike" aria-live="polite">
+          <!-- Daily showroom card deck will be inserted here -->
+        </div>
+
+        <div class="hero-deck-nav" aria-label="Navigasi unit pilihan">
+          <button type="button" id="heroDeckPrev" aria-label="Lihat unit sebelumnya">←</button>
+          <span>Geser kartu atau gunakan tombol</span>
+          <button type="button" id="heroDeckNext" aria-label="Lihat unit berikutnya">→</button>
         </div>
 
         <div class="hero-data-rail" aria-label="Ringkasan unit pilihan">
