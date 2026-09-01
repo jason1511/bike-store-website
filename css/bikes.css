@@ -3977,14 +3977,6 @@ body.catalogue-page:not(.dark-theme) .catalogue-data-rail::after {
     min-height: 46px;
   }
 
-  .catalogue-page .bike-modal-content,
-  body.dark-theme.catalogue-page .bike-modal-content {
-    width: 100%;
-    max-height: 100dvh;
-    margin: 0;
-    clip-path: none;
-  }
-
   .catalogue-page .bike-modal-close {
     top: max(10px, env(safe-area-inset-top));
     right: max(10px, env(safe-area-inset-right));
@@ -4001,6 +3993,36 @@ body.catalogue-page:not(.dark-theme) .catalogue-data-rail::after {
     padding: 24px 18px max(30px, env(safe-area-inset-bottom));
   }
 
+  .compare-page-header {
+    padding: 18px 16px;
+  }
+}
+
+@media (min-width: 621px) and (max-width: 768px) {
+  .catalogue-page .bike-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catalogue-page .bike-card-image-wrap {
+    min-height: 270px;
+  }
+
+  .catalogue-page .bike-card-image,
+  .catalogue-page .bike-card-image-wrap img,
+  .catalogue-page .bike-card img.bike-card-image {
+    height: 245px;
+  }
+}
+
+@media (max-width: 620px) {
+  .catalogue-page .bike-modal-content,
+  body.dark-theme.catalogue-page .bike-modal-content {
+    width: 100%;
+    max-height: 100dvh;
+    margin: 0;
+    clip-path: none;
+  }
+
   .compare-page-modal {
     padding: 0;
   }
@@ -4008,10 +4030,6 @@ body.catalogue-page:not(.dark-theme) .catalogue-data-rail::after {
   .compare-page-shell {
     max-height: 100dvh;
     border-radius: 0;
-  }
-
-  .compare-page-header {
-    padding: 18px 16px;
   }
 }
 
