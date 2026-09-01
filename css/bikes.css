@@ -2515,6 +2515,47 @@ body.dark-theme.catalogue-page .bike-detail-page-link {
   background: #0c1315;
 }
 
+/* Match the homepage's green-black dark palette. */
+body.dark-theme.catalogue-page {
+  background: #132223;
+}
+
+body.dark-theme.catalogue-page .page-hero {
+  background:
+    radial-gradient(circle at 78% 38%, rgba(40, 76, 74, 0.2), transparent 34%),
+    #132223;
+}
+
+body.dark-theme.catalogue-page .bike-listing {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    #101c1d;
+  background-size: 48px 48px;
+}
+
+body.dark-theme.catalogue-page .bike-toolbar {
+  background: rgba(17, 30, 31, 0.95);
+}
+
+body.dark-theme.catalogue-page .bike-search input,
+body.dark-theme.catalogue-page .bike-sort select {
+  background: #0f1a1b;
+}
+
+body.dark-theme.catalogue-page .bike-card {
+  background: #132022;
+}
+
+body.dark-theme.catalogue-page .bike-info {
+  background:
+    linear-gradient(145deg, var(--card-brand-soft), transparent 34%),
+    #132022;
+}
+
+body.dark-theme.catalogue-page .bike-empty-state {
+  background: #132022;
+}
+
 body.catalogue-page:not(.dark-theme) {
   --color-bg: #eeece5;
   --color-surface: #f8f6f0;
