@@ -126,19 +126,30 @@ function normalizeBrandSlug(value) {
     .replace(/[^a-z0-9-]/g, "");
 }
 
+function normalizePublicAssetPath(path) {
+  const value = String(path || "").trim();
+
+  if (!value || /^(?:https?:)?\/\//i.test(value) || /^(?:data|blob):/i.test(value) || value.startsWith("/")) {
+    return value;
+  }
+
+  return `/${value.replace(/^\.\//, "")}`;
+}
+
 function getBrandTheme(bikeOrBrand) {
   if (bikeOrBrand && typeof bikeOrBrand === "object") {
     const bike = bikeOrBrand;
     const theme = bike.brandTheme || {};
     const slug = theme.slug || normalizeBrandSlug(bike.brand);
+    const fallbackTheme = getBrandTheme(bike.brand);
 
     return {
-      className: theme.className || (slug ? `brand-${slug}` : "brand-default"),
-      logo: theme.logo || "",
-      main: theme.main || "#203333",
-      second: theme.second || "#2f4f4f",
-      soft: theme.soft || "rgba(159, 184, 182, 0.18)",
-      glow: theme.glow || "rgba(0, 0, 0, 0.12)"
+      className: theme.className || fallbackTheme.className || (slug ? `brand-${slug}` : "brand-default"),
+      logo: normalizePublicAssetPath(theme.logo || fallbackTheme.logo || ""),
+      main: theme.main || fallbackTheme.main || "#203333",
+      second: theme.second || fallbackTheme.second || "#2f4f4f",
+      soft: theme.soft || fallbackTheme.soft || "rgba(159, 184, 182, 0.18)",
+      glow: theme.glow || fallbackTheme.glow || "rgba(0, 0, 0, 0.12)"
     };
   }
 
@@ -147,7 +158,7 @@ function getBrandTheme(bikeOrBrand) {
   const fallbackThemes = {
     exotic: {
       className: "brand-exotic",
-      logo: "images/brands/exotic.jpeg",
+      logo: "/images/brands/exotic.jpeg",
       main: "#ed1c24",
       second: "#111111",
       soft: "rgba(237, 28, 36, 0.18)",
@@ -155,7 +166,7 @@ function getBrandTheme(bikeOrBrand) {
     },
     pacific: {
       className: "brand-pacific",
-      logo: "images/brands/pacific.jpeg",
+      logo: "/images/brands/pacific.jpeg",
       main: "#ed1c24",
       second: "#111111",
       soft: "rgba(237, 28, 36, 0.18)",
@@ -163,7 +174,7 @@ function getBrandTheme(bikeOrBrand) {
     },
     pasifik: {
       className: "brand-pacific",
-      logo: "images/brands/pacific.jpeg",
+      logo: "/images/brands/pacific.jpeg",
       main: "#ed1c24",
       second: "#111111",
       soft: "rgba(237, 28, 36, 0.18)",
@@ -171,7 +182,7 @@ function getBrandTheme(bikeOrBrand) {
     },
     pasific: {
       className: "brand-pacific",
-      logo: "images/brands/pacific.jpeg",
+      logo: "/images/brands/pacific.jpeg",
       main: "#ed1c24",
       second: "#111111",
       soft: "rgba(237, 28, 36, 0.18)",
@@ -179,7 +190,7 @@ function getBrandTheme(bikeOrBrand) {
     },
     larizz: {
       className: "brand-larizz",
-      logo: "images/brands/laris.jpeg",
+      logo: "/images/brands/laris.jpeg",
       main: "#27245f",
       second: "#e31b23",
       soft: "rgba(39, 36, 95, 0.18)",
@@ -187,7 +198,7 @@ function getBrandTheme(bikeOrBrand) {
     },
     saige: {
       className: "brand-saige",
-      logo: "images/brands/saige.jpeg",
+      logo: "/images/brands/saige.jpeg",
       main: "#66bd45",
       second: "#2f6f2e",
       soft: "rgba(102, 189, 69, 0.18)",
@@ -195,7 +206,7 @@ function getBrandTheme(bikeOrBrand) {
     },
     uwinfly: {
       className: "brand-uwinfly",
-      logo: "images/brands/uwinfly.jpeg",
+      logo: "/images/brands/uwinfly.jpeg",
       main: "#ed1c24",
       second: "#b91319",
       soft: "rgba(237, 28, 36, 0.18)",
@@ -203,7 +214,7 @@ function getBrandTheme(bikeOrBrand) {
     },
     nuv: {
       className: "brand-nuv",
-      logo: "images/brands/nuv.jpeg",
+      logo: "/images/brands/nuv.jpeg",
       main: "#27bfc3",
       second: "#0f777b",
       soft: "rgba(39, 191, 195, 0.2)",

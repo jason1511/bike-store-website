@@ -8,6 +8,10 @@ html {
   text-size-adjust: 100%;
 }
 
+.admin-mobile-menu-toggle {
+  display: none;
+}
+
 .admin-body,
 .admin-page,
 .admin-dashboard,
@@ -195,12 +199,13 @@ html {
   }
 
   .admin-dashboard-header {
-    padding: 22px;
+    padding: 18px;
   }
 
   .admin-dashboard-header h1,
   .admin-login-card h1 {
-    font-size: clamp(2rem, 10vw, 2.8rem);
+    font-size: clamp(1.9rem, 8.5vw, 2.55rem);
+    line-height: 1.06;
   }
 
   .admin-dashboard-header p,
@@ -209,7 +214,7 @@ html {
   }
 
   .admin-panel {
-    padding: 18px;
+    padding: 16px;
   }
 
   .admin-panel-header,
@@ -287,8 +292,11 @@ html {
 ========================= */
 @media (max-width: 900px) {
   .admin-navbar {
-    top: 8px;
-    gap: 12px;
+    position: sticky;
+    top: max(6px, env(safe-area-inset-top));
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
     padding: 10px;
   }
 
@@ -305,33 +313,84 @@ html {
     display: none;
   }
 
+  .admin-mobile-menu-toggle {
+    display: grid;
+    grid-template-columns: auto auto 12px;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 8px 11px;
+    border: 1px solid rgba(159, 184, 182, 0.28);
+    border-radius: 12px;
+    color: #dce5e3;
+    background: rgba(8, 20, 20, 0.76);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .admin-mobile-menu-toggle > span:first-child {
+    color: #9fb8b6;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .admin-mobile-menu-toggle strong {
+    max-width: 86px;
+    overflow: hidden;
+    color: #8fffc0;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-mobile-menu-icon {
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.18s ease;
+  }
+
+  .admin-navbar.is-menu-open .admin-mobile-menu-icon {
+    transform: translateY(2px) rotate(225deg);
+  }
+
   .admin-navbar-links {
+    grid-column: 1 / -1;
     width: 100%;
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
     gap: 8px;
-    padding: 2px 2px 6px;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
+    padding: 4px 0 0;
+  }
+
+  .admin-navbar.has-mobile-menu:not(.is-menu-open) .admin-navbar-links {
+    display: none;
   }
 
   .admin-nav-link,
   .admin-current-user {
-    min-height: 40px;
+    width: 100%;
+    min-height: 44px;
     padding: 9px 12px;
     font-size: 0.82rem;
-    scroll-snap-align: start;
+    justify-content: center;
+    border-radius: 12px;
     white-space: nowrap;
   }
 
   .admin-current-user {
+    grid-column: 1 / -1;
+    order: -1;
     margin-left: 0;
   }
 
   .admin-current-user span {
-    max-width: 90px;
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -343,14 +402,20 @@ html {
 @media (max-width: 900px) {
   .admin-stock-summary-grid,
   .admin-report-stock-summary-grid,
-  .admin-invoice-summary-grid {
-    grid-template-columns: 1fr;
+  .admin-invoice-summary-grid,
+  .admin-sales-summary-grid,
+  .admin-user-summary-grid,
+  .admin-audit-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
   .admin-stock-summary-card,
-  .admin-invoice-summary-card {
-    padding: 14px;
+  .admin-invoice-summary-card,
+  .admin-sales-summary-card,
+  .admin-user-summary-card,
+  .admin-audit-summary-card {
+    padding: 13px;
     border-radius: 16px;
   }
 
@@ -391,6 +456,44 @@ html {
 
   .admin-stock-movement-row div:first-child {
     grid-column: 1 / -1;
+  }
+}
+
+/* =========================
+   IPAD DENSITY
+========================= */
+@media (min-width: 600px) and (max-width: 900px) {
+  .admin-page {
+    padding-inline: max(18px, env(safe-area-inset-left));
+  }
+
+  .admin-navbar-links {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-current-user {
+    grid-column: span 2;
+  }
+
+  .admin-filter-bar,
+  .admin-report-filter-grid,
+  .admin-brand-form-grid,
+  .admin-color-variant-fields,
+  .admin-invoice-filter-grid,
+  .admin-service-filter-grid,
+  .admin-user-filter-bar,
+  .admin-audit-filter-grid,
+  .admin-audit-custom-range {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-stock-summary-grid,
+  .admin-report-stock-summary-grid,
+  .admin-invoice-summary-grid,
+  .admin-sales-summary-grid,
+  .admin-user-summary-grid,
+  .admin-audit-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -616,7 +719,7 @@ html {
   .admin-panel,
   .admin-dashboard-header,
   .admin-login-card {
-    padding: 16px;
+    padding: 14px;
     border-radius: 16px;
   }
 
@@ -628,6 +731,19 @@ html {
   .admin-current-user {
     font-size: 0.78rem;
     padding-inline: 10px;
+  }
+
+  .admin-dashboard,
+  .admin-view.is-active {
+    gap: 12px;
+  }
+
+  .admin-stock-summary-card small,
+  .admin-invoice-summary-card small,
+  .admin-sales-summary-card small,
+  .admin-user-summary-card small,
+  .admin-audit-summary-card small {
+    font-size: 0.72rem;
   }
 
   .admin-eyebrow {
@@ -644,5 +760,16 @@ html {
 
   .admin-empty-state {
     padding: 14px;
+  }
+}
+
+@media (max-width: 350px) {
+  .admin-stock-summary-grid,
+  .admin-report-stock-summary-grid,
+  .admin-invoice-summary-grid,
+  .admin-sales-summary-grid,
+  .admin-user-summary-grid,
+  .admin-audit-summary-grid {
+    grid-template-columns: 1fr;
   }
 }

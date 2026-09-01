@@ -130,8 +130,8 @@ function createBikeCard(bike) {
                 data-bike-color-image="${escapeHtml(color.image || bike.image || imageSrc)}"
                 data-bike-color-name="${escapeHtml(color.name || "")}"
                 onclick="event.stopPropagation(); switchBikeCardColor(this);"
-                aria-label="Warna ${escapeHtml(color.name || "unit")}"
-                title="${escapeHtml(color.name || "Warna")}"
+                aria-label="Warna ${escapeHtml(color.name || "unit")} - ${isColorAvailable ? "tersedia" : "stok habis"}"
+                title="${escapeHtml(color.name || "Warna")} — ${isColorAvailable ? "tersedia" : "stok habis"}"
                 ${isColorAvailable ? "" : "disabled"}
               ></button>
             `;

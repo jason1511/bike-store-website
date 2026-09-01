@@ -28,9 +28,10 @@
 
   <link rel="stylesheet" href="css/global.css" />
   <link rel="stylesheet" href="css/bikes.css" />
+  <link rel="stylesheet" href="css/public-shell.css" />
 </head>
 
-<body>
+<body class="catalogue-page public-page">
   <header>
     <nav class="navbar">
       <a href="/" class="logo">
@@ -40,7 +41,7 @@
 
       <ul class="nav-links">
         <li><a href="/">Beranda</a></li>
-        <li><a href="/bikes">Katalog</a></li>
+        <li><a href="/bikes" aria-current="page">Katalog</a></li>
         <li><a href="/contact">Kontak</a></li>
       </ul>
 
@@ -53,20 +54,30 @@
   <main>
     <section class="page-hero">
       <div class="page-hero-content">
-        <p class="section-tag">Mobilitas Cerdas Dimulai di Sini</p>
-        <h1>Temukan Sepeda Listrik yang Pas untuk Gaya Hidup Anda</h1>
-        <p>
-          Jelajahi model unggulan dari Exotic, Pacific, Larizz, Saige, Uwinfly,
-          dan Nuv. Bandingkan performa, jarak tempuh, kenyamanan, warna, dan
-          ketersediaan stok—lalu dapatkan penawaran terbaru langsung dari showroom.
-        </p>
-
-        <div class="page-hero-actions">
-          <a class="btn-primary" href="#bikeCatalogue">Jelajahi Koleksi</a>
-          <button type="button" class="btn-secondary" id="openCompareModal">
-            Bandingkan 2 Model
-          </button>
+        <div class="catalogue-hero-title">
+          <p class="section-tag">Katalog / Unit Aktif</p>
+          <h1>Pilih unit.<span>Periksa detailnya.</span></h1>
         </div>
+
+        <div class="catalogue-hero-intro">
+          <p>
+            Telusuri model yang tersedia berdasarkan brand, jarak tempuh,
+            tenaga motor, warna, dan kebutuhan penggunaan Anda.
+          </p>
+
+          <div class="page-hero-actions">
+            <a class="btn-primary" href="#bikeCatalogue">Lihat Katalog</a>
+            <button type="button" class="btn-secondary" id="openCompareModal">
+              Bandingkan 2 Model <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="catalogue-data-rail" aria-hidden="true">
+        <span class="catalogue-signal-dot"></span>
+        <span>Katalog aktif</span>
+        <strong id="catalogueSignalCount">-- unit</strong>
       </div>
     </section>
 
@@ -124,11 +135,10 @@
     >
       <header class="compare-page-header">
         <div>
-          <p class="section-tag">Smart Comparison</p>
-          <h2 id="comparePageTitle">Bandingkan Lebih Cerdas, Pilih dengan Percaya Diri</h2>
+          <p class="section-tag">Bike Compare / 02</p>
+          <h2 id="comparePageTitle">Bandingkan dua model.</h2>
           <p>
-            Bandingkan dua model berdampingan dan temukan pilihan yang paling sesuai
-            untuk aktivitas harian, kenyamanan, performa, dan kebutuhan Anda.
+            Lihat selisih spesifikasi utama dan temukan unit yang paling sesuai.
           </p>
         </div>
 
@@ -145,48 +155,52 @@
       <section class="bike-compare-ai" aria-label="Formulir perbandingan sepeda">
         <div class="bike-compare-content">
           <div class="compare-heading">
-            <p class="section-tag">Temukan Pilihan Terbaik</p>
-            <h2>Dua model, satu keputusan yang lebih yakin</h2>
+            <p class="section-tag">Langkah 1 / Pilih</p>
+            <h2>Tentukan dua unit pilihan.</h2>
             <p>
-              Pilih dua sepeda yang menarik perhatian Anda. Rekomendasi cerdas kami
-              merangkum perbedaan utama agar Anda lebih mudah menentukan model yang tepat.
+              Kami merangkum performa, jarak tempuh, baterai, dan kecocokan penggunaan.
             </p>
           </div>
 
           <form class="compare-form" id="compareBikeForm">
+            <div class="compare-form-heading">
+              <p class="section-tag">Langkah 2 / Bandingkan</p>
+              <h3>Atur perbandingan</h3>
+            </div>
+
             <div class="form-group">
-              <label for="compareBikeOne">Model pilihan pertama</label>
+              <label for="compareBikeOne">Unit A</label>
               <select id="compareBikeOne" required>
-                <option value="">Pilih model pertama</option>
+                <option value="">Pilih unit pertama</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="compareBikeTwo">Model pembanding</label>
+              <label for="compareBikeTwo">Unit B</label>
               <select id="compareBikeTwo" required>
-                <option value="">Pilih model pembanding</option>
+                <option value="">Pilih unit pembanding</option>
               </select>
             </div>
 
             <div class="form-group compare-usage-group">
-              <label for="compareUsageInput">Aktivitas atau kebutuhan utama</label>
+              <label for="compareUsageInput">Kebutuhan utama <span>(opsional)</span></label>
               <input
                 type="text"
                 id="compareUsageInput"
-                placeholder="Contoh: perjalanan kerja, antar anak, belanja harian, atau jalan santai"
+                placeholder="Contoh: kerja, antar anak, atau perjalanan jauh"
               >
             </div>
 
             <button type="submit" class="btn-primary">
-              Lihat Rekomendasi
+              Bandingkan sekarang <span aria-hidden="true">→</span>
             </button>
           </form>
 
           <div class="compare-result" id="compareBikeResult" aria-live="polite">
-            <h3>Pilihan terbaik Anda akan tampil di sini</h3>
+            <p class="compare-result-status">Hasil / Siap</p>
+            <h3>Perbandingan akan tampil di sini.</h3>
             <p>
-              Pilih dua model untuk melihat perbedaan utama dan rekomendasi
-              yang ringkas, jelas, dan mudah dipahami.
+              Pilih Unit A dan Unit B, lalu tekan “Bandingkan sekarang”.
             </p>
           </div>
         </div>

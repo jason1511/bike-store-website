@@ -225,6 +225,7 @@ function renderBikes() {
 
 function updateBikeStatus() {
   const bikeStatus = document.getElementById("bikeStatus");
+  const catalogueSignalCount = document.getElementById("catalogueSignalCount");
 
   if (!bikeStatus) {
     return;
@@ -235,6 +236,10 @@ function updateBikeStatus() {
     search: String(currentSearch || ""),
     sort: currentSort || "default"
   }).length;
+
+  if (catalogueSignalCount) {
+    catalogueSignalCount.textContent = `${visibleCount} unit`;
+  }
 
   const brandLabel = currentBrand === "all" ? "semua brand" : currentBrand;
   const safeSearch = String(currentSearch || "").trim();
@@ -470,12 +475,12 @@ function setupCompareBikeDropdowns() {
     .join("");
 
   bikeOne.innerHTML = `
-    <option value="">Pilih model pertama</option>
+    <option value="">Pilih unit pertama</option>
     ${bikeOptions}
   `;
 
   bikeTwo.innerHTML = `
-    <option value="">Pilih model pembanding</option>
+    <option value="">Pilih unit pembanding</option>
     ${bikeOptions}
   `;
 }

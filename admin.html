@@ -101,7 +101,19 @@
           </div>
         </div>
 
-        <div class="admin-navbar-links">
+        <button
+          type="button"
+          class="admin-mobile-menu-toggle"
+          id="adminMobileMenuToggle"
+          aria-expanded="false"
+          aria-controls="adminNavbarLinks"
+        >
+          <span>Menu</span>
+          <strong id="adminMobileViewLabel">Katalog</strong>
+          <span class="admin-mobile-menu-icon" aria-hidden="true"></span>
+        </button>
+
+        <div class="admin-navbar-links" id="adminNavbarLinks">
           <a href="index.html" class="admin-nav-link admin-site-link">
             Website
           </a>
