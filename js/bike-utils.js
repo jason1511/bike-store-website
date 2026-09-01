@@ -131,14 +131,15 @@ function getBrandTheme(bikeOrBrand) {
     const bike = bikeOrBrand;
     const theme = bike.brandTheme || {};
     const slug = theme.slug || normalizeBrandSlug(bike.brand);
+    const fallbackTheme = getBrandTheme(bike.brand);
 
     return {
-      className: theme.className || (slug ? `brand-${slug}` : "brand-default"),
-      logo: theme.logo || "",
-      main: theme.main || "#203333",
-      second: theme.second || "#2f4f4f",
-      soft: theme.soft || "rgba(159, 184, 182, 0.18)",
-      glow: theme.glow || "rgba(0, 0, 0, 0.12)"
+      className: theme.className || fallbackTheme.className || (slug ? `brand-${slug}` : "brand-default"),
+      logo: theme.logo || fallbackTheme.logo || "",
+      main: theme.main || fallbackTheme.main || "#203333",
+      second: theme.second || fallbackTheme.second || "#2f4f4f",
+      soft: theme.soft || fallbackTheme.soft || "rgba(159, 184, 182, 0.18)",
+      glow: theme.glow || fallbackTheme.glow || "rgba(0, 0, 0, 0.12)"
     };
   }
 
