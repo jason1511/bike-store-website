@@ -62,6 +62,70 @@
   color: #ffffff;
 }
 
+/* Logged-in dashboard access follows the public shell design language. */
+.public-page .admin-portal-link,
+.public-page .nav-links .admin-portal-link {
+  position: relative;
+  min-height: 38px;
+  padding: 5px 12px 5px 14px;
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(107, 233, 255, 0.28);
+  border-radius: 0;
+  background: rgba(107, 233, 255, 0.055);
+  color: #f3f5f1;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.public-page .admin-portal-link::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 0;
+  width: 2px;
+  background: #6be9ff;
+  box-shadow: 0 0 12px rgba(107, 233, 255, 0.65);
+}
+
+.public-page .nav-links .admin-portal-link:hover,
+.public-page .nav-links .admin-portal-link:focus-visible {
+  border-color: rgba(107, 233, 255, 0.7);
+  background: rgba(107, 233, 255, 0.12);
+  color: #ffffff;
+  outline: none;
+}
+
+.public-page .admin-portal-icon {
+  color: #6be9ff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.public-page .admin-portal-identity {
+  gap: 2px;
+}
+
+.public-page .admin-portal-identity strong {
+  color: #f3f5f1;
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.public-page .admin-portal-identity small {
+  color: rgba(243, 245, 241, 0.48);
+  font-size: 0.48rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
 .public-page .theme-toggle {
   width: 56px;
   height: 30px;
@@ -110,6 +174,37 @@ body.public-page:not(.dark-theme) .nav-links a:hover {
 
 body.public-page:not(.dark-theme) .nav-links a {
   color: rgba(17, 24, 25, 0.56);
+}
+
+body.public-page:not(.dark-theme) .admin-portal-link,
+body.public-page:not(.dark-theme) .nav-links .admin-portal-link {
+  border-color: rgba(29, 125, 142, 0.34);
+  background: rgba(29, 125, 142, 0.055);
+  color: #111819;
+}
+
+body.public-page:not(.dark-theme) .admin-portal-link::before {
+  background: #1d7d8e;
+  box-shadow: 0 0 10px rgba(29, 125, 142, 0.28);
+}
+
+body.public-page:not(.dark-theme) .admin-portal-icon {
+  color: #1d7d8e;
+}
+
+body.public-page:not(.dark-theme) .admin-portal-identity strong {
+  color: #111819;
+}
+
+body.public-page:not(.dark-theme) .admin-portal-identity small {
+  color: rgba(17, 24, 25, 0.48);
+}
+
+body.public-page:not(.dark-theme) .nav-links .admin-portal-link:hover,
+body.public-page:not(.dark-theme) .nav-links .admin-portal-link:focus-visible {
+  border-color: rgba(29, 125, 142, 0.7);
+  background: rgba(29, 125, 142, 0.11);
+  color: #111819;
 }
 
 body.public-page:not(.dark-theme) .theme-toggle {
@@ -171,6 +266,10 @@ body.public-page:not(.dark-theme) .footer-logo img {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  .public-page .nav-links:has(> [data-admin-navbar-item]) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   body.public-page:not(.dark-theme) .nav-links {
     border-top-color: rgba(17, 24, 25, 0.1);
   }
@@ -182,6 +281,27 @@ body.public-page:not(.dark-theme) .footer-logo img {
     min-height: 38px;
     padding: 4px 8px;
     font-size: 0.7rem;
+  }
+
+  .public-page .nav-links .admin-portal-link {
+    width: 100%;
+    min-height: 38px;
+    padding: 4px 8px;
+    display: flex;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    clip-path: none;
+  }
+
+  .public-page .admin-portal-link::before,
+  .public-page .admin-portal-identity {
+    display: none;
+  }
+
+  .public-page .admin-portal-icon {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
   }
 
   .public-page .logo {
