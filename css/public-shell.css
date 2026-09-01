@@ -9,6 +9,21 @@
   backdrop-filter: blur(14px);
 }
 
+.public-page {
+  overflow-x: clip;
+}
+
+.public-page main,
+.public-page section,
+.public-page .navbar > * {
+  min-width: 0;
+}
+
+.public-page :is(a, button, input, select) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .public-page .navbar {
   min-height: 72px;
   max-width: 1600px;
@@ -135,25 +150,96 @@ body.public-page:not(.dark-theme) .footer-logo img {
 
 @media (max-width: 768px) {
   .public-page header {
-    padding: 0 18px;
+    padding: 0 max(14px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
   }
 
   .public-page .navbar {
-    grid-template-columns: 1fr auto;
-    padding: 12px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 14px;
+    min-height: 0;
+    padding: 10px 0 8px;
   }
 
   .public-page .nav-links {
     grid-column: 1 / -1;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     width: 100%;
-    gap: 24px;
+    gap: 0;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  body.public-page:not(.dark-theme) .nav-links {
+    border-top-color: rgba(17, 24, 25, 0.1);
+  }
+
+  .public-page .nav-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+
+  .public-page .logo {
+    min-width: 0;
+  }
+
+  .public-page .logo img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .public-page .theme-toggle {
+    width: 58px;
+    min-height: 38px;
+  }
+
+  .public-page .footer {
+    padding: 38px max(18px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  }
+
+  .public-page .footer-content {
+    gap: 28px;
+  }
+
+  .public-page .footer-links a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
   }
 }
 
 @media (max-width: 480px) {
   .public-page .logo span {
-    max-width: 160px;
+    max-width: min(190px, 52vw);
+    overflow: hidden;
+    font-size: 0.78rem;
     line-height: 1.2;
+    text-overflow: ellipsis;
+  }
+
+  .public-page .nav-links a {
+    font-size: 0.65rem;
+    letter-spacing: 0.055em;
+  }
+
+  .public-page .footer-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+  }
+
+  .public-page .footer-links a {
+    justify-content: center;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 950px) {
+  .public-page header {
+    position: relative;
   }
 }
