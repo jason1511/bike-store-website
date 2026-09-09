@@ -334,6 +334,10 @@ function setupAdminLogout() {
   logoutButton.dataset.adminLogoutBound = "true";
 
 logoutButton.addEventListener("click", () => {
+  if (typeof stopAdminLiveUpdates === "function") {
+    stopAdminLiveUpdates({ removePresence: true });
+  }
+
   clearStoredAdminSession();
 
   if (
@@ -415,6 +419,10 @@ function showAdminLogin() {
   if (dashboard) {
     dashboard.classList.add("is-hidden");
   }
+
+  if (typeof stopAdminLiveUpdates === "function") {
+    stopAdminLiveUpdates();
+  }
 }
 
 function showAdminDashboard() {
@@ -430,6 +438,10 @@ function showAdminDashboard() {
   }
 
   renderAdminCurrentUserLabel();
+
+  if (typeof startAdminLiveUpdates === "function") {
+    startAdminLiveUpdates();
+  }
 }
 
 /* =========================

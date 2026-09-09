@@ -101,6 +101,64 @@
           </div>
         </div>
 
+        <div class="admin-live-shell" id="adminLiveShell">
+          <button
+            type="button"
+            class="admin-live-toggle"
+            id="adminLiveToggle"
+            aria-expanded="false"
+            aria-controls="adminLivePopover"
+          >
+            <span class="admin-live-dot" aria-hidden="true"></span>
+            <span class="admin-live-toggle-copy">
+              <strong id="adminLiveOnlineCount">—</strong>
+              <small>online</small>
+            </span>
+            <span
+              class="admin-live-badge is-hidden"
+              id="adminLiveBadge"
+              aria-label="Aktivitas baru"
+            >0</span>
+          </button>
+
+          <section
+            class="admin-live-popover is-hidden"
+            id="adminLivePopover"
+            aria-label="Aktivitas admin langsung"
+          >
+            <div class="admin-live-popover-header">
+              <div>
+                <p class="admin-eyebrow">Live Admin</p>
+                <h2>Aktivitas Tim</h2>
+              </div>
+              <span id="adminLiveConnectionLabel">Menghubungkan…</span>
+            </div>
+
+            <div class="admin-live-section">
+              <h3>Sedang online</h3>
+              <div class="admin-presence-list" id="adminPresenceList">
+                <p class="admin-live-empty">Memeriksa pengguna…</p>
+              </div>
+            </div>
+
+            <div class="admin-live-section">
+              <div class="admin-live-section-heading">
+                <h3>Aktivitas terbaru</h3>
+                <button
+                  type="button"
+                  class="admin-live-refresh is-hidden"
+                  id="adminLiveRefreshBtn"
+                >
+                  Muat pembaruan
+                </button>
+              </div>
+              <div class="admin-live-event-list" id="adminLiveEventList">
+                <p class="admin-live-empty">Belum ada aktivitas baru.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
         <button
           type="button"
           class="admin-mobile-menu-toggle"
@@ -200,8 +258,16 @@
     </section>
   </main>
 
+  <div
+    class="admin-live-toast-region"
+    id="adminLiveToastRegion"
+    aria-live="polite"
+    aria-atomic="true"
+  ></div>
+
   <script src="js/bike-utils.js"></script>
   <script src="js/admin-core.js"></script>
+<script src="js/admin-live.js"></script>
 <script src="js/admin-stock-chart.js"></script>
 <script src="js/admin-stock-analytics.js"></script>
 <script src="js/admin-partials.js"></script>
