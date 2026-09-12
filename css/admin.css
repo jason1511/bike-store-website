@@ -536,3 +536,335 @@ button:disabled {
   pointer-events: none;
 }
 
+/* =========================
+   LIVE ADMIN
+========================= */
+.admin-live-shell {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.admin-live-toggle {
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 7px 11px;
+  border: 1px solid rgba(37, 211, 102, 0.28);
+  border-radius: 999px;
+  color: #dce5e3;
+  background: rgba(7, 24, 19, 0.76);
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-live-dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.12);
+}
+
+.admin-live-shell.is-connected .admin-live-dot,
+.admin-presence-item.is-online .admin-presence-avatar::after {
+  background: #48ee91;
+  box-shadow: 0 0 0 4px rgba(72, 238, 145, 0.12);
+}
+
+.admin-live-shell.is-offline .admin-live-dot {
+  background: #ff8f8f;
+  box-shadow: 0 0 0 4px rgba(255, 143, 143, 0.12);
+}
+
+.admin-live-toggle-copy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.admin-live-toggle-copy strong {
+  color: #8fffc0;
+  font-size: 0.9rem;
+}
+
+.admin-live-toggle-copy small {
+  color: #9fb8b6;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.admin-live-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: #071312;
+  background: #48ee91;
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.admin-live-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 60;
+  display: grid;
+  width: min(390px, calc(100vw - 36px));
+  max-height: min(680px, calc(100dvh - 110px));
+  overflow-y: auto;
+  border: 1px solid rgba(159, 184, 182, 0.24);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(37, 211, 102, 0.14), transparent 35%),
+    #102321;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+  scrollbar-width: thin;
+}
+
+.admin-live-popover-header,
+.admin-live-section {
+  padding: 16px;
+}
+
+.admin-live-popover-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid rgba(159, 184, 182, 0.14);
+}
+
+.admin-live-popover-header .admin-eyebrow {
+  margin-bottom: 4px;
+}
+
+.admin-live-popover-header h2,
+.admin-live-section h3 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.admin-live-popover-header h2 {
+  font-size: 1.2rem;
+}
+
+.admin-live-popover-header > span {
+  color: #8fffc0;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.admin-live-section + .admin-live-section {
+  border-top: 1px solid rgba(159, 184, 182, 0.14);
+}
+
+.admin-live-section h3 {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-live-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-presence-list,
+.admin-live-event-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-presence-item,
+.admin-live-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(159, 184, 182, 0.12);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-presence-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: #071312;
+  background: #9fb8b6;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.admin-presence-avatar::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid #102321;
+  border-radius: 50%;
+  background: #fbbf24;
+}
+
+.admin-presence-item div,
+.admin-live-event div {
+  min-width: 0;
+}
+
+.admin-presence-item strong,
+.admin-presence-item small,
+.admin-live-event p,
+.admin-live-event small {
+  display: block;
+}
+
+.admin-presence-item strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 0.83rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-presence-item small,
+.admin-live-event small,
+.admin-live-empty {
+  color: #9fb8b6;
+  font-size: 0.72rem;
+}
+
+.admin-presence-state {
+  color: #8fffc0;
+  font-size: 0.67rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-presence-item.is-away .admin-presence-state {
+  color: #f7cf73;
+}
+
+.admin-live-event {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+
+.admin-live-event-mark {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #68d8ee;
+}
+
+.admin-live-event-mark.is-invoice {
+  background: #48ee91;
+}
+
+.admin-live-event-mark.is-service {
+  background: #f7cf73;
+}
+
+.admin-live-event-mark.is-user,
+.admin-live-event-mark.is-auth {
+  background: #ff9f9f;
+}
+
+.admin-live-event p,
+.admin-live-empty {
+  margin: 0;
+}
+
+.admin-live-event p {
+  color: #dce5e3;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.admin-live-event p strong {
+  color: #ffffff;
+}
+
+.admin-live-refresh {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid rgba(72, 238, 145, 0.3);
+  border-radius: 9px;
+  color: #8fffc0;
+  background: rgba(72, 238, 145, 0.08);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-live-toast-region {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 120;
+  width: min(390px, calc(100vw - 36px));
+}
+
+.admin-live-toast {
+  appearance: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(72, 238, 145, 0.32);
+  border-radius: 16px;
+  color: #ffffff;
+  background: #102b25;
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.42);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-live-toast > span:last-child,
+.admin-live-toast strong,
+.admin-live-toast small,
+.admin-live-toast em {
+  display: block;
+}
+
+.admin-live-toast strong {
+  margin-bottom: 3px;
+  color: #8fffc0;
+  font-size: 0.8rem;
+}
+
+.admin-live-toast small {
+  color: #dce5e3;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.admin-live-toast em {
+  margin-top: 4px;
+  color: #9fb8b6;
+  font-size: 0.68rem;
+  font-style: normal;
+}
