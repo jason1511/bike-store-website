@@ -113,7 +113,7 @@ function buildAuditFilters(url) {
     catalog:
       "target_type IN ('bike', 'brand')",
     stock:
-      "target_type = 'bike' AND details LIKE '%\"stockChanges\":[{%'",
+      "target_type = 'bike' AND (action = 'stock_receive' OR details LIKE '%\"stockChanges\":[{%')",
     sales: "target_type = 'invoice'",
     service: "target_type = 'service'",
     user: "target_type = 'user'",
@@ -250,7 +250,10 @@ export async function onRequestGet(context) {
           SUM(
             CASE
               WHEN target_type = 'bike'
-                AND details LIKE '%"stockChanges":[{%'
+                AND (
+                  action = 'stock_receive'
+                  OR details LIKE '%"stockChanges":[{%'
+                )
               THEN 1 ELSE 0
             END
           ) AS stock_changes_today,
