@@ -1,4 +1,5 @@
 import { jsonResponse, requireRole } from "../../_shared/auth.js";
+import { normalizeBikeColors } from "../../_shared/bike-utils.js";
 
 const MOVEMENT_LABELS = {
   stock_in: "Stok Masuk",
@@ -84,6 +85,65 @@ async function getStockReport(db, from, to) {
     note: row.note || "-"
   }));
 }
+
+async function getCurrentStockReport(db) {
+  const result = await db.prepare(`
+    SELECT
+      bikes.id,
+      bikes.brand,
+      bikes.name,
+      bikes.colors,
+      bikes.stockQty,
+      bikes.inStock,
+      COALESCE(brands.name, bikes.brand) AS brand_name,
+      COALESCE(brands.sort_order, 999) AS brand_sort_order
+    FROM bikes
+    LEFT JOIN brands
+      ON brands.id = bikes.brand_id
+    ORDER BY
+      brand_sort_order ASC,
+      brand_name ASC,
+      bikes.name ASC
+  `).all();
+
+  return (result.results || []).flatMap((row) => {
+    const bike = `${row.brand_name || row.brand || ""} ${row.name || ""}`
+      .trim() || "-";
+    const colors = normalizeBikeColors(row.colors);
+
+    if (!colors.length) {
+      const quantity = Math.max(0, Number(row.stockQty || 0));
+
+      return [{
+        bikeId: row.id,
+        bike,
+        color: "-",
+        quantity,
+        statusLabel: quantity <= 0
+          ? "Habis"
+          : quantity <= 3
+            ? "Stok Rendah"
+            : "Tersedia"
+      }];
+    }
+
+    return colors.map((color) => {
+      const quantity = Math.max(0, Number(color.stockQty || 0));
+
+      return {
+        bikeId: row.id,
+        bike,
+        color: color.name || "-",
+        quantity,
+        statusLabel: quantity <= 0
+          ? "Habis"
+          : quantity <= 3
+            ? "Stok Rendah"
+            : "Tersedia"
+      };
+    });
+  });
+}
 async function getReportAvailableRange(
   db,
   type
@@ -134,13 +194,24 @@ export async function onRequestGet(context) {
     const from = url.searchParams.get("from") || "";
     const to = url.searchParams.get("to") || "";
 
-    if (!["sales", "stock"].includes(type)) {
+    if (!["sales", "stock", "current_stock"].includes(type)) {
       return jsonResponse({ error: "Jenis laporan tidak valid." }, 400);
     }
     const metadataOnly =
   url.searchParams.get("meta") === "1";
 
 if (metadataOnly) {
+  if (type === "current_stock") {
+    return jsonResponse({
+      success: true,
+      type,
+      range: {
+        firstDate: "",
+        lastDate: ""
+      }
+    });
+  }
+
   const range =
     await getReportAvailableRange(
       env.BIKE_DB,
@@ -153,20 +224,32 @@ if (metadataOnly) {
     range
   });
 }
-    if (!isValidDate(from) || !isValidDate(to) || from > to) {
+    if (
+      type !== "current_stock" &&
+      (!isValidDate(from) || !isValidDate(to) || from > to)
+    ) {
       return jsonResponse({ error: "Rentang tanggal laporan tidak valid." }, 400);
     }
 
     const rows = type === "sales"
       ? await getSalesReport(env.BIKE_DB, from, to)
-      : await getStockReport(env.BIKE_DB, from, to);
+      : type === "stock"
+        ? await getStockReport(env.BIKE_DB, from, to)
+        : await getCurrentStockReport(env.BIKE_DB);
+
+    const generatedAt = new Date().toISOString();
 
     return jsonResponse({
       success: true,
       type,
-      title: type === "sales" ? "Laporan Penjualan" : "Laporan Pergerakan Stok",
-      from,
-      to,
+      title: type === "sales"
+        ? "Laporan Penjualan"
+        : type === "stock"
+          ? "Laporan Pergerakan Stok"
+          : "Laporan Posisi Stok Saat Ini",
+      from: type === "current_stock" ? "" : from,
+      to: type === "current_stock" ? "" : to,
+      generatedAt,
       rows
     });
   } catch (error) {
