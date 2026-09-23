@@ -223,6 +223,30 @@ async function loadReportsPage() {
 
 let generatedReport = null;
 
+const REPORT_TYPE_LABELS = {
+  sales: "Laporan Penjualan",
+  stock: "Laporan Pergerakan Stok",
+  stock_sales: "Laporan Stok Terjual",
+  stock_in: "Laporan Stok Masuk",
+  current_stock: "Posisi Stok Saat Ini"
+};
+
+const REPORT_PRINT_TITLES = {
+  sales: "LAPORAN PENJUALAN",
+  stock: "LAPORAN PERGERAKAN STOK",
+  stock_sales: "LAPORAN STOK TERJUAL",
+  stock_in: "LAPORAN STOK MASUK",
+  current_stock: "LAPORAN POSISI STOK SAAT INI"
+};
+
+function getReportTypeLabel(type) {
+  return REPORT_TYPE_LABELS[type] || "Laporan";
+}
+
+function getReportPrintTitle(type) {
+  return REPORT_PRINT_TITLES[type] || "LAPORAN";
+}
+
 function invalidateGeneratedReport() {
   generatedReport = null;
   const printButton =
@@ -672,6 +696,24 @@ function getReportColumns(type) {
     ];
   }
 
+  if (["stock_sales", "stock_in"].includes(type)) {
+    return [
+      ["date", "Tanggal"],
+      ["bike", "Sepeda"],
+      ["color", "Warna"],
+      [
+        "quantity",
+        type === "stock_sales"
+          ? "Jumlah Terjual"
+          : "Jumlah Masuk"
+      ],
+      ["quantityBefore", "Stok Sebelum"],
+      ["quantityAfter", "Stok Sesudah"],
+      ["createdBy", "Admin"],
+      ["note", "Catatan"]
+    ];
+  }
+
   if (type === "stock") {
     return [
       ["date", "Tanggal"], ["bike", "Sepeda"], ["color", "Warna"],
@@ -1048,6 +1090,47 @@ function getCurrentStockReportSummary(rows = []) {
   ];
 }
 
+function getFocusedStockReportSummary(
+  rows = [],
+  type
+) {
+  const totalUnits = rows.reduce(
+    (total, row) => total + Number(row.quantity || 0),
+    0
+  );
+  const models = new Set(
+    rows.map((row) => row.bikeId || row.bike)
+  );
+  const variants = new Set(
+    rows.map(
+      (row) => `${row.bikeId || row.bike}::${row.color || "-"}`
+    )
+  );
+
+  return [
+    {
+      label: type === "stock_sales"
+        ? "Unit Terjual"
+        : "Unit Masuk",
+      value: `${totalUnits} unit`
+    },
+    {
+      label: type === "stock_sales"
+        ? "Catatan Penjualan"
+        : "Penerimaan Stok",
+      value: rows.length
+    },
+    {
+      label: "Model",
+      value: models.size
+    },
+    {
+      label: "Varian Warna",
+      value: variants.size
+    }
+  ];
+}
+
 function getPrintableReportSummary(report) {
   if (report.type === "sales") {
     return getSalesReportSummary(report.rows);
@@ -1055,6 +1138,13 @@ function getPrintableReportSummary(report) {
 
   if (report.type === "current_stock") {
     return getCurrentStockReportSummary(report.rows);
+  }
+
+  if (["stock_sales", "stock_in"].includes(report.type)) {
+    return getFocusedStockReportSummary(
+      report.rows,
+      report.type
+    );
   }
 
   return getStockReportSummary(report.rows);
@@ -1509,7 +1599,12 @@ function renderPrintableReportTable(
               (total, row) => total + Number(row.quantity || 0),
               0
             )} unit dalam ${report.rows.length} varian warna`
-          : `Total ${report.rows.length} pergerakan stok`}
+          : ["stock_sales", "stock_in"].includes(report.type)
+            ? `Total ${report.rows.reduce(
+                (total, row) => total + Number(row.quantity || 0),
+                0
+              )} unit dalam ${report.rows.length} catatan`
+            : `Total ${report.rows.length} pergerakan stok`}
       </td>
     </tr>
   `;
@@ -1527,12 +1622,9 @@ async function preparePrintableReport(
     report.type === "current_stock"
   );
 
-  const title =
-    report.type === "sales"
-      ? "LAPORAN PENJUALAN"
-      : report.type === "stock"
-        ? "LAPORAN PERGERAKAN STOK"
-        : "LAPORAN POSISI STOK SAAT INI";
+  const title = getReportPrintTitle(
+    report.type
+  );
 
   const period =
     report.type === "current_stock"
@@ -1600,11 +1692,7 @@ const printButton =
   if (!preview || !head || !body) return;
 
   document.getElementById("reportPreviewType").textContent =
-    report.type === "sales"
-      ? "Laporan Penjualan"
-      : report.type === "stock"
-        ? "Laporan Pergerakan Stok"
-        : "Posisi Stok Saat Ini";
+    getReportTypeLabel(report.type);
   document.getElementById("reportPreviewTitle").textContent = report.title;
   document.getElementById("reportPreviewPeriod").textContent =
     report.type === "current_stock"
@@ -1635,6 +1723,14 @@ const printButton =
 
       previewSummary.textContent =
         `${summary[0].value} · ${report.rows.length} varian`;
+    } else if (["stock_sales", "stock_in"].includes(report.type)) {
+      const summary = getFocusedStockReportSummary(
+        report.rows,
+        report.type
+      );
+
+      previewSummary.textContent =
+        `${summary[0].value} · ${report.rows.length} catatan`;
     } else {
       previewSummary.textContent =
         `${report.rows.length} pergerakan`;
@@ -1794,12 +1890,9 @@ async function printGeneratedReport() {
     const baseUrl =
       `${window.location.origin}/`;
 
-    const reportTitle =
-      generatedReport.type === "sales"
-        ? "Laporan Penjualan"
-        : generatedReport.type === "stock"
-          ? "Laporan Pergerakan Stok"
-          : "Laporan Posisi Stok Saat Ini";
+    const reportTitle = getReportTypeLabel(
+      generatedReport.type
+    );
 
     const isCurrentStockReport =
       generatedReport.type === "current_stock";
