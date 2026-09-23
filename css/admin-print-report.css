@@ -491,6 +491,108 @@
   font-weight: 800;
 }
 
+/* Focused stock tables stay landscape, with deliberate column allocation. */
+.print-report.is-focused-stock-report .print-report-table,
+.print-report.is-stock-movement-report .print-report-table {
+  table-layout: fixed;
+  font-size: 8.3pt;
+  line-height: 1.25;
+}
+
+.print-report.is-focused-stock-report .print-report-table th,
+.print-report.is-focused-stock-report .print-report-table td,
+.print-report.is-stock-movement-report .print-report-table th,
+.print-report.is-stock-movement-report .print-report-table td {
+  padding: 6px 5px;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.print-report.is-focused-stock-report .print-report-table th,
+.print-report.is-stock-movement-report .print-report-table th {
+  font-size: 7.4pt;
+  line-height: 1.15;
+}
+
+.print-report.is-focused-stock-report .print-report-table .is-color,
+.print-report.is-focused-stock-report .print-report-table .is-createdBy,
+.print-report.is-focused-stock-report .print-report-table .is-number,
+.print-report.is-stock-movement-report .print-report-table .is-color,
+.print-report.is-stock-movement-report .print-report-table .is-createdBy,
+.print-report.is-stock-movement-report .print-report-table .is-movementLabel,
+.print-report.is-stock-movement-report .print-report-table .is-number {
+  white-space: nowrap;
+}
+
+.print-report.is-focused-stock-report .print-report-table .is-bike,
+.print-report.is-focused-stock-report .print-report-table .is-note,
+.print-report.is-stock-movement-report .print-report-table .is-bike,
+.print-report.is-stock-movement-report .print-report-table .is-note {
+  overflow-wrap: break-word;
+}
+
+/* Stok Terjual / Stok Masuk: 8 columns. */
+.print-report.is-focused-stock-report .print-report-table .is-date {
+  width: 11%;
+}
+
+.print-report.is-focused-stock-report .print-report-table .is-bike {
+  width: 20%;
+}
+
+.print-report.is-focused-stock-report .print-report-table .is-color {
+  width: 10%;
+}
+
+.print-report.is-focused-stock-report .print-report-table .is-quantity,
+.print-report.is-focused-stock-report .print-report-table .is-quantityBefore,
+.print-report.is-focused-stock-report .print-report-table .is-quantityAfter {
+  width: 9%;
+}
+
+.print-report.is-focused-stock-report .print-report-table .is-createdBy {
+  width: 9%;
+}
+
+.print-report.is-focused-stock-report .print-report-table .is-note {
+  width: 23%;
+}
+
+/* Pergerakan Stok: 9 columns. */
+.print-report.is-stock-movement-report .print-report-table .is-date {
+  width: 11%;
+}
+
+.print-report.is-stock-movement-report .print-report-table .is-bike {
+  width: 18%;
+}
+
+.print-report.is-stock-movement-report .print-report-table .is-color {
+  width: 10%;
+}
+
+.print-report.is-stock-movement-report .print-report-table .is-movementLabel {
+  width: 12%;
+}
+
+.print-report.is-stock-movement-report .print-report-table .is-quantityChange {
+  width: 8%;
+}
+
+.print-report.is-stock-movement-report .print-report-table .is-quantityBefore,
+.print-report.is-stock-movement-report .print-report-table .is-quantityAfter {
+  width: 9%;
+}
+
+.print-report.is-stock-movement-report .print-report-table .is-createdBy {
+  width: 8%;
+}
+
+.print-report.is-stock-movement-report .print-report-table .is-note {
+  width: 15%;
+}
+
 /* Current stock has only four columns, so it uses a compact portrait layout. */
 .print-report.is-current-stock-report
   .print-report-header {

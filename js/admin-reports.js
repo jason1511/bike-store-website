@@ -1533,8 +1533,8 @@ function renderPrintableReportTable(
     <tr>
       ${columns
         .map(
-          ([, label]) =>
-            `<th>${escapeHtml(label)}</th>`
+          ([key, label]) =>
+            `<th class="is-${escapeHtml(key)}">${escapeHtml(label)}</th>`
         )
         .join("")}
     </tr>
@@ -1564,7 +1564,7 @@ function renderPrintableReportTable(
                           numeric
                             ? "is-number"
                             : ""
-                        }"
+                        } is-${escapeHtml(key)}"
                       >
                         ${escapeHtml(
                           formatReportCell(
@@ -1615,11 +1615,25 @@ async function preparePrintableReport(
 ) {
   await loadPrintableReport();
 
-  document.getElementById(
-    "printableReport"
-  )?.classList.toggle(
+  const printableReport = document.getElementById("printableReport");
+
+  printableReport?.classList.remove(
+    "is-current-stock-report",
+    "is-focused-stock-report",
+    "is-stock-movement-report"
+  );
+
+  printableReport?.classList.toggle(
     "is-current-stock-report",
     report.type === "current_stock"
+  );
+  printableReport?.classList.toggle(
+    "is-focused-stock-report",
+    ["stock_sales", "stock_in"].includes(report.type)
+  );
+  printableReport?.classList.toggle(
+    "is-stock-movement-report",
+    report.type === "stock"
   );
 
   const title = getReportPrintTitle(
