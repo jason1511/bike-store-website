@@ -491,6 +491,120 @@
   font-weight: 800;
 }
 
+/* Current stock has only four columns, so it uses a compact portrait layout. */
+.print-report.is-current-stock-report
+  .print-report-header {
+  gap: 18px;
+  padding-bottom: 10px;
+}
+
+.print-report.is-current-stock-report
+  .print-report-company {
+  font-size: 15px;
+}
+
+.print-report.is-current-stock-report
+  .print-report-heading h1 {
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.print-report.is-current-stock-report
+  .print-report-meta {
+  margin: 10px 0;
+  padding: 9px 12px;
+}
+
+.print-report.is-current-stock-report
+  .print-report-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.print-report.is-current-stock-report
+  .print-report-summary-item {
+  padding: 9px 8px;
+}
+
+.print-report.is-current-stock-report
+  .print-report-summary-label {
+  margin-bottom: 4px;
+  font-size: 7.5pt;
+}
+
+.print-report.is-current-stock-report
+  .print-report-summary-value {
+  font-size: 10pt;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table {
+  table-layout: fixed;
+  font-size: 9.5pt;
+  line-height: 1.25;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table th,
+.print-report.is-current-stock-report
+  .print-report-table td {
+  padding: 6px 8px;
+  overflow-wrap: normal;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table th {
+  font-size: 7.5pt;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table th:nth-child(1),
+.print-report.is-current-stock-report
+  .print-report-table td:nth-child(1) {
+  width: 43%;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table th:nth-child(2),
+.print-report.is-current-stock-report
+  .print-report-table td:nth-child(2) {
+  width: 23%;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table th:nth-child(3),
+.print-report.is-current-stock-report
+  .print-report-table td:nth-child(3) {
+  width: 15%;
+  text-align: center;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table th:nth-child(4),
+.print-report.is-current-stock-report
+  .print-report-table td:nth-child(4) {
+  width: 19%;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table td:nth-child(3),
+.print-report.is-current-stock-report
+  .print-report-table td:nth-child(4) {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.print-report.is-current-stock-report
+  .print-report-table tbody tr:nth-child(even) {
+  background: #f5f7f7;
+}
+
+.print-report.is-current-stock-report
+  .print-report-footer {
+  margin-top: 14px;
+}
+
 .print-report-empty {
   padding: 28px 12px !important;
   color: #667085;

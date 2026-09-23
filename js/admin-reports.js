@@ -1520,6 +1520,13 @@ async function preparePrintableReport(
 ) {
   await loadPrintableReport();
 
+  document.getElementById(
+    "printableReport"
+  )?.classList.toggle(
+    "is-current-stock-report",
+    report.type === "current_stock"
+  );
+
   const title =
     report.type === "sales"
       ? "LAPORAN PENJUALAN"
@@ -1794,6 +1801,19 @@ async function printGeneratedReport() {
           ? "Laporan Pergerakan Stok"
           : "Laporan Posisi Stok Saat Ini";
 
+    const isCurrentStockReport =
+      generatedReport.type === "current_stock";
+
+    const reportPageSize =
+      isCurrentStockReport
+        ? "A4 portrait"
+        : "A4 landscape";
+
+    const reportWidth =
+      isCurrentStockReport
+        ? "188mm"
+        : "273mm";
+
     printWindow.document.open();
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -1818,8 +1838,8 @@ async function printGeneratedReport() {
 
           <style>
             @page {
-              size: A4 landscape;
-              margin: 12mm;
+              size: ${reportPageSize};
+              margin: ${isCurrentStockReport ? "11mm" : "12mm"};
             }
 
             html,
@@ -1838,8 +1858,8 @@ async function printGeneratedReport() {
             .print-report {
               box-sizing: border-box;
               display: block !important;
-              width: 273mm;
-              max-width: 273mm;
+              width: ${reportWidth};
+              max-width: ${reportWidth};
               margin: 0 auto;
               padding: 0;
             }
@@ -1901,8 +1921,8 @@ async function printGeneratedReport() {
 
               .print-report {
                 display: block !important;
-                width: 273mm !important;
-                max-width: 273mm !important;
+                width: ${reportWidth} !important;
+                max-width: ${reportWidth} !important;
                 margin: 0 auto !important;
                 padding: 0 !important;
               }
