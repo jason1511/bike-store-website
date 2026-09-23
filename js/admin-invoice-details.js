@@ -286,7 +286,7 @@ function setPrintText(id, value) {
   }
 }
 
-function openInvoiceModal(invoice) {
+function openInvoiceModal(invoice, options = {}) {
   const modal = document.getElementById("adminInvoiceModal");
 
   if (!modal || !invoice) {
@@ -299,6 +299,16 @@ function openInvoiceModal(invoice) {
   const totalQuantity = getInvoiceTotalQuantity(invoice);
   const isVoided = isInvoiceVoided(invoice);
   const printButton = document.getElementById("printInvoiceBtn");
+  const createdBanner = document.getElementById("invoiceCreatedBanner");
+  const createdBannerTitle = document.getElementById("invoiceCreatedBannerTitle");
+
+  if (createdBanner) {
+    createdBanner.classList.toggle("is-hidden", options.newlyCreated !== true);
+  }
+
+  if (createdBannerTitle && options.newlyCreated === true) {
+    createdBannerTitle.textContent = `Invoice ${invoice.invoiceNumber} berhasil dibuat`;
+  }
 
   if (printButton) {
     printButton.classList.toggle("is-hidden", isVoided);

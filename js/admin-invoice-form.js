@@ -3,6 +3,7 @@
 ========================= */
 let pendingVoidInvoiceId = "";
 let pendingInvoiceItems = [];
+let pendingReviewedInvoice = null;
 
 function getBikeColorsForInvoice(bike) {
   return getBikeColors(bike);
@@ -523,6 +524,156 @@ function validateInvoiceFormData(invoice) {
 
   return errors;
 }
+
+function closeReviewInvoiceModal() {
+  const modal = document.getElementById("reviewInvoiceModal");
+
+  modal?.classList.add("is-hidden");
+  modal?.setAttribute("aria-hidden", "true");
+}
+
+function renderInvoiceReview(invoice) {
+  const content = document.getElementById("reviewInvoiceContent");
+
+  if (!content) {
+    return;
+  }
+
+  const reviewItems = pendingInvoiceItems.map((item) => `
+    <tr>
+      <td>
+        <strong>${escapeHtml(item.bikeBrand)} ${escapeHtml(item.bikeName)}</strong>
+        <small>Warna ${escapeHtml(item.bikeColorName)}</small>
+      </td>
+      <td>${Number(item.quantity).toLocaleString("id-ID")}</td>
+      <td>${escapeHtml(getInvoiceFrameNumbersLabel(item.frameNumbers))}</td>
+      <td class="is-right">${formatRupiah(item.unitPrice)}</td>
+      <td class="is-right"><strong>${formatRupiah(item.lineTotal)}</strong></td>
+    </tr>
+  `).join("");
+
+  const paymentLabel = invoice.paymentMethod === "Bank Transfer" && invoice.paymentBank
+    ? `${invoice.paymentMethod} — ${invoice.paymentBank}`
+    : invoice.paymentMethod;
+
+  content.innerHTML = `
+    <div class="invoice-review-facts">
+      <div><span>Customer</span><strong>${escapeHtml(invoice.customerName)}</strong></div>
+      <div><span>WhatsApp</span><strong>${escapeHtml(invoice.customerPhone || "-")}</strong></div>
+      <div><span>Pembayaran</span><strong>${escapeHtml(paymentLabel || "-")}</strong></div>
+      <div class="is-wide"><span>Alamat</span><strong>${escapeHtml(invoice.customerAddress || "-")}</strong></div>
+    </div>
+    <div class="invoice-review-table-wrap">
+      <table class="invoice-review-table">
+        <thead>
+          <tr>
+            <th>Sepeda</th>
+            <th>Jumlah</th>
+            <th>Nomor Rangka</th>
+            <th class="is-right">Harga</th>
+            <th class="is-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>${reviewItems}</tbody>
+      </table>
+    </div>
+    ${invoice.notes ? `
+      <div class="invoice-review-notes">
+        <span>Catatan</span>
+        <p>${escapeHtml(invoice.notes)}</p>
+      </div>
+    ` : ""}
+    <div class="invoice-review-total">
+      <span>Total Invoice</span>
+      <strong>${formatRupiah(getPendingInvoiceTotal())}</strong>
+    </div>
+  `;
+}
+
+function openReviewInvoiceModal(invoice) {
+  const modal = document.getElementById("reviewInvoiceModal");
+
+  if (!modal) {
+    return;
+  }
+
+  pendingReviewedInvoice = invoice;
+  renderInvoiceReview(invoice);
+  setInvoiceFormNote("Invoice siap ditinjau. Stok belum dikurangi.");
+
+  const note = document.getElementById("reviewInvoiceNote");
+  if (note) {
+    note.textContent = "Invoice belum dibuat dan stok belum berubah.";
+    note.classList.remove("is-error", "is-success");
+  }
+
+  modal.classList.remove("is-hidden");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+async function confirmReviewedInvoice() {
+  const confirmButton = document.getElementById("confirmCreateInvoiceBtn");
+  const note = document.getElementById("reviewInvoiceNote");
+
+  if (!pendingReviewedInvoice || confirmButton?.disabled) {
+    return;
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = true;
+    confirmButton.textContent = "Membuat Invoice...";
+  }
+
+  if (note) {
+    note.textContent = "Memeriksa stok terbaru dan membuat invoice...";
+    note.classList.remove("is-error", "is-success");
+  }
+
+  try {
+    const createdInvoice = await createInvoice(pendingReviewedInvoice);
+
+    closeReviewInvoiceModal();
+    pendingReviewedInvoice = null;
+    resetInvoiceForm();
+    resetPendingInvoiceItems();
+    resetInvoiceItemModalForm();
+
+    if (typeof loadAdminBikes === "function") {
+      await loadAdminBikes();
+    }
+
+    populateInvoiceBikeOptions();
+    await loadInvoices({ resetPage: true });
+
+    if (typeof isCurrentUserAdmin === "function" && isCurrentUserAdmin() && typeof loadAuditLogs === "function") {
+      loadAuditLogs();
+    }
+
+    setInvoiceFormNote(
+      `Invoice ${createdInvoice.invoiceNumber} berhasil dibuat dan stok sudah dikurangi.`,
+      "is-success"
+    );
+
+    if (typeof openInvoiceModal === "function") {
+      openInvoiceModal(createdInvoice, { newlyCreated: true });
+    }
+  } catch (error) {
+    if (handleAdminAuthError(error)) {
+      return;
+    }
+
+    if (note) {
+      note.textContent = error.message;
+      note.classList.add("is-error");
+    }
+  } finally {
+    if (confirmButton) {
+      confirmButton.disabled = false;
+      confirmButton.textContent = "Konfirmasi & Buat Invoice";
+    }
+  }
+}
+
 function setInvoiceFormNote(message, type = "") {
   const note = document.getElementById("adminInvoiceFormNote");
 
@@ -552,12 +703,27 @@ function setupInvoiceForm() {
   const addItemButton = document.getElementById("addInvoiceItemBtn");
   const pendingItemsList = document.getElementById("pendingInvoiceItemsList");
 
-  const createButton = document.getElementById("createInvoiceBtn");
+  const reviewModalOverlay = document.getElementById("reviewInvoiceModalOverlay");
+  const closeReviewButton = document.getElementById("closeReviewInvoiceModalBtn");
+  const backToEditButton = document.getElementById("backToEditInvoiceBtn");
+  const confirmCreateButton = document.getElementById("confirmCreateInvoiceBtn");
   const paymentMethodInput = document.getElementById("invoicePaymentMethodInput");
 
   if (openItemModalButton && !openItemModalButton.dataset.invoiceItemBound) {
     openItemModalButton.dataset.invoiceItemBound = "true";
     openItemModalButton.addEventListener("click", openInvoiceItemModal);
+  }
+
+  [reviewModalOverlay, closeReviewButton, backToEditButton].forEach((element) => {
+    if (element && !element.dataset.invoiceReviewBound) {
+      element.dataset.invoiceReviewBound = "true";
+      element.addEventListener("click", closeReviewInvoiceModal);
+    }
+  });
+
+  if (confirmCreateButton && !confirmCreateButton.dataset.invoiceReviewBound) {
+    confirmCreateButton.dataset.invoiceReviewBound = "true";
+    confirmCreateButton.addEventListener("click", confirmReviewedInvoice);
   }
 
   if (paymentMethodInput && !paymentMethodInput.dataset.paymentBankBound) {
@@ -686,46 +852,6 @@ function setupInvoiceForm() {
       return;
     }
 
-    if (createButton) {
-      createButton.disabled = true;
-      createButton.textContent = "Membuat...";
-    }
-
-    setInvoiceFormNote("Membuat invoice dan mengurangi stok...");
-
-    try {
-      await createInvoice(invoice);
-
-      setInvoiceFormNote("Invoice berhasil dibuat dan stok sudah dikurangi.", "is-success");
-      resetInvoiceForm();
-      resetPendingInvoiceItems();
-      resetInvoiceItemModalForm();
-
-      if (typeof loadAdminBikes === "function") {
-        await loadAdminBikes();
-      }
-
-      populateInvoiceBikeOptions();
-      await loadInvoices({ resetPage: true });
-
-      if (
-        typeof isCurrentUserAdmin === "function" &&
-        isCurrentUserAdmin() &&
-        typeof loadAuditLogs === "function"
-      ) {
-        loadAuditLogs();
-      }
-    } catch (error) {
-      if (handleAdminAuthError(error)) {
-        return;
-      }
-
-      setInvoiceFormNote(error.message, "is-error");
-    } finally {
-      if (createButton) {
-        createButton.disabled = false;
-        createButton.textContent = "Buat Invoice";
-      }
-    }
+    openReviewInvoiceModal(invoice);
   });
 }

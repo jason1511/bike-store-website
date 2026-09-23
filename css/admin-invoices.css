@@ -131,6 +131,199 @@
 }
 
 /* =========================
+   INVOICE REVIEW
+========================= */
+.invoice-review-modal {
+  width: min(880px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(37, 211, 102, 0.13), transparent 34%),
+    rgba(15, 25, 25, 0.98);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+}
+
+.invoice-review-modal .admin-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.invoice-review-modal .admin-modal-header h2,
+.invoice-review-modal .admin-modal-header p {
+  margin: 0;
+}
+
+.invoice-review-modal .admin-modal-header h2 {
+  color: #fff;
+  font-size: 1.35rem;
+}
+
+.invoice-review-modal .admin-modal-header p:last-child {
+  margin-top: 6px;
+  color: #9fb8b6;
+}
+
+.invoice-review-content {
+  display: grid;
+  gap: 16px;
+}
+
+.invoice-review-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.invoice-review-facts > div {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  background: rgba(7, 18, 18, 0.84);
+}
+
+.invoice-review-facts .is-wide {
+  grid-column: 1 / -1;
+}
+
+.invoice-review-facts span,
+.invoice-review-notes span {
+  color: #8fa9a6;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.invoice-review-facts strong {
+  overflow-wrap: anywhere;
+  color: #f4f8f7;
+  font-size: 0.86rem;
+}
+
+.invoice-review-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+}
+
+.invoice-review-table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.invoice-review-table th,
+.invoice-review-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #dce5e3;
+  font-size: 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.invoice-review-table th {
+  color: #8fa9a6;
+  background: rgba(7, 18, 18, 0.88);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.invoice-review-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.invoice-review-table td strong,
+.invoice-review-table td small {
+  display: block;
+}
+
+.invoice-review-table td small {
+  margin-top: 4px;
+  color: #9fb8b6;
+}
+
+.invoice-review-table .is-right {
+  text-align: right;
+}
+
+.invoice-review-notes {
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(7, 18, 18, 0.62);
+}
+
+.invoice-review-notes p {
+  margin: 6px 0 0;
+  color: #dce5e3;
+  line-height: 1.5;
+}
+
+.invoice-review-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(37, 211, 102, 0.26);
+  border-radius: 16px;
+  background: rgba(37, 211, 102, 0.08);
+}
+
+.invoice-review-total span {
+  color: #dce5e3;
+  font-weight: 850;
+}
+
+.invoice-review-total strong {
+  color: #8fffc0;
+  font-size: 1.4rem;
+}
+
+.invoice-review-modal > .admin-form-note {
+  margin: 14px 0 0;
+}
+
+.invoice-review-modal .admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.invoice-created-banner {
+  display: grid;
+  gap: 3px;
+  padding: 13px 16px;
+  border: 1px solid rgba(37, 211, 102, 0.34);
+  border-radius: 14px;
+  color: #dfffea;
+  background: rgba(22, 101, 52, 0.88);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+}
+
+.invoice-created-banner.is-hidden {
+  display: none;
+}
+
+.invoice-created-banner span {
+  color: #c8f7d8;
+  font-size: 0.84rem;
+}
+
+/* =========================
    INVOICE ITEM BUILDER
 ========================= */
 .admin-section-card {
@@ -943,6 +1136,24 @@
   .admin-invoice-edit-modal
     .admin-modal-actions button {
     width: 100%;
+  }
+
+  .invoice-review-modal {
+    max-height: calc(100dvh - 20px);
+    padding: 18px;
+  }
+
+  .invoice-review-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .invoice-review-facts .is-wide {
+    grid-column: auto;
+  }
+
+  .invoice-review-modal .admin-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }
 

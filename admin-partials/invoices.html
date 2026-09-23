@@ -167,7 +167,7 @@
 
         <div class="admin-form-actions">
           <button type="submit" class="btn-primary" id="createInvoiceBtn">
-            Buat Invoice
+            Tinjau Invoice
           </button>
 
           <p class="admin-form-note" id="adminInvoiceFormNote">
@@ -269,6 +269,54 @@
         aria-label="Navigasi halaman invoice"
       ></nav>
     </article>
+  </div>
+
+  <!-- =========================
+       REVIEW INVOICE MODAL
+  ========================== -->
+  <div
+    id="reviewInvoiceModal"
+    class="admin-modal is-hidden"
+    aria-hidden="true"
+  >
+    <div id="reviewInvoiceModalOverlay" class="admin-modal-overlay"></div>
+
+    <div
+      class="admin-modal-content invoice-review-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reviewInvoiceModalTitle"
+    >
+      <div class="admin-modal-header">
+        <div>
+          <p class="admin-eyebrow">Pemeriksaan Terakhir</p>
+          <h2 id="reviewInvoiceModalTitle">Tinjau Invoice</h2>
+          <p>Pastikan data sudah benar sebelum stok dikurangi.</p>
+        </div>
+
+        <button
+          type="button"
+          id="closeReviewInvoiceModalBtn"
+          class="admin-modal-close"
+          aria-label="Tutup"
+        >×</button>
+      </div>
+
+      <div class="invoice-review-content" id="reviewInvoiceContent"></div>
+
+      <p class="admin-form-note" id="reviewInvoiceNote">
+        Invoice belum dibuat dan stok belum berubah.
+      </p>
+
+      <div class="admin-modal-actions">
+        <button type="button" class="btn-secondary" id="backToEditInvoiceBtn">
+          Kembali Edit
+        </button>
+        <button type="button" class="btn-primary" id="confirmCreateInvoiceBtn">
+          Konfirmasi &amp; Buat Invoice
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- =========================

@@ -1,7 +1,7 @@
 /* =========================
    ADMIN PARTIAL LOADER
 ========================= */
-const ADMIN_PARTIAL_VERSION = "admin-partials-6";
+const ADMIN_PARTIAL_VERSION = "admin-partials-7";
 
 const ADMIN_PARTIALS = [
   "bikes",
