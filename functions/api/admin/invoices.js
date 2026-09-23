@@ -8,6 +8,51 @@ import {
   getColorStockTotal,
   normalizeBikeColors
 } from "../../_shared/bike-utils.js";
+
+let invoiceTypeSchemaReady = false;
+
+async function ensureInvoiceTypeSchema(db) {
+  if (invoiceTypeSchemaReady) {
+    return;
+  }
+
+  const columns = await db
+    .prepare("PRAGMA table_info(invoices)")
+    .all();
+  const hasInvoiceType = (columns.results || []).some(
+    (column) => column.name === "invoice_type"
+  );
+
+  if (!hasInvoiceType) {
+    try {
+      await db
+        .prepare(
+          "ALTER TABLE invoices ADD COLUMN invoice_type TEXT NOT NULL DEFAULT 'normal'"
+        )
+        .run();
+    } catch (error) {
+      const verification = await db
+        .prepare("PRAGMA table_info(invoices)")
+        .all();
+      const addedByConcurrentRequest = (verification.results || []).some(
+        (column) => column.name === "invoice_type"
+      );
+
+      if (!addedByConcurrentRequest) {
+        throw error;
+      }
+    }
+  }
+
+  await db
+    .prepare(
+      "CREATE INDEX IF NOT EXISTS idx_invoices_invoice_type ON invoices (invoice_type)"
+    )
+    .run();
+
+  invoiceTypeSchemaReady = true;
+}
+
 function createInvoiceId() {
   return `invoice_${Date.now()}_${crypto.randomUUID()}`;
 }
@@ -170,8 +215,8 @@ function getInvoiceDateCode(date = new Date()) {
   return `${year}${month}${day}`;
 }
 
-function getInvoiceNumberPrefix(dateCode) {
-  return `INV-${dateCode}`;
+function getInvoiceNumberPrefix(dateCode, invoiceType = "normal") {
+  return `${invoiceType === "grosir" ? "GRS" : "INV"}-${dateCode}`;
 }
 
 function getInvoiceSequenceFromNumber(invoiceNumber, prefix) {
@@ -205,9 +250,12 @@ async function getHighestExistingInvoiceSequence(db, prefix) {
   }, 0);
 }
 
-async function createInvoiceNumber(db) {
+async function createInvoiceNumber(db, invoiceType = "normal") {
   const dateCode = getInvoiceDateCode();
-  const prefix = getInvoiceNumberPrefix(dateCode);
+  const prefix = getInvoiceNumberPrefix(dateCode, invoiceType);
+  const sequenceKey = invoiceType === "grosir"
+    ? `GRS-${dateCode}`
+    : dateCode;
   const highestExistingSequence = await getHighestExistingInvoiceSequence(db, prefix);
 
   await db
@@ -220,7 +268,7 @@ async function createInvoiceNumber(db) {
       VALUES (?, ?, CURRENT_TIMESTAMP)
       ON CONFLICT(date_code) DO NOTHING
     `)
-    .bind(dateCode, highestExistingSequence)
+    .bind(sequenceKey, highestExistingSequence)
     .run();
 
   const sequenceRow = await db
@@ -232,7 +280,7 @@ async function createInvoiceNumber(db) {
       WHERE date_code = ?
       RETURNING last_sequence
     `)
-    .bind(dateCode)
+    .bind(sequenceKey)
     .first();
 
   const sequence = Number(sequenceRow?.last_sequence || 1);
@@ -280,6 +328,7 @@ function rowToInvoice(row) {
   return {
     id: row.id,
     invoiceNumber: row.invoice_number,
+    invoiceType: row.invoice_type === "grosir" ? "grosir" : "normal",
 
     customerName: row.customer_name,
     customerPhone: row.customer_phone,
@@ -359,6 +408,7 @@ function normalizeInvoicePayload(payload) {
     : [payload];
 
   return {
+    invoiceType: payload.invoiceType === "grosir" ? "grosir" : "normal",
     customerName: String(payload.customerName || "").trim(),
     customerPhone: String(payload.customerPhone || "").trim(),
     customerAddress: String(payload.customerAddress || "").trim(),
@@ -652,6 +702,9 @@ function buildInvoiceListFilters(url) {
   const actor = String(
     url.searchParams.get("actor") || "all"
   ).trim().slice(0, 80);
+  const invoiceType = String(
+    url.searchParams.get("type") || "all"
+  ).trim().toLowerCase();
   const from = url.searchParams.get("from");
   const to = url.searchParams.get("to");
 
@@ -696,6 +749,11 @@ function buildInvoiceListFilters(url) {
       "COALESCE(i.status, 'active') = ?"
     );
     bindings.push(status);
+  }
+
+  if (["normal", "grosir"].includes(invoiceType)) {
+    conditions.push("COALESCE(i.invoice_type, 'normal') = ?");
+    bindings.push(invoiceType);
   }
 
   if (payment === "Cash") {
@@ -754,6 +812,8 @@ export async function onRequestGet(context) {
     if (!env.BIKE_DB) {
       return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
     }
+
+    await ensureInvoiceTypeSchema(env.BIKE_DB);
 
     const url = new URL(request.url);
     const page = getPositiveInteger(
@@ -1077,6 +1137,11 @@ function normalizeInvoiceEditPayload(
   payload
 ) {
   return {
+    invoiceType:
+      payload.invoiceType === "grosir"
+        ? "grosir"
+        : "normal",
+
     customerName:
       String(
         payload.customerName || ""
@@ -1483,6 +1548,8 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: "D1 binding BIKE_DB is missing" }, 500);
     }
 
+    await ensureInvoiceTypeSchema(env.BIKE_DB);
+
     const payload = await request.json().catch(() => null);
 
     if (!payload) {
@@ -1506,7 +1573,10 @@ export async function onRequestPost(context) {
 
     const firstItem = invoicePlan.preparedItems[0];
     const invoiceId = createInvoiceId();
-    const invoiceNumber = await createInvoiceNumber(env.BIKE_DB);
+    const invoiceNumber = await createInvoiceNumber(
+      env.BIKE_DB,
+      invoice.invoiceType
+    );
     const totalPrice = invoicePlan.totalPrice;
 
     try {
@@ -1515,6 +1585,7 @@ export async function onRequestPost(context) {
           INSERT INTO invoices (
             id,
             invoice_number,
+            invoice_type,
 
             customer_name,
             customer_phone,
@@ -1539,11 +1610,12 @@ export async function onRequestPost(context) {
             created_by_username,
             created_by_role
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
         .bind(
           invoiceId,
           invoiceNumber,
+          invoice.invoiceType,
 
           invoice.customerName,
           invoice.customerPhone,
@@ -1687,6 +1759,8 @@ export async function onRequestPatch(context) {
         500
       );
     }
+
+    await ensureInvoiceTypeSchema(env.BIKE_DB);
 
     const payload = await request.json().catch(() => null);
 
@@ -1939,6 +2013,8 @@ export async function onRequestPut(
       );
     }
 
+    await ensureInvoiceTypeSchema(env.BIKE_DB);
+
     const payload =
       await request.json().catch(
         () => null
@@ -2119,6 +2195,7 @@ export async function onRequestPut(
           .prepare(`
             UPDATE invoices
             SET
+              invoice_type = ?,
               customer_name = ?,
               customer_phone = ?,
               customer_address = ?,
@@ -2140,6 +2217,7 @@ export async function onRequestPut(
             WHERE id = ?
           `)
           .bind(
+            editedInvoice.invoiceType,
             editedInvoice.customerName,
             editedInvoice.customerPhone,
             editedInvoice.customerAddress,

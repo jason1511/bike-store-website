@@ -274,6 +274,38 @@ function renderPrintableInvoiceItems(invoice) {
 
   tableBody.innerHTML = rows.join("");
 }
+
+function renderPrintableGrosirInvoice(invoice) {
+  const body = document.getElementById("grosirInvoiceItems");
+
+  if (!body) {
+    return;
+  }
+
+  const rows = getInvoiceItems(invoice).map((item) => `
+    <tr>
+      <td>${Number(item.quantity || 0).toLocaleString("id-ID")}</td>
+      <td>${escapeHtml(`${getInvoiceItemLabel(item)} - ${item.bikeColorName || "-"}`)}</td>
+      <td>${escapeHtml(formatRupiah(Number(item.unitPrice || 0)))}</td>
+      <td>${escapeHtml(formatRupiah(Number(
+        item.lineTotal || Number(item.quantity || 0) * Number(item.unitPrice || 0)
+      )))}</td>
+    </tr>
+  `);
+
+  const emptyRows = Math.max(0, 13 - rows.length);
+
+  for (let index = 0; index < emptyRows; index += 1) {
+    rows.push('<tr class="is-empty-row"><td>&nbsp;</td><td></td><td></td><td></td></tr>');
+  }
+
+  body.innerHTML = rows.join("");
+  setPrintText("grosirInvoiceNumber", invoice.invoiceNumber);
+  setPrintText("grosirInvoiceDate", formatAuditDate(invoice.createdAt));
+  setPrintText("grosirCustomerName", invoice.customerName);
+  setPrintText("grosirCustomerAddress", invoice.customerAddress || "-");
+  setPrintText("grosirInvoiceTotal", formatRupiah(Number(invoice.totalPrice || 0)));
+}
 function getInvoiceByIdFromCache(invoiceId) {
   return adminInvoicesCache.find((invoice) => invoice.id === invoiceId) || null;
 }
@@ -299,6 +331,11 @@ function openInvoiceModal(invoice, options = {}) {
   const totalQuantity = getInvoiceTotalQuantity(invoice);
   const isVoided = isInvoiceVoided(invoice);
   const printButton = document.getElementById("printInvoiceBtn");
+  const normalInvoice = document.querySelector(
+    "#adminInvoiceModal .printable-invoice:not(.printable-invoice-grosir)"
+  );
+  const grosirInvoice = document.getElementById("printableGrosirInvoice");
+  const isGrosir = invoice.invoiceType === "grosir";
   const createdBanner = document.getElementById("invoiceCreatedBanner");
   const createdBannerTitle = document.getElementById("invoiceCreatedBannerTitle");
 
@@ -312,6 +349,13 @@ function openInvoiceModal(invoice, options = {}) {
 
   if (printButton) {
     printButton.classList.toggle("is-hidden", isVoided);
+  }
+
+  normalInvoice?.classList.toggle("is-hidden", isGrosir);
+  grosirInvoice?.classList.toggle("is-hidden", !isGrosir);
+
+  if (isGrosir) {
+    renderPrintableGrosirInvoice(invoice);
   }
 
   const firstItem = items[0] || {};
@@ -416,7 +460,7 @@ function closeInvoiceModal() {
 function printCurrentInvoice() {
   const invoice =
     document.querySelector(
-      "#adminInvoiceModal .printable-invoice"
+      "#adminInvoiceModal .printable-invoice:not(.is-hidden)"
     );
 
   if (!invoice) {
@@ -447,6 +491,7 @@ function printCurrentInvoice() {
 
   const invoiceHtml =
     invoice.outerHTML;
+  const isGrosir = invoice.classList.contains("printable-invoice-grosir");
 
   printWindow.document.open();
 
@@ -463,7 +508,7 @@ function printCurrentInvoice() {
 
         <base href="${baseUrl}">
 
-        <title>Cetak Faktur Penjualan</title>
+        <title>${isGrosir ? "Cetak Faktur Grosir" : "Cetak Faktur Penjualan"}</title>
 
         <link
           rel="stylesheet"
@@ -477,7 +522,7 @@ function printCurrentInvoice() {
 
         <style>
           @page {
-            size: 210mm 148mm;
+            size: ${isGrosir ? "148mm 210mm" : "210mm 148mm"};
             margin: 5mm;
           }
 
@@ -496,8 +541,8 @@ function printCurrentInvoice() {
           }
 
           .printable-invoice {
-            width: 200mm;
-            max-width: 200mm;
+            width: ${isGrosir ? "138mm" : "200mm"};
+            max-width: ${isGrosir ? "138mm" : "200mm"};
             margin: 0 auto;
             border-radius: 0;
             box-shadow: none;
@@ -514,6 +559,18 @@ function printCurrentInvoice() {
             margin: 0;
             padding: 4mm 5mm 3mm;
             overflow: hidden;
+          }
+
+          .printable-invoice-grosir,
+          .grosir-invoice-page {
+            width: 138mm;
+            max-width: 138mm;
+          }
+
+          .grosir-invoice-page {
+            height: 198mm;
+            min-height: 198mm;
+            max-height: 198mm;
           }
 
           .standalone-print-actions {
@@ -578,6 +635,19 @@ function printCurrentInvoice() {
               overflow: hidden !important;
               break-after: avoid !important;
               page-break-after: avoid !important;
+            }
+
+            .printable-invoice-grosir {
+              width: 138mm !important;
+              max-width: 138mm !important;
+            }
+
+            .grosir-invoice-page {
+              width: 138mm !important;
+              max-width: 138mm !important;
+              height: 198mm !important;
+              min-height: 198mm !important;
+              max-height: 198mm !important;
             }
 
             .printable-invoice-page {

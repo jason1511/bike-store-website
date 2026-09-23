@@ -73,6 +73,26 @@
 
       <form class="admin-bike-form" id="adminInvoiceForm">
         <div class="admin-form-group admin-form-wide">
+          <fieldset class="invoice-mode-selector" id="invoiceModeSelector">
+            <legend>Jenis Penjualan</legend>
+            <label>
+              <input type="radio" name="invoiceType" value="normal" checked>
+              <span>
+                <strong>Penjualan Biasa</strong>
+                <small>Faktur lengkap dengan detail pembayaran dan nomor rangka.</small>
+              </span>
+            </label>
+            <label>
+              <input type="radio" name="invoiceType" value="grosir">
+              <span>
+                <strong>Penjualan Grosir</strong>
+                <small>Faktur ringkas untuk pembelian dalam jumlah besar.</small>
+              </span>
+            </label>
+          </fieldset>
+        </div>
+
+        <div class="admin-form-group admin-form-wide">
           <div class="admin-section-card">
             <div class="admin-section-card-header">
               <div>
@@ -206,6 +226,15 @@
         </div>
 
         <div class="admin-form-group">
+          <label for="invoiceTypeFilter">Jenis Penjualan</label>
+          <select id="invoiceTypeFilter">
+            <option value="all">Semua Jenis</option>
+            <option value="normal">Penjualan Biasa</option>
+            <option value="grosir">Grosir</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
           <label for="invoicePaymentFilter">Pembayaran</label>
           <select id="invoicePaymentFilter">
             <option value="all">Semua Pembayaran</option>
@@ -329,7 +358,7 @@
   >
     <div id="invoiceItemModalOverlay" class="admin-modal-overlay"></div>
 
-    <div class="admin-modal-content admin-void-modal">
+    <div class="admin-modal-content admin-void-modal invoice-item-modal-content">
       <div class="admin-modal-header">
         <h2>Tambah Item Invoice</h2>
 
@@ -535,6 +564,21 @@
 
     <div class="admin-modal-body">
       <div class="admin-form-group">
+        <label for="editInvoiceTypeInput">
+          Jenis Penjualan
+        </label>
+
+        <select id="editInvoiceTypeInput">
+          <option value="normal">Penjualan Biasa</option>
+          <option value="grosir">Penjualan Grosir</option>
+        </select>
+
+        <p class="admin-form-note">
+          Hanya administrator yang dapat mengubah jenis invoice lama.
+        </p>
+      </div>
+
+      <div class="admin-form-group">
         <label for="editInvoiceCustomerNameInput">
           Nama Customer
         </label>
@@ -709,7 +753,7 @@
   ></div>
 
   <div
-    class="admin-modal-content admin-void-modal"
+    class="admin-modal-content admin-void-modal invoice-item-modal-content"
     role="dialog"
     aria-modal="true"
     aria-labelledby="editInvoiceItemModalTitle"

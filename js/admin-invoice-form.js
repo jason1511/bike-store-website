@@ -457,6 +457,9 @@ function resetInvoiceForm() {
 }
 function getInvoiceFormData() {
   return {
+    invoiceType: document.querySelector(
+      'input[name="invoiceType"]:checked'
+    )?.value === "grosir" ? "grosir" : "normal",
     customerName: document.getElementById("invoiceCustomerNameInput")?.value.trim() || "",
     customerPhone: document.getElementById("invoiceCustomerPhoneInput")?.value.trim() || "",
     customerAddress: document.getElementById("invoiceCustomerAddressInput")?.value.trim() || "",
@@ -557,6 +560,9 @@ function renderInvoiceReview(invoice) {
     : invoice.paymentMethod;
 
   content.innerHTML = `
+    <div class="invoice-review-mode ${invoice.invoiceType === "grosir" ? "is-grosir" : ""}">
+      ${invoice.invoiceType === "grosir" ? "Penjualan Grosir" : "Penjualan Biasa"}
+    </div>
     <div class="invoice-review-facts">
       <div><span>Customer</span><strong>${escapeHtml(invoice.customerName)}</strong></div>
       <div><span>WhatsApp</span><strong>${escapeHtml(invoice.customerPhone || "-")}</strong></div>
