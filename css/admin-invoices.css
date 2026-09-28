@@ -839,8 +839,35 @@
 .admin-invoice-modal-actions,
 .admin-service-modal-actions {
   display: flex;
+  align-items: end;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.print-paper-size-control {
+  display: grid;
+  gap: 5px;
+  margin-right: auto;
+  color: var(--admin-text-muted, #aebfbc);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.print-paper-size-control select {
+  min-width: 170px;
+  min-height: 42px;
+  padding: 8px 34px 8px 12px;
+  border: 1px solid var(--admin-border, #314541);
+  border-radius: 10px;
+  color: var(--admin-text, #f4fbf9);
+  background: var(--admin-surface, #10201d);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 /* =========================

@@ -492,6 +492,36 @@ function printCurrentInvoice() {
   const invoiceHtml =
     invoice.outerHTML;
   const isGrosir = invoice.classList.contains("printable-invoice-grosir");
+  const requestedPaperSize =
+    document.getElementById("invoicePrintPaperSize")?.value === "a4"
+      ? "a4"
+      : "a5";
+  const isA4 = requestedPaperSize === "a4";
+  const printPageSize = isA4
+    ? `A4 ${isGrosir ? "portrait" : "landscape"}`
+    : isGrosir
+      ? "148mm 210mm"
+      : "210mm 148mm";
+  const printAreaWidth = isA4
+    ? isGrosir
+      ? "200mm"
+      : "287mm"
+    : isGrosir
+      ? "138mm"
+      : "200mm";
+  const printAreaHeight = isA4
+    ? isGrosir
+      ? "287mm"
+      : "200mm"
+    : isGrosir
+      ? "198mm"
+      : "136mm";
+  const printScale = isA4
+    ? isGrosir
+      ? 1.449275
+      : 1.435
+    : 1;
+  const paperLabel = isA4 ? "A4" : "A5";
 
   printWindow.document.open();
 
@@ -522,7 +552,7 @@ function printCurrentInvoice() {
 
         <style>
           @page {
-            size: ${isGrosir ? "148mm 210mm" : "210mm 148mm"};
+            size: ${printPageSize};
             margin: 5mm;
           }
 
@@ -546,6 +576,19 @@ function printCurrentInvoice() {
             margin: 0 auto;
             border-radius: 0;
             box-shadow: none;
+            overflow: hidden;
+            transform: scale(${printScale});
+            transform-origin: top center;
+          }
+
+          .standalone-print-stage {
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: ${printAreaWidth};
+            height: ${printAreaHeight};
+            margin: 0 auto;
             overflow: hidden;
           }
 
@@ -597,6 +640,13 @@ function printCurrentInvoice() {
             cursor: pointer;
           }
 
+          .standalone-print-format {
+            align-self: center;
+            color: #52635f;
+            font-size: 0.82rem;
+            font-weight: 800;
+          }
+
           .standalone-print-actions
             .standalone-print-again {
             color: #ffffff;
@@ -635,6 +685,15 @@ function printCurrentInvoice() {
               overflow: hidden !important;
               break-after: avoid !important;
               page-break-after: avoid !important;
+              transform: scale(${printScale}) !important;
+              transform-origin: top center !important;
+            }
+
+            .standalone-print-stage {
+              width: ${printAreaWidth} !important;
+              height: ${printAreaHeight} !important;
+              margin: 0 auto !important;
+              overflow: hidden !important;
             }
 
             .printable-invoice-grosir {
@@ -669,6 +728,8 @@ function printCurrentInvoice() {
           role="toolbar"
           aria-label="Kontrol cetak invoice"
         >
+          <span class="standalone-print-format">Format ${paperLabel}</span>
+
           <button
             id="standaloneInvoicePrintAgain"
             class="standalone-print-again"
@@ -686,7 +747,9 @@ function printCurrentInvoice() {
           </button>
         </div>
 
-        ${invoiceHtml}
+        <main class="standalone-print-stage">
+          ${invoiceHtml}
+        </main>
       </body>
     </html>
   `);

@@ -671,6 +671,11 @@ html {
     grid-template-columns: 1fr;
   }
 
+  .admin-invoice-modal-actions .print-paper-size-control,
+  .admin-invoice-modal-actions .print-paper-size-control select {
+    width: 100%;
+  }
+
 }
 
 /* =========================
@@ -706,6 +711,11 @@ html {
   .admin-service-modal-actions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .admin-service-modal-actions .print-paper-size-control,
+  .admin-service-modal-actions .print-paper-size-control select {
+    width: 100%;
   }
 }
 
