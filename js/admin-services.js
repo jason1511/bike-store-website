@@ -575,22 +575,6 @@ function printCurrentService() {
 
   const baseUrl =
     `${window.location.origin}/`;
-  const requestedPaperSize =
-    document.getElementById("servicePrintPaperSize")?.value === "a4"
-      ? "a4"
-      : "a5";
-  const isA4 = requestedPaperSize === "a4";
-  const printPageSize = isA4
-    ? "A4 landscape"
-    : "210mm 148mm";
-  const printAreaWidth = isA4
-    ? "287mm"
-    : "200mm";
-  const printAreaHeight = isA4
-    ? "200mm"
-    : "136mm";
-  const printScale = isA4 ? 1.435 : 1;
-  const paperLabel = isA4 ? "A4" : "A5";
 
   printWindow.document.open();
   printWindow.document.write(`
@@ -616,7 +600,7 @@ function printCurrentService() {
 
         <style>
           @page {
-            size: ${printPageSize};
+            size: landscape;
             margin: 5mm;
           }
 
@@ -641,7 +625,7 @@ function printCurrentService() {
             border-radius: 0;
             box-shadow: none;
             overflow: hidden;
-            transform: scale(${printScale});
+            transform: scale(1);
             transform-origin: top center;
           }
 
@@ -650,8 +634,8 @@ function printCurrentService() {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            width: ${printAreaWidth};
-            height: ${printAreaHeight};
+            width: 200mm;
+            height: 136mm;
             margin: 0 auto;
             overflow: hidden;
           }
@@ -692,13 +676,6 @@ function printCurrentService() {
             cursor: pointer;
           }
 
-          .standalone-print-format {
-            align-self: center;
-            color: #52635f;
-            font-size: 0.82rem;
-            font-weight: 800;
-          }
-
           .standalone-print-actions
             .standalone-print-again {
             color: #ffffff;
@@ -737,13 +714,13 @@ function printCurrentService() {
               overflow: hidden !important;
               break-after: avoid !important;
               page-break-after: avoid !important;
-              transform: scale(${printScale}) !important;
+              transform: scale(1) !important;
               transform-origin: top center !important;
             }
 
             .standalone-print-stage {
-              width: ${printAreaWidth} !important;
-              height: ${printAreaHeight} !important;
+              width: 200mm !important;
+              height: 136mm !important;
               margin: 0 auto !important;
               overflow: hidden !important;
             }
@@ -758,6 +735,17 @@ function printCurrentService() {
               overflow: hidden !important;
             }
           }
+
+          @media print and (min-width: 250mm) {
+            .standalone-print-stage {
+              width: 287mm !important;
+              height: 200mm !important;
+            }
+
+            .printable-service {
+              transform: scale(1.435) !important;
+            }
+          }
         </style>
       </head>
 
@@ -767,8 +755,6 @@ function printCurrentService() {
           role="toolbar"
           aria-label="Kontrol cetak service"
         >
-          <span class="standalone-print-format">Format ${paperLabel}</span>
-
           <button
             id="standaloneServicePrintAgain"
             class="standalone-print-again"
