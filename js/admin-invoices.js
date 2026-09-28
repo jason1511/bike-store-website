@@ -55,6 +55,9 @@ async function fetchInvoices() {
     status: document.getElementById(
       "invoiceStatusFilter"
     )?.value || "all",
+    type: document.getElementById(
+      "invoiceTypeFilter"
+    )?.value || "all",
     payment: document.getElementById(
       "invoicePaymentFilter"
     )?.value || "all",
@@ -457,6 +460,9 @@ function renderInvoices(invoices) {
             <div>
               <p class="admin-invoice-number">
                 ${escapeHtml(invoice.invoiceNumber)}
+                <span class="invoice-type-badge ${invoice.invoiceType === "grosir" ? "is-grosir" : ""}">
+                  ${invoice.invoiceType === "grosir" ? "Grosir" : "Biasa"}
+                </span>
               </p>
 
               <h3>
@@ -1030,6 +1036,13 @@ function openEditInvoiceModal(
     "editInvoiceNumber"
   ).textContent =
     invoice.invoiceNumber || "-";
+
+  document.getElementById(
+    "editInvoiceTypeInput"
+  ).value =
+    invoice.invoiceType === "grosir"
+      ? "grosir"
+      : "normal";
 
   document.getElementById(
     "editInvoiceCustomerNameInput"
@@ -1881,6 +1894,13 @@ function getEditInvoiceFormData() {
     id:
       pendingEditInvoiceId,
 
+    invoiceType:
+      document.getElementById(
+        "editInvoiceTypeInput"
+      )?.value === "grosir"
+        ? "grosir"
+        : "normal",
+
     customerName:
       document.getElementById(
         "editInvoiceCustomerNameInput"
@@ -2722,6 +2742,7 @@ function resetInvoiceListFilters() {
   const defaults = {
     invoiceSearchInput: "",
     invoiceStatusFilter: "all",
+    invoiceTypeFilter: "all",
     invoicePaymentFilter: "all",
     invoiceBankFilter: "all",
     invoiceActorFilter: "all",
@@ -2762,6 +2783,7 @@ function setupInvoiceListControls() {
   );
   const filterIds = [
     "invoiceStatusFilter",
+    "invoiceTypeFilter",
     "invoicePaymentFilter",
     "invoiceBankFilter",
     "invoiceActorFilter",

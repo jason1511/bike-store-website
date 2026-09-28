@@ -223,6 +223,30 @@ async function loadReportsPage() {
 
 let generatedReport = null;
 
+const REPORT_TYPE_LABELS = {
+  sales: "Laporan Penjualan",
+  stock: "Laporan Pergerakan Stok",
+  stock_sales: "Laporan Stok Terjual",
+  stock_in: "Laporan Stok Masuk",
+  current_stock: "Posisi Stok Saat Ini"
+};
+
+const REPORT_PRINT_TITLES = {
+  sales: "LAPORAN PENJUALAN",
+  stock: "LAPORAN PERGERAKAN STOK",
+  stock_sales: "LAPORAN STOK TERJUAL",
+  stock_in: "LAPORAN STOK MASUK",
+  current_stock: "LAPORAN POSISI STOK SAAT INI"
+};
+
+function getReportTypeLabel(type) {
+  return REPORT_TYPE_LABELS[type] || "Laporan";
+}
+
+function getReportPrintTitle(type) {
+  return REPORT_PRINT_TITLES[type] || "LAPORAN";
+}
+
 function invalidateGeneratedReport() {
   generatedReport = null;
   const printButton =
@@ -445,39 +469,54 @@ function updateReportPeriodControls() {
       "reportPeriodInput"
     )?.value || "monthly";
 
+  const type =
+    document.getElementById(
+      "reportTypeInput"
+    )?.value || "sales";
+
+  const isCurrentStock =
+    type === "current_stock";
+
+  document
+    .getElementById("reportPeriodGroup")
+    ?.classList.toggle(
+      "is-hidden",
+      isCurrentStock
+    );
+
   document
     .getElementById("reportDailyGroup")
     ?.classList.toggle(
       "is-hidden",
-      period !== "daily"
+      isCurrentStock || period !== "daily"
     );
 
   document
     .getElementById("reportWeeklyGroup")
     ?.classList.toggle(
       "is-hidden",
-      period !== "weekly"
+      isCurrentStock || period !== "weekly"
     );
 
   document
     .getElementById("reportMonthlyGroup")
     ?.classList.toggle(
       "is-hidden",
-      period !== "monthly"
+      isCurrentStock || period !== "monthly"
     );
 
   document
     .getElementById("reportCustomFromGroup")
     ?.classList.toggle(
       "is-hidden",
-      period !== "custom"
+      isCurrentStock || period !== "custom"
     );
 
   document
     .getElementById("reportCustomToGroup")
     ?.classList.toggle(
       "is-hidden",
-      period !== "custom"
+      isCurrentStock || period !== "custom"
     );
 }
 
@@ -531,6 +570,18 @@ async function initialiseReportPeriodControls() {
 }
 
 function getSelectedReportDateRange() {
+  const type =
+    document.getElementById(
+      "reportTypeInput"
+    )?.value || "sales";
+
+  if (type === "current_stock") {
+    return {
+      from: "",
+      to: ""
+    };
+  }
+
   const period =
     document.getElementById(
       "reportPeriodInput"
@@ -636,6 +687,33 @@ function getSelectedReportDateRange() {
   };
 }
 function getReportColumns(type) {
+  if (type === "current_stock") {
+    return [
+      ["bike", "Sepeda"],
+      ["color", "Warna"],
+      ["quantity", "Stok Saat Ini"],
+      ["statusLabel", "Status"]
+    ];
+  }
+
+  if (["stock_sales", "stock_in"].includes(type)) {
+    return [
+      ["date", "Tanggal"],
+      ["bike", "Sepeda"],
+      ["color", "Warna"],
+      [
+        "quantity",
+        type === "stock_sales"
+          ? "Jumlah Terjual"
+          : "Jumlah Masuk"
+      ],
+      ["quantityBefore", "Stok Sebelum"],
+      ["quantityAfter", "Stok Sesudah"],
+      ["createdBy", "Admin"],
+      ["note", "Catatan"]
+    ];
+  }
+
   if (type === "stock") {
     return [
       ["date", "Tanggal"], ["bike", "Sepeda"], ["color", "Warna"],
@@ -679,6 +757,17 @@ function formatPrintableReportPeriod(
     `${formatReportDisplayDate(fromDate)} – ` +
     formatReportDisplayDate(toDate)
   );
+}
+
+function formatCurrentStockSnapshotTime(value) {
+  return `${new Intl.DateTimeFormat(
+    "id-ID",
+    {
+      dateStyle: "long",
+      timeStyle: "short",
+      timeZone: "Asia/Jakarta"
+    }
+  ).format(new Date(value || Date.now()))} WIB`;
 }
 
 function groupSalesReportRows(rows = []) {
@@ -965,10 +1054,100 @@ function getStockReportSummary(rows = []) {
   ];
 }
 
+function getCurrentStockReportSummary(rows = []) {
+  const modelIds = new Set(
+    rows.map((row) => row.bikeId || row.bike)
+  );
+  const totalStock = rows.reduce(
+    (total, row) => total + Number(row.quantity || 0),
+    0
+  );
+  const lowStock = rows.filter(
+    (row) => Number(row.quantity || 0) > 0 &&
+      Number(row.quantity || 0) <= 3
+  ).length;
+  const outOfStock = rows.filter(
+    (row) => Number(row.quantity || 0) <= 0
+  ).length;
+
+  return [
+    {
+      label: "Total Stok",
+      value: `${totalStock} unit`
+    },
+    {
+      label: "Model",
+      value: modelIds.size
+    },
+    {
+      label: "Stok Rendah",
+      value: `${lowStock} varian`
+    },
+    {
+      label: "Stok Habis",
+      value: `${outOfStock} varian`
+    }
+  ];
+}
+
+function getFocusedStockReportSummary(
+  rows = [],
+  type
+) {
+  const totalUnits = rows.reduce(
+    (total, row) => total + Number(row.quantity || 0),
+    0
+  );
+  const models = new Set(
+    rows.map((row) => row.bikeId || row.bike)
+  );
+  const variants = new Set(
+    rows.map(
+      (row) => `${row.bikeId || row.bike}::${row.color || "-"}`
+    )
+  );
+
+  return [
+    {
+      label: type === "stock_sales"
+        ? "Unit Terjual"
+        : "Unit Masuk",
+      value: `${totalUnits} unit`
+    },
+    {
+      label: type === "stock_sales"
+        ? "Catatan Penjualan"
+        : "Penerimaan Stok",
+      value: rows.length
+    },
+    {
+      label: "Model",
+      value: models.size
+    },
+    {
+      label: "Varian Warna",
+      value: variants.size
+    }
+  ];
+}
+
 function getPrintableReportSummary(report) {
-  return report.type === "sales"
-    ? getSalesReportSummary(report.rows)
-    : getStockReportSummary(report.rows);
+  if (report.type === "sales") {
+    return getSalesReportSummary(report.rows);
+  }
+
+  if (report.type === "current_stock") {
+    return getCurrentStockReportSummary(report.rows);
+  }
+
+  if (["stock_sales", "stock_in"].includes(report.type)) {
+    return getFocusedStockReportSummary(
+      report.rows,
+      report.type
+    );
+  }
+
+  return getStockReportSummary(report.rows);
 }
 
 function renderPrintableReportSummary(
@@ -1354,8 +1533,8 @@ function renderPrintableReportTable(
     <tr>
       ${columns
         .map(
-          ([, label]) =>
-            `<th>${escapeHtml(label)}</th>`
+          ([key, label]) =>
+            `<th class="is-${escapeHtml(key)}">${escapeHtml(label)}</th>`
         )
         .join("")}
     </tr>
@@ -1385,7 +1564,7 @@ function renderPrintableReportTable(
                           numeric
                             ? "is-number"
                             : ""
-                        }"
+                        } is-${escapeHtml(key)}"
                       >
                         ${escapeHtml(
                           formatReportCell(
@@ -1415,8 +1594,17 @@ function renderPrintableReportTable(
   foot.innerHTML = `
     <tr>
       <td colspan="${columns.length}">
-        Total ${report.rows.length}
-        pergerakan stok
+        ${report.type === "current_stock"
+          ? `Total ${report.rows.reduce(
+              (total, row) => total + Number(row.quantity || 0),
+              0
+            )} unit dalam ${report.rows.length} varian warna`
+          : ["stock_sales", "stock_in"].includes(report.type)
+            ? `Total ${report.rows.reduce(
+                (total, row) => total + Number(row.quantity || 0),
+                0
+              )} unit dalam ${report.rows.length} catatan`
+            : `Total ${report.rows.length} pergerakan stok`}
       </td>
     </tr>
   `;
@@ -1427,25 +1615,53 @@ async function preparePrintableReport(
 ) {
   await loadPrintableReport();
 
-  const title =
-    report.type === "sales"
-      ? "LAPORAN PENJUALAN"
-      : "LAPORAN PERGERAKAN STOK";
+  const printableReport = document.getElementById("printableReport");
+
+  printableReport?.classList.remove(
+    "is-current-stock-report",
+    "is-focused-stock-report",
+    "is-stock-movement-report"
+  );
+
+  printableReport?.classList.toggle(
+    "is-current-stock-report",
+    report.type === "current_stock"
+  );
+  printableReport?.classList.toggle(
+    "is-focused-stock-report",
+    ["stock_sales", "stock_in"].includes(report.type)
+  );
+  printableReport?.classList.toggle(
+    "is-stock-movement-report",
+    report.type === "stock"
+  );
+
+  const title = getReportPrintTitle(
+    report.type
+  );
 
   const period =
-    formatPrintableReportPeriod(
-      report.from,
-      report.to
-    );
+    report.type === "current_stock"
+      ? `Posisi stok per ${formatCurrentStockSnapshotTime(
+          report.generatedAt
+        )}`
+      : formatPrintableReportPeriod(
+          report.from,
+          report.to
+        );
 
   const createdAt =
-    new Intl.DateTimeFormat(
-      "id-ID",
-      {
-        dateStyle: "long",
-        timeStyle: "short"
-      }
-    ).format(new Date());
+    report.type === "current_stock"
+      ? formatCurrentStockSnapshotTime(
+          report.generatedAt
+        )
+      : new Intl.DateTimeFormat(
+          "id-ID",
+          {
+            dateStyle: "long",
+            timeStyle: "short"
+          }
+        ).format(new Date());
 
   document.getElementById(
     "printReportTitle"
@@ -1453,7 +1669,9 @@ async function preparePrintableReport(
 
   document.getElementById(
     "printReportPeriod"
-  ).textContent = `Periode: ${period}`;
+  ).textContent = report.type === "current_stock"
+    ? period
+    : `Periode: ${period}`;
 
   document.getElementById(
     "printReportCreatedAt"
@@ -1488,9 +1706,14 @@ const printButton =
   if (!preview || !head || !body) return;
 
   document.getElementById("reportPreviewType").textContent =
-    report.type === "sales" ? "Laporan Penjualan" : "Laporan Pergerakan Stok";
+    getReportTypeLabel(report.type);
   document.getElementById("reportPreviewTitle").textContent = report.title;
-  document.getElementById("reportPreviewPeriod").textContent = `${report.from} sampai ${report.to}`;
+  document.getElementById("reportPreviewPeriod").textContent =
+    report.type === "current_stock"
+      ? `Posisi stok per ${formatCurrentStockSnapshotTime(
+          report.generatedAt
+        )}`
+      : `${report.from} sampai ${report.to}`;
   const previewSummary = document.getElementById(
     "reportPreviewSummary"
   );
@@ -1507,6 +1730,21 @@ const printButton =
 
       previewSummary.textContent =
         `${invoiceGroups.length} invoice · ${units} unit`;
+    } else if (report.type === "current_stock") {
+      const summary = getCurrentStockReportSummary(
+        report.rows
+      );
+
+      previewSummary.textContent =
+        `${summary[0].value} · ${report.rows.length} varian`;
+    } else if (["stock_sales", "stock_in"].includes(report.type)) {
+      const summary = getFocusedStockReportSummary(
+        report.rows,
+        report.type
+      );
+
+      previewSummary.textContent =
+        `${summary[0].value} · ${report.rows.length} catatan`;
     } else {
       previewSummary.textContent =
         `${report.rows.length} pergerakan`;
@@ -1529,7 +1767,10 @@ async function previewGeneratedReport() {
   const note = document.getElementById("reportGenerationNote");
   const button = document.getElementById("previewReportBtn");
 
-  if (!from || !to || from > to) {
+  if (
+    type !== "current_stock" &&
+    (!from || !to || from > to)
+  ) {
     if (note) note.textContent = "Rentang tanggal laporan tidak valid.";
     return;
   }
@@ -1538,7 +1779,9 @@ async function previewGeneratedReport() {
 
   try {
     generatedReport = await fetchAdminJson(
-      `/api/admin/reports?type=${encodeURIComponent(type)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+      type === "current_stock"
+        ? "/api/admin/reports?type=current_stock"
+        : `/api/admin/reports?type=${encodeURIComponent(type)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
       { method: "GET" }
     );
 
@@ -1661,10 +1904,22 @@ async function printGeneratedReport() {
     const baseUrl =
       `${window.location.origin}/`;
 
-    const reportTitle =
-      generatedReport.type === "sales"
-        ? "Laporan Penjualan"
-        : "Laporan Pergerakan Stok";
+    const reportTitle = getReportTypeLabel(
+      generatedReport.type
+    );
+
+    const isCurrentStockReport =
+      generatedReport.type === "current_stock";
+
+    const reportPageSize =
+      isCurrentStockReport
+        ? "A4 portrait"
+        : "A4 landscape";
+
+    const reportWidth =
+      isCurrentStockReport
+        ? "188mm"
+        : "273mm";
 
     printWindow.document.open();
     printWindow.document.write(`
@@ -1690,8 +1945,8 @@ async function printGeneratedReport() {
 
           <style>
             @page {
-              size: A4 landscape;
-              margin: 12mm;
+              size: ${reportPageSize};
+              margin: ${isCurrentStockReport ? "11mm" : "12mm"};
             }
 
             html,
@@ -1710,8 +1965,8 @@ async function printGeneratedReport() {
             .print-report {
               box-sizing: border-box;
               display: block !important;
-              width: 273mm;
-              max-width: 273mm;
+              width: ${reportWidth};
+              max-width: ${reportWidth};
               margin: 0 auto;
               padding: 0;
             }
@@ -1773,8 +2028,8 @@ async function printGeneratedReport() {
 
               .print-report {
                 display: block !important;
-                width: 273mm !important;
-                max-width: 273mm !important;
+                width: ${reportWidth} !important;
+                max-width: ${reportWidth} !important;
                 margin: 0 auto !important;
                 padding: 0 !important;
               }
@@ -2014,7 +2269,27 @@ if (
     async () => {
       invalidateGeneratedReport();
 
+      updateReportPeriodControls();
+
+      const note = document.getElementById(
+        "reportGenerationNote"
+      );
+
+      if (typeInput.value === "current_stock") {
+        if (note) {
+          note.textContent =
+            "Laporan akan mengambil stok terbaru saat Preview Laporan diklik.";
+        }
+
+        return;
+      }
+
       await populateReportMonthOptions();
+
+      if (note) {
+        note.textContent =
+          "Pilih periode dan jenis laporan, lalu klik Preview Laporan.";
+      }
     }
   );
 }

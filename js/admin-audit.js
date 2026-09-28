@@ -19,6 +19,7 @@ const AUDIT_ACTION_LABELS = {
   bike_deactivate: "Nonaktifkan Sepeda",
   bike_toggle: "Ubah Status Sepeda",
   bike_hard_delete: "Hapus Permanen Sepeda",
+  stock_receive: "Terima Stok",
   brand_create: "Tambah Brand",
   brand_update: "Edit Brand",
   brand_activate: "Aktifkan Brand",
@@ -78,9 +79,22 @@ function formatAuditActionLabel(action) {
 function getAuditStockChanges(log) {
   const stockChanges = log?.details?.stockChanges;
 
-  return Array.isArray(stockChanges)
-    ? stockChanges
-    : [];
+  if (Array.isArray(stockChanges)) {
+    return stockChanges;
+  }
+
+  if (normalizeAuditAction(log?.action) === "stock_receive") {
+    const details = log?.details || {};
+
+    return [{
+      colorName: details.colorName || "Warna belum dicatat",
+      quantityBefore: Number(details.quantityBefore || 0),
+      quantityAfter: Number(details.quantityAfter || 0),
+      quantityChange: Number(details.quantityAdded || 0)
+    }];
+  }
+
+  return [];
 }
 
 function getAuditSeverity(log) {
@@ -212,6 +226,18 @@ function createAuditDetailsText(log) {
     return `Login ditolak setelah ${Number(
       details.failedAttempts || 5
     )} percobaan gagal.`;
+  }
+
+  if (action === "stock_receive") {
+    const colorName = details.colorName || "Warna belum dicatat";
+    const colorBefore = Number(details.quantityBefore || 0);
+    const colorAfter = Number(details.quantityAfter || 0);
+    const quantityAdded = Number(details.quantityAdded || 0);
+    const totalBefore = Number(details.totalStockBefore || 0);
+    const totalAfter = Number(details.totalStockAfter || 0);
+
+    return `${colorName}: ${colorBefore} → ${colorAfter} unit ` +
+      `(+${quantityAdded}) · Total model: ${totalBefore} → ${totalAfter} unit`;
   }
 
   if (stockChanges.length) {
@@ -452,9 +478,53 @@ function renderAuditInvoiceItems(details = {}) {
 
 function createAuditExpandedDetails(log) {
   const details = log.details || {};
+  const action = normalizeAuditAction(log.action);
   const targetId = log.targetId || log.target_id || "-";
   const rows = [
     ["ID Record", targetId],
+    action === "stock_receive"
+      ? [
+          "Mode penerimaan",
+          details.mode === "new"
+            ? "Warna baru"
+            : "Tambah stok warna tersedia"
+        ]
+      : null,
+    action === "stock_receive" && details.colorName
+      ? ["Warna", details.colorName]
+      : null,
+    action === "stock_receive"
+      ? [
+          "Stok warna",
+          `${Number(details.quantityBefore || 0).toLocaleString("id-ID")} → ${Number(
+            details.quantityAfter || 0
+          ).toLocaleString("id-ID")} unit`
+        ]
+      : null,
+    action === "stock_receive"
+      ? [
+          "Jumlah diterima",
+          `+${Number(details.quantityAdded || 0).toLocaleString("id-ID")} unit`
+        ]
+      : null,
+    action === "stock_receive"
+      ? [
+          "Total stok model",
+          `${Number(details.totalStockBefore || 0).toLocaleString("id-ID")} → ${Number(
+            details.totalStockAfter || 0
+          ).toLocaleString("id-ID")} unit`
+        ]
+      : null,
+    action === "stock_receive"
+      ? [
+          "Catatan penerimaan",
+          details.note || (
+            details.mode === "new"
+              ? `Stok awal warna baru ${details.colorName || "-"}`
+              : `Penerimaan stok warna ${details.colorName || "-"}`
+          )
+        ]
+      : null,
     details.reason
       ? ["Alasan", details.reason]
       : null,

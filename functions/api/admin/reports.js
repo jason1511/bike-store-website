@@ -1,9 +1,23 @@
 import { jsonResponse, requireRole } from "../../_shared/auth.js";
+import { normalizeBikeColors } from "../../_shared/bike-utils.js";
 
 const MOVEMENT_LABELS = {
   stock_in: "Stok Masuk",
   sale: "Penjualan",
   adjustment: "Penyesuaian"
+};
+
+const STOCK_REPORT_FILTERS = {
+  stock_sales: "sale",
+  stock_in: "stock_in"
+};
+
+const REPORT_TITLES = {
+  sales: "Laporan Penjualan",
+  stock: "Laporan Pergerakan Stok",
+  stock_sales: "Laporan Stok Terjual",
+  stock_in: "Laporan Stok Masuk",
+  current_stock: "Laporan Posisi Stok Saat Ini"
 };
 
 function isValidDate(value) {
@@ -63,16 +77,31 @@ async function getSalesReport(db, from, to) {
   }));
 }
 
-async function getStockReport(db, from, to) {
-  const result = await db.prepare(`
+async function getStockReport(
+  db,
+  from,
+  to,
+  movementType = ""
+) {
+  const movementFilter = movementType
+    ? "AND movement_type = ?"
+    : "";
+
+  const statement = db.prepare(`
     SELECT *
     FROM stock_movements
     WHERE date(datetime(created_at), '+7 hours') BETWEEN ? AND ?
+      ${movementFilter}
     ORDER BY datetime(created_at) ASC
     LIMIT 5000
-  `).bind(from, to).all();
+  `);
+
+  const result = movementType
+    ? await statement.bind(from, to, movementType).all()
+    : await statement.bind(from, to).all();
 
   return (result.results || []).map((row) => ({
+    bikeId: row.bike_id || "",
     date: row.created_at,
     bike: `${row.bike_brand || ""} ${row.bike_name || ""}`.trim() || "-",
     color: row.bike_color_name || "-",
@@ -80,9 +109,69 @@ async function getStockReport(db, from, to) {
     quantityChange: Number(row.quantity_change || 0),
     quantityBefore: Number(row.quantity_before || 0),
     quantityAfter: Number(row.quantity_after || 0),
+    quantity: Math.abs(Number(row.quantity_change || 0)),
     createdBy: row.created_by_username || "-",
     note: row.note || "-"
   }));
+}
+
+async function getCurrentStockReport(db) {
+  const result = await db.prepare(`
+    SELECT
+      bikes.id,
+      bikes.brand,
+      bikes.name,
+      bikes.colors,
+      bikes.stockQty,
+      bikes.inStock,
+      COALESCE(brands.name, bikes.brand) AS brand_name,
+      COALESCE(brands.sort_order, 999) AS brand_sort_order
+    FROM bikes
+    LEFT JOIN brands
+      ON brands.id = bikes.brand_id
+    ORDER BY
+      brand_sort_order ASC,
+      brand_name ASC,
+      bikes.name ASC
+  `).all();
+
+  return (result.results || []).flatMap((row) => {
+    const bike = `${row.brand_name || row.brand || ""} ${row.name || ""}`
+      .trim() || "-";
+    const colors = normalizeBikeColors(row.colors);
+
+    if (!colors.length) {
+      const quantity = Math.max(0, Number(row.stockQty || 0));
+
+      return [{
+        bikeId: row.id,
+        bike,
+        color: "-",
+        quantity,
+        statusLabel: quantity <= 0
+          ? "Habis"
+          : quantity <= 3
+            ? "Stok Rendah"
+            : "Tersedia"
+      }];
+    }
+
+    return colors.map((color) => {
+      const quantity = Math.max(0, Number(color.stockQty || 0));
+
+      return {
+        bikeId: row.id,
+        bike,
+        color: color.name || "-",
+        quantity,
+        statusLabel: quantity <= 0
+          ? "Habis"
+          : quantity <= 3
+            ? "Stok Rendah"
+            : "Tersedia"
+      };
+    });
+  });
 }
 async function getReportAvailableRange(
   db,
@@ -93,8 +182,14 @@ async function getReportAvailableRange(
       ? "invoices"
       : "stock_movements";
 
-  const result = await db
-    .prepare(`
+  const movementType =
+    STOCK_REPORT_FILTERS[type] || "";
+
+  const movementFilter = movementType
+    ? "WHERE movement_type = ?"
+    : "";
+
+  const statement = db.prepare(`
       SELECT
         MIN(
           date(
@@ -110,8 +205,12 @@ async function getReportAvailableRange(
           )
         ) AS last_date
       FROM ${table}
-    `)
-    .first();
+      ${movementFilter}
+    `);
+
+  const result = movementType
+    ? await statement.bind(movementType).first()
+    : await statement.first();
 
   return {
     firstDate:
@@ -134,13 +233,24 @@ export async function onRequestGet(context) {
     const from = url.searchParams.get("from") || "";
     const to = url.searchParams.get("to") || "";
 
-    if (!["sales", "stock"].includes(type)) {
+    if (!Object.hasOwn(REPORT_TITLES, type)) {
       return jsonResponse({ error: "Jenis laporan tidak valid." }, 400);
     }
     const metadataOnly =
   url.searchParams.get("meta") === "1";
 
 if (metadataOnly) {
+  if (type === "current_stock") {
+    return jsonResponse({
+      success: true,
+      type,
+      range: {
+        firstDate: "",
+        lastDate: ""
+      }
+    });
+  }
+
   const range =
     await getReportAvailableRange(
       env.BIKE_DB,
@@ -153,20 +263,33 @@ if (metadataOnly) {
     range
   });
 }
-    if (!isValidDate(from) || !isValidDate(to) || from > to) {
+    if (
+      type !== "current_stock" &&
+      (!isValidDate(from) || !isValidDate(to) || from > to)
+    ) {
       return jsonResponse({ error: "Rentang tanggal laporan tidak valid." }, 400);
     }
 
     const rows = type === "sales"
       ? await getSalesReport(env.BIKE_DB, from, to)
-      : await getStockReport(env.BIKE_DB, from, to);
+      : type === "current_stock"
+        ? await getCurrentStockReport(env.BIKE_DB)
+        : await getStockReport(
+            env.BIKE_DB,
+            from,
+            to,
+            STOCK_REPORT_FILTERS[type] || ""
+          );
+
+    const generatedAt = new Date().toISOString();
 
     return jsonResponse({
       success: true,
       type,
-      title: type === "sales" ? "Laporan Penjualan" : "Laporan Pergerakan Stok",
-      from,
-      to,
+      title: REPORT_TITLES[type],
+      from: type === "current_stock" ? "" : from,
+      to: type === "current_stock" ? "" : to,
+      generatedAt,
       rows
     });
   } catch (error) {
