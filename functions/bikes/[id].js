@@ -110,8 +110,7 @@ function createProductStructuredData(bike, canonicalUrl, imageUrl) {
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
       seller: {
-        "@type": "Organization",
-        name: "CV Niaga Bersama Abadi"
+        "@id": `${SITE_URL}/#organization`
       }
     };
   }
@@ -256,7 +255,7 @@ function renderProductPage(bike) {
     <header>
       <nav class="navbar">
         <a href="/" class="logo">
-          <img src="/images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
+          <img src="/images/logo.jpeg" alt="CV Niaga Bersama Abadi logo" width="332" height="157" decoding="async">
           <span>CV Niaga Bersama Abadi</span>
         </a>
         <ul class="nav-links">
@@ -279,7 +278,7 @@ function renderProductPage(bike) {
 
       <article class="product-detail">
         <div class="product-image-panel">
-          <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(bike.alt || title)}" fetchpriority="high">
+          <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(bike.alt || title)}" fetchpriority="high" decoding="async">
         </div>
 
         <div class="product-summary">
@@ -324,7 +323,7 @@ function renderProductPage(bike) {
       <div class="footer-content">
         <div class="footer-brand">
           <div class="footer-logo">
-            <img src="/images/logo.jpeg" alt="CV Niaga Bersama Abadi logo">
+            <img src="/images/logo.jpeg" alt="CV Niaga Bersama Abadi logo" width="332" height="157" loading="lazy" decoding="async">
             <span>CV Niaga Bersama Abadi</span>
           </div>
           <p>Showroom sepeda listrik di Lumajang untuk mobilitas harian dan kebutuhan keluarga.</p>
