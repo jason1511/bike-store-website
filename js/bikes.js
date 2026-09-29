@@ -100,6 +100,148 @@ function renderPublicBrandFilters() {
   `;
 }
 
+function updateBrandFilterScrollControls() {
+  const filterContainer = document.getElementById("bikeBrandFilters");
+  const leftButton = document.getElementById("brandFilterScrollLeft");
+  const rightButton = document.getElementById("brandFilterScrollRight");
+
+  if (!filterContainer || !leftButton || !rightButton) {
+    return;
+  }
+
+  const maxScrollLeft = Math.max(0, filterContainer.scrollWidth - filterContainer.clientWidth);
+  const hasOverflow = maxScrollLeft > 2;
+
+  leftButton.disabled = !hasOverflow || filterContainer.scrollLeft <= 2;
+  rightButton.disabled = !hasOverflow || filterContainer.scrollLeft >= maxScrollLeft - 2;
+}
+
+function revealBrandFilterButton(button) {
+  const filterContainer = document.getElementById("bikeBrandFilters");
+
+  if (!filterContainer || !button) {
+    return;
+  }
+
+  const containerRect = filterContainer.getBoundingClientRect();
+  const buttonRect = button.getBoundingClientRect();
+
+  if (buttonRect.left < containerRect.left) {
+    filterContainer.scrollBy({
+      left: buttonRect.left - containerRect.left - 12,
+      behavior: "smooth"
+    });
+  } else if (buttonRect.right > containerRect.right) {
+    filterContainer.scrollBy({
+      left: buttonRect.right - containerRect.right + 12,
+      behavior: "smooth"
+    });
+  }
+}
+
+function setupBrandFilterScroller() {
+  const filterContainer = document.getElementById("bikeBrandFilters");
+  const leftButton = document.getElementById("brandFilterScrollLeft");
+  const rightButton = document.getElementById("brandFilterScrollRight");
+
+  if (!filterContainer || !leftButton || !rightButton) {
+    return;
+  }
+
+  const scrollPage = (direction) => {
+    const distance = Math.max(240, Math.round(filterContainer.clientWidth * 0.72));
+    filterContainer.scrollBy({ left: direction * distance, behavior: "smooth" });
+  };
+
+  leftButton.addEventListener("click", () => scrollPage(-1));
+  rightButton.addEventListener("click", () => scrollPage(1));
+
+  filterContainer.addEventListener("scroll", updateBrandFilterScrollControls, { passive: true });
+  filterContainer.addEventListener("wheel", (event) => {
+    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      ? event.deltaX
+      : event.deltaY;
+    const maxScrollLeft = filterContainer.scrollWidth - filterContainer.clientWidth;
+    const canScroll = delta > 0
+      ? filterContainer.scrollLeft < maxScrollLeft - 2
+      : filterContainer.scrollLeft > 2;
+
+    if (!delta || !canScroll) {
+      return;
+    }
+
+    event.preventDefault();
+    filterContainer.scrollLeft += delta;
+  }, { passive: false });
+
+  let pointerId = null;
+  let pointerStartX = 0;
+  let pointerStartScrollLeft = 0;
+  let didDrag = false;
+  let suppressClick = false;
+
+  const finishDrag = () => {
+    if (pointerId === null) {
+      return;
+    }
+
+    suppressClick = didDrag;
+    pointerId = null;
+    filterContainer.classList.remove("is-dragging");
+    window.setTimeout(() => {
+      suppressClick = false;
+    }, 0);
+  };
+
+  filterContainer.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "touch" || event.button !== 0) {
+      return;
+    }
+
+    pointerId = event.pointerId;
+    pointerStartX = event.clientX;
+    pointerStartScrollLeft = filterContainer.scrollLeft;
+    didDrag = false;
+  });
+
+  filterContainer.addEventListener("pointermove", (event) => {
+    if (event.pointerId !== pointerId) {
+      return;
+    }
+
+    const distance = event.clientX - pointerStartX;
+
+    if (!didDrag && Math.abs(distance) < 5) {
+      return;
+    }
+
+    didDrag = true;
+    filterContainer.classList.add("is-dragging");
+    filterContainer.setPointerCapture?.(event.pointerId);
+    filterContainer.scrollLeft = pointerStartScrollLeft - distance;
+    event.preventDefault();
+  });
+
+  filterContainer.addEventListener("pointerup", finishDrag);
+  filterContainer.addEventListener("pointercancel", finishDrag);
+  filterContainer.addEventListener("click", (event) => {
+    if (!suppressClick) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver(updateBrandFilterScrollControls).observe(filterContainer);
+  } else {
+    window.addEventListener("resize", updateBrandFilterScrollControls);
+  }
+
+  window.requestAnimationFrame(updateBrandFilterScrollControls);
+}
+
 /* =========================
    FILTER + SORT
 ========================= */
@@ -257,11 +399,20 @@ function updateBikeStatus() {
 
 function updateActiveFilterButton() {
   const filterButtons = document.querySelectorAll(".filter-btn");
+  let activeButton = null;
 
   filterButtons.forEach((button) => {
     const isActive = button.dataset.brand === currentBrand;
     button.classList.toggle("active", isActive);
+
+    if (isActive) {
+      activeButton = button;
+    }
   });
+
+  if (activeButton) {
+    window.requestAnimationFrame(() => revealBrandFilterButton(activeButton));
+  }
 }
 
 function setupBikeFilters() {
@@ -850,6 +1001,7 @@ async function initializeBikesPage() {
     currentBrand = getInitialBrandFromUrl();
 
     setupBikeFilters();
+    setupBrandFilterScroller();
     setupCatalogueHistory();
     setupBikeSearch();
     setupBikeSort();

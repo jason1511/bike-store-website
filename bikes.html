@@ -91,15 +91,35 @@
         <div class="filter-panel">
           <p class="filter-label">Pilih Brand</p>
 
-          <div class="bike-filters" id="bikeBrandFilters">
-  <button
-    type="button"
-    class="filter-btn active"
-    data-brand="all"
-  >
-    Memuat brand...
-  </button>
-</div>
+          <div class="brand-filter-track">
+            <button
+              type="button"
+              class="brand-filter-scroll brand-filter-scroll-left"
+              id="brandFilterScrollLeft"
+              aria-label="Geser daftar brand ke kiri"
+            >
+              <span aria-hidden="true">←</span>
+            </button>
+
+            <div class="bike-filters" id="bikeBrandFilters">
+              <button
+                type="button"
+                class="filter-btn active"
+                data-brand="all"
+              >
+                Memuat brand...
+              </button>
+            </div>
+
+            <button
+              type="button"
+              class="brand-filter-scroll brand-filter-scroll-right"
+              id="brandFilterScrollRight"
+              aria-label="Geser daftar brand ke kanan"
+            >
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
         </div>
 
         <div class="bike-toolbar-right">
