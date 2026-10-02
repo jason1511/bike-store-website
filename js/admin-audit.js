@@ -43,10 +43,24 @@ const AUDIT_ACTION_LABELS = {
 const AUDIT_FIELD_LABELS = {
   brand: "brand",
   name: "nama model",
+  battery: "baterai",
+  motor: "motor",
+  topSpeed: "kecepatan maksimum",
+  range: "jarak tempuh",
+  maxWeight: "beban maksimum",
+  safety: "fitur keamanan",
+  image: "gambar utama",
+  alt: "teks alternatif gambar",
+  comfort: "tingkat kenyamanan",
+  colorName: "warna utama",
+  description: "deskripsi",
   price: "harga",
+  featured: "unit unggulan",
   inStock: "status katalog",
   stockQty: "total stok",
   colors: "warna dan stok",
+  invoiceType: "jenis invoice",
+  totalPrice: "total invoice",
   customerName: "nama customer",
   customerPhone: "nomor WhatsApp",
   customerAddress: "alamat",
@@ -80,7 +94,29 @@ function getAuditStockChanges(log) {
   const stockChanges = log?.details?.stockChanges;
 
   if (Array.isArray(stockChanges)) {
-    return stockChanges;
+    return stockChanges.map((change) => {
+      const quantityBefore = Number(
+        change.quantityBefore ?? change.stockBefore ?? 0
+      );
+      const quantityAfter = Number(
+        change.quantityAfter ?? change.stockAfter ?? 0
+      );
+
+      return {
+        ...change,
+        colorName: change.colorName ||
+          change.bikeColorName ||
+          change.bikeName ||
+          "Stok model",
+        quantityBefore,
+        quantityAfter,
+        quantityChange: Number(
+          change.quantityChange ??
+          change.stockChange ??
+          (quantityAfter - quantityBefore)
+        )
+      };
+    });
   }
 
   if (normalizeAuditAction(log?.action) === "stock_receive") {
@@ -175,7 +211,11 @@ function getAuditModule(log) {
     log.targetType || log.target_type || ""
   ).toLowerCase();
 
-  if (targetType === "bike" && getAuditStockChanges(log).length) {
+  if (
+    targetType === "bike" &&
+    normalizeAuditAction(log.action) !== "bike_create" &&
+    getAuditStockChanges(log).length
+  ) {
     return { key: "stock", label: "Stok" };
   }
 
@@ -207,10 +247,67 @@ function formatAuditFieldLabel(field) {
     String(field || "-").replaceAll("_", " ");
 }
 
+function getAuditFieldChanges(details = {}) {
+  if (Array.isArray(details.fieldChanges)) {
+    return details.fieldChanges.filter((change) => change?.field);
+  }
+
+  const before = details.before || {};
+  const after = details.after || {};
+  const fields = Array.isArray(details.changedFields)
+    ? details.changedFields
+    : [];
+
+  return fields.filter((field) => {
+    return Object.prototype.hasOwnProperty.call(before, field) ||
+      Object.prototype.hasOwnProperty.call(after, field);
+  }).map((field) => ({
+    field,
+    before: before[field],
+    after: after[field]
+  }));
+}
+
+function formatAuditFieldValue(field, value) {
+  if (field === "price" || field === "totalPrice" || field === "unitPrice") {
+    return formatRupiah(Number(value || 0));
+  }
+
+  if (field === "featured") {
+    return value ? "Ya" : "Tidak";
+  }
+
+  if (field === "inStock" || field === "isActive") {
+    return value ? "Aktif" : "Tidak aktif";
+  }
+
+  if (field === "colors" && Array.isArray(value)) {
+    if (!value.length) return "Belum ada warna";
+
+    return value.map((color) => {
+      const name = color?.name || "Tanpa nama";
+      const hex = color?.hex ? ` (${color.hex})` : "";
+      const image = color?.image ? ` · gambar: ${color.image}` : "";
+      return `${name}${hex}${image}`;
+    }).join("; ");
+  }
+
+  if (Array.isArray(value)) {
+    return value.length ? value.join(", ") : "Belum diisi";
+  }
+
+  if (value && typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value ?? "").trim() || "Belum diisi";
+}
+
 function createAuditDetailsText(log) {
   const details = log.details || {};
   const action = normalizeAuditAction(log.action);
   const stockChanges = getAuditStockChanges(log);
+  const fieldChanges = getAuditFieldChanges(details);
 
   if (action === "login_success") {
     return "Login admin berhasil.";
@@ -240,7 +337,30 @@ function createAuditDetailsText(log) {
       `(+${quantityAdded}) · Total model: ${totalBefore} → ${totalAfter} unit`;
   }
 
-  if (stockChanges.length) {
+  if (action === "bike_create") {
+    const stockText = stockChanges.length
+      ? ` · Stok awal ${stockChanges.reduce((total, change) => {
+          return total + Number(change.quantityAfter || 0);
+        }, 0).toLocaleString("id-ID")} unit`
+      : "";
+
+    return `${fieldChanges.length} nilai awal tersimpan${stockText}.`;
+  }
+
+  if (action === "bike_update" && fieldChanges.length) {
+    const preview = fieldChanges.slice(0, 2).map((change) => {
+      return `${formatAuditFieldLabel(change.field)}: ` +
+        `${formatAuditFieldValue(change.field, change.before)} → ` +
+        `${formatAuditFieldValue(change.field, change.after)}`;
+    });
+    const remaining = fieldChanges.length - preview.length;
+
+    return `${preview.join(" · ")}${
+      remaining > 0 ? ` · +${remaining} perubahan lain` : ""
+    }${stockChanges.length ? ` · ${stockChanges.length} perubahan stok` : ""}.`;
+  }
+
+  if (stockChanges.length && action !== "invoice_create") {
     const preview = stockChanges.slice(0, 2)
       .map((change) => {
         return `${change.colorName || "Warna belum dicatat"}: ` +
@@ -405,7 +525,9 @@ function renderAuditStockChanges(stockChanges) {
         ${stockChanges.map((change) => `
           <div>
             <span>${escapeHtml(
-              change.colorName || "Warna belum dicatat"
+              [change.bikeName, change.colorName || "Warna belum dicatat"]
+                .filter(Boolean)
+                .join(" · ")
             )}</span>
             <strong>
               ${Number(change.quantityBefore || 0).toLocaleString("id-ID")}
@@ -423,8 +545,11 @@ function renderAuditStockChanges(stockChanges) {
 }
 
 function renderAuditChangedFields(details = {}) {
+  const representedFields = new Set(
+    getAuditFieldChanges(details).map((change) => change.field)
+  );
   const fields = Array.isArray(details.changedFields)
-    ? details.changedFields
+    ? details.changedFields.filter((field) => !representedFields.has(field))
     : [];
 
   if (!fields.length) {
@@ -433,12 +558,42 @@ function renderAuditChangedFields(details = {}) {
 
   return `
     <div class="admin-audit-change-section">
-      <h4>Field yang berubah</h4>
+      <h4>Field berubah (nilai lama tidak tersimpan)</h4>
       <div class="admin-audit-field-chips">
         ${fields.map((field) => `
           <span>${escapeHtml(
             formatAuditFieldLabel(field)
           )}</span>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderAuditFieldChanges(details = {}) {
+  const changes = getAuditFieldChanges(details);
+
+  if (!changes.length) {
+    return "";
+  }
+
+  return `
+    <div class="admin-audit-change-section">
+      <h4>Nilai sebelum dan sesudah</h4>
+      <div class="admin-audit-value-changes">
+        ${changes.map((change) => `
+          <div>
+            <span>${escapeHtml(formatAuditFieldLabel(change.field))}</span>
+            <div>
+              <strong>${escapeHtml(
+                formatAuditFieldValue(change.field, change.before)
+              )}</strong>
+              <em aria-hidden="true">→</em>
+              <strong>${escapeHtml(
+                formatAuditFieldValue(change.field, change.after)
+              )}</strong>
+            </div>
+          </div>
         `).join("")}
       </div>
     </div>
@@ -461,9 +616,13 @@ function renderAuditInvoiceItems(details = {}) {
         ${items.map((item) => `
           <div>
             <span>
-              ${escapeHtml(item.bikeName || "Sepeda")}
-              ${item.bikeColorName
-                ? ` · ${escapeHtml(item.bikeColorName)}`
+              <b>${escapeHtml(item.bikeName || "Sepeda")}</b>
+              ${item.bikeColorName ? ` · ${escapeHtml(item.bikeColorName)}` : ""}
+              ${item.stockBefore !== undefined && item.stockAfter !== undefined
+                ? `<small>Stok warna: ${Number(item.stockBefore || 0).toLocaleString("id-ID")} → ${Number(item.stockAfter || 0).toLocaleString("id-ID")} (${formatAuditSignedQuantity(item.stockChange ?? (Number(item.stockAfter || 0) - Number(item.stockBefore || 0)))})</small>`
+                : ""}
+              ${item.unitPrice !== undefined
+                ? `<small>${formatRupiah(item.unitPrice)} × ${Number(item.quantity || 0).toLocaleString("id-ID")} = ${formatRupiah(item.lineTotal || 0)}</small>`
                 : ""}
             </span>
             <strong>
@@ -553,6 +712,7 @@ function createAuditExpandedDetails(log) {
         </div>
       `).join("")}
     </div>
+    ${renderAuditFieldChanges(details)}
     ${renderAuditChangedFields(details)}
     ${renderAuditStockChanges(getAuditStockChanges(log))}
     ${renderAuditInvoiceItems(details)}

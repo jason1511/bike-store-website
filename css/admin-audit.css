@@ -310,12 +310,14 @@
 }
 
 .admin-audit-stock-changes,
+.admin-audit-value-changes,
 .admin-audit-item-list {
   display: grid;
   gap: 6px;
 }
 
 .admin-audit-stock-changes > div,
+.admin-audit-value-changes > div,
 .admin-audit-item-list > div {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
@@ -324,6 +326,40 @@
   padding: 8px 10px;
   border-radius: 10px;
   background: rgba(7, 18, 18, 0.58);
+}
+
+.admin-audit-value-changes > div {
+  grid-template-columns: minmax(130px, 0.35fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.admin-audit-value-changes > div > span {
+  color: #9fb0ad;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-audit-value-changes > div > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.admin-audit-value-changes strong {
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.admin-audit-value-changes em {
+  color: #ffd873;
+  font-style: normal;
+  font-weight: 900;
 }
 
 .admin-audit-stock-changes span,
@@ -346,6 +382,21 @@
 
 .admin-audit-item-list > div {
   grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.admin-audit-item-list span {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-audit-item-list b {
+  color: #ffffff;
+}
+
+.admin-audit-item-list small {
+  color: #9fb0ad;
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .admin-audit-pagination {
@@ -423,6 +474,16 @@
 
   .admin-audit-stock-changes > div {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .admin-audit-value-changes > div,
+  .admin-audit-value-changes > div > div {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-audit-value-changes em {
+    transform: rotate(90deg);
+    width: max-content;
   }
 
   .admin-audit-stock-changes em {

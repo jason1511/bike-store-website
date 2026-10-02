@@ -115,39 +115,80 @@ function getBikeLabel(bike) {
   return `${bike.brand || ""} ${bike.name || ""}`.trim();
 }
 
-function getChangedBikeFields(beforeBike, afterBike) {
-  if (!beforeBike || !afterBike) {
-    return [];
+const BIKE_AUDIT_FIELDS = [
+  "brand",
+  "name",
+  "battery",
+  "motor",
+  "topSpeed",
+  "range",
+  "maxWeight",
+  "safety",
+  "image",
+  "alt",
+  "comfort",
+  "colors",
+  "description",
+  "price",
+  "featured",
+  "inStock"
+];
+
+function getBikeAuditValue(bike, field) {
+  if (field === "colors") {
+    return normalizeBikeColors(bike?.colors).map((color) => ({
+      name: color.name,
+      hex: color.hex,
+      image: color.image
+    }));
   }
 
-  const fields = [
-    "brandId",
-    "brand",
-    "name",
-    "battery",
-    "motor",
-    "topSpeed",
-    "range",
-    "maxWeight",
-    "safety",
-    "image",
-    "alt",
-    "comfort",
-    "colorName",
-    "colors",
-    "description",
-    "price",
-    "featured",
-    "inStock",
-    "stockQty"
-  ];
+  return bike?.[field];
+}
 
-  return fields.filter((field) => {
-    const beforeValue = beforeBike[field];
-    const afterValue = afterBike[field];
+function getInitialBikeAuditValue(field) {
+  if (field === "colors") return [];
+  if (field === "price") return 0;
+  if (field === "featured" || field === "inStock") return false;
+  return "";
+}
 
-    return String(beforeValue ?? "") !== String(afterValue ?? "");
-  });
+function hasBikeAuditValue(field, value) {
+  if (field === "price" || field === "featured" || field === "inStock") {
+    return true;
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  return String(value ?? "").trim() !== "";
+}
+
+function createBikeFieldChanges(beforeBike, afterBike) {
+  if (!afterBike) return [];
+
+  return BIKE_AUDIT_FIELDS.map((field) => {
+    const before = beforeBike
+      ? getBikeAuditValue(beforeBike, field)
+      : getInitialBikeAuditValue(field);
+    const after = getBikeAuditValue(afterBike, field);
+
+    if (!beforeBike && !hasBikeAuditValue(field, after)) {
+      return null;
+    }
+
+    if (JSON.stringify(before) === JSON.stringify(after)) {
+      return null;
+    }
+
+    return { field, before, after };
+  }).filter(Boolean);
+}
+
+function getChangedBikeFields(beforeBike, afterBike) {
+  return createBikeFieldChanges(beforeBike, afterBike)
+    .map((change) => change.field);
 }
 
 function createStockMovementId() {
@@ -641,6 +682,13 @@ const errors = validateBike(bike);
     ]);
 
     const createdBike = await getBikeById(env.BIKE_DB, bike.id);
+    const initialStockChanges = getBikeStockEntries(createdBike)
+      .map((entry) => ({
+        colorName: entry.colorName,
+        quantityBefore: 0,
+        quantityChange: entry.quantity,
+        quantityAfter: entry.quantity
+      }));
 
     await writeAuditLog(env, auth.user, {
       action: "bike_create",
@@ -653,18 +701,8 @@ const errors = validateBike(bike);
         price: createdBike.price,
         inStock: createdBike.inStock,
         stockQty: createdBike.stockQty,
-        stockChanges: initialStockMovements.map(
-          (movement) => ({
-            colorName:
-              movement.bikeColorName || "",
-            quantityBefore:
-              movement.quantityBefore,
-            quantityChange:
-              movement.quantityChange,
-            quantityAfter:
-              movement.quantityAfter
-          })
-        )
+        fieldChanges: createBikeFieldChanges(null, createdBike),
+        stockChanges: initialStockChanges
       }
     });
 
@@ -795,7 +833,11 @@ const errors = validateBike(bike);
     ]);
 
     const updatedBike = await getBikeById(env.BIKE_DB, bike.id);
-    const changedFields = getChangedBikeFields(existingBike, updatedBike);
+    const fieldChanges = createBikeFieldChanges(
+      existingBike,
+      updatedBike
+    );
+    const changedFields = fieldChanges.map((change) => change.field);
 
     await writeAuditLog(env, auth.user, {
       action: "bike_update",
@@ -804,6 +846,7 @@ const errors = validateBike(bike);
       targetLabel: getBikeLabel(updatedBike),
       details: {
         changedFields,
+        fieldChanges,
         before: {
           brand: existingBike.brand,
           name: existingBike.name,

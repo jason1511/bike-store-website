@@ -387,6 +387,37 @@ function restoreColorStock(colors, colorName, quantity) {
     nextStockQty: getColorStockTotal(nextColors)
   };
 }
+
+function getColorStockChanges(originalColors, nextColors) {
+  const beforeByName = new Map(
+    normalizeBikeColors(originalColors).map((color) => [
+      String(color.name || "").trim().toLocaleLowerCase("id-ID"),
+      color
+    ])
+  );
+  const afterByName = new Map(
+    normalizeBikeColors(nextColors).map((color) => [
+      String(color.name || "").trim().toLocaleLowerCase("id-ID"),
+      color
+    ])
+  );
+  const names = new Set([...beforeByName.keys(), ...afterByName.keys()]);
+
+  return Array.from(names).map((name) => {
+    const beforeColor = beforeByName.get(name);
+    const afterColor = afterByName.get(name);
+    const quantityBefore = Number(beforeColor?.stockQty || 0);
+    const quantityAfter = Number(afterColor?.stockQty || 0);
+
+    return {
+      colorName: afterColor?.name || beforeColor?.name || "",
+      quantityBefore,
+      quantityAfter,
+      quantityChange: quantityAfter - quantityBefore
+    };
+  }).filter((change) => change.quantityChange !== 0);
+}
+
 function normalizeInvoiceItemPayload(item) {
   const quantity = Number(item.quantity || 1);
   const unitPrice = Number(item.unitPrice || 0);
@@ -1032,7 +1063,10 @@ async function prepareInvoiceItemsAndStockUpdates(db, invoice) {
       frameNumbers: item.frameNumbers,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
-      lineTotal: item.quantity * item.unitPrice
+      lineTotal: item.quantity * item.unitPrice,
+      stockBefore: currentColorStock,
+      stockAfter: currentColorStock - item.quantity,
+      stockChange: -item.quantity
     });
   }
 
@@ -1093,7 +1127,18 @@ async function prepareInvoiceVoidStockUpdates(db, invoice) {
     }
 
     const quantity = Math.max(0, Number(item.quantity || 0));
-    const itemStockBefore = getColorStockTotal(bikePlan.workingColors);
+    const selectedColor = findBikeColor(
+      bikePlan.workingColors,
+      item.bikeColorName
+    );
+
+    if (!selectedColor) {
+      throw new Error(
+        `Warna ${item.bikeColorName} untuk ${item.bikeBrand} ${item.bikeName} tidak ditemukan di data stok.`
+      );
+    }
+
+    const itemStockBefore = Number(selectedColor.stockQty || 0);
 
     const stockResult = restoreColorStock(
       bikePlan.workingColors,
@@ -1116,7 +1161,7 @@ async function prepareInvoiceVoidStockUpdates(db, invoice) {
       bikeColorName: item.bikeColorName,
       quantity,
       quantityBefore: itemStockBefore,
-      quantityAfter: stockResult.nextStockQty
+      quantityAfter: itemStockBefore + quantity
     });
   }
 
@@ -1686,10 +1731,6 @@ export async function onRequestPost(context) {
     }
 
     for (const item of invoicePlan.preparedItems) {
-      const stockUpdate = invoicePlan.stockUpdates.find((update) => {
-        return update.bike.id === item.bikeId;
-      });
-
       await writeStockMovement(env, auth.user, {
         bikeId: item.bikeId,
         bikeBrand: item.bikeBrand,
@@ -1697,8 +1738,8 @@ export async function onRequestPost(context) {
         bikeColorName: item.bikeColorName,
         movementType: "sale",
         quantityChange: -item.quantity,
-        quantityBefore: stockUpdate?.stockBefore ?? 0,
-        quantityAfter: stockUpdate?.stockAfter ?? 0,
+        quantityBefore: item.stockBefore,
+        quantityAfter: item.stockAfter,
         note: `Invoice ${invoiceNumber} - Warna ${item.bikeColorName}`
       });
     }
@@ -1720,7 +1761,17 @@ export async function onRequestPost(context) {
           frameNumbers: item.frameNumbers,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          lineTotal: item.lineTotal
+          lineTotal: item.lineTotal,
+          stockBefore: item.stockBefore,
+          stockAfter: item.stockAfter,
+          stockChange: item.stockChange
+        })),
+        stockChanges: invoicePlan.preparedItems.map((item) => ({
+          bikeName: `${item.bikeBrand} ${item.bikeName}`.trim(),
+          colorName: item.bikeColorName,
+          quantityBefore: item.stockBefore,
+          quantityAfter: item.stockAfter,
+          quantityChange: item.stockChange
         }))
       }
     });
@@ -2358,56 +2409,39 @@ export async function onRequestPut(
     }
 
     /*
-     * Record aggregate inventory changes.
+     * Record each affected color so an invoice edit remains traceable.
      */
     for (
       const stockUpdate of
       editPlan.stockUpdates
     ) {
-      const quantityChange =
-        stockUpdate.stockAfter -
-        stockUpdate.stockBefore;
-
-      if (quantityChange === 0) {
-        continue;
-      }
-
-      try {
-        await writeStockMovement(
-          env,
-          auth.user,
-          {
-            bikeId:
-              stockUpdate.bike.id,
-
-            bikeBrand:
-              stockUpdate.bike.brand,
-
-            bikeName:
-              stockUpdate.bike.name,
-
-            bikeColorName: "",
-
-            movementType:
-              "adjustment",
-
-            quantityChange,
-
-            quantityBefore:
-              stockUpdate.stockBefore,
-
-            quantityAfter:
-              stockUpdate.stockAfter,
-
-            note:
-              `Edit invoice ${originalInvoice.invoiceNumber} - ${reason}`
-          }
-        );
-      } catch (error) {
-        console.error(
-          "Failed to write invoice edit stock movement:",
-          error
-        );
+      for (const change of getColorStockChanges(
+        stockUpdate.originalColors,
+        stockUpdate.nextColors
+      )) {
+        try {
+          await writeStockMovement(
+            env,
+            auth.user,
+            {
+              bikeId: stockUpdate.bike.id,
+              bikeBrand: stockUpdate.bike.brand,
+              bikeName: stockUpdate.bike.name,
+              bikeColorName: change.colorName,
+              movementType: "adjustment",
+              quantityChange: change.quantityChange,
+              quantityBefore: change.quantityBefore,
+              quantityAfter: change.quantityAfter,
+              note:
+                `Edit invoice ${originalInvoice.invoiceNumber} - ${reason}`
+            }
+          );
+        } catch (error) {
+          console.error(
+            "Failed to write invoice edit stock movement:",
+            error
+          );
+        }
       }
     }
 
@@ -2441,21 +2475,17 @@ export async function onRequestPut(
             updatedInvoice,
 
           stockChanges:
-            editPlan.stockUpdates.map(
-              (update) => ({
-                bikeId:
-                  update.bike.id,
-
+            editPlan.stockUpdates.flatMap((update) => {
+              return getColorStockChanges(
+                update.originalColors,
+                update.nextColors
+              ).map((change) => ({
+                bikeId: update.bike.id,
                 bikeName:
                   `${update.bike.brand} ${update.bike.name}`.trim(),
-
-                stockBefore:
-                  update.stockBefore,
-
-                stockAfter:
-                  update.stockAfter
-              })
-            )
+                ...change
+              }));
+            })
         }
       }
     );
