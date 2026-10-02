@@ -418,6 +418,38 @@ function getColorStockChanges(originalColors, nextColors) {
   }).filter((change) => change.quantityChange !== 0);
 }
 
+const INVOICE_AUDIT_FIELDS = [
+  "invoiceType",
+  "customerName",
+  "customerPhone",
+  "customerAddress",
+  "paymentMethod",
+  "paymentBank",
+  "notes",
+  "status",
+  "totalPrice"
+];
+
+function createInvoiceFieldChanges(beforeInvoice, afterInvoice) {
+  if (!beforeInvoice || !afterInvoice) return [];
+
+  return INVOICE_AUDIT_FIELDS.map((field) => {
+    const before = beforeInvoice[field];
+    const after = afterInvoice[field];
+
+    return JSON.stringify(before) === JSON.stringify(after)
+      ? null
+      : { field, before, after };
+  }).filter(Boolean);
+}
+
+function getInvoiceRecordValues(invoice) {
+  return INVOICE_AUDIT_FIELDS.reduce((values, field) => {
+    values[field] = invoice?.[field];
+    return values;
+  }, {});
+}
+
 function normalizeInvoiceItemPayload(item) {
   const quantity = Number(item.quantity || 1);
   const unitPrice = Number(item.unitPrice || 0);
@@ -1755,6 +1787,7 @@ export async function onRequestPost(context) {
         customerName: createdInvoice.customerName,
         totalPrice: createdInvoice.totalPrice,
         itemCount: invoicePlan.preparedItems.length,
+        recordValues: getInvoiceRecordValues(createdInvoice),
         items: invoicePlan.preparedItems.map((item) => ({
           bikeName: `${item.bikeBrand} ${item.bikeName}`,
           bikeColorName: item.bikeColorName,
@@ -2000,6 +2033,7 @@ export async function onRequestPatch(context) {
         details: {
           reason,
           customerName: updatedInvoice.customerName,
+          recordValues: getInvoiceRecordValues(updatedInvoice),
           itemCount: voidPlan.movementPlans.length,
           items: voidPlan.movementPlans.map((movement) => ({
             bikeName:
@@ -2450,6 +2484,12 @@ export async function onRequestPut(
         env.BIKE_DB,
         originalInvoice.id
       );
+    const fieldChanges = createInvoiceFieldChanges(
+      originalInvoice,
+      updatedInvoice
+    );
+    const invoiceItemsChanged = JSON.stringify(originalInvoice.items || []) !==
+      JSON.stringify(updatedInvoice.items || []);
 
     await writeAuditLog(
       env,
@@ -2468,11 +2508,21 @@ export async function onRequestPut(
         details: {
           reason,
 
+          changedFields: [
+            ...fieldChanges.map((change) => change.field),
+            ...(invoiceItemsChanged ? ["items"] : [])
+          ],
+
+          fieldChanges,
+
           before:
             originalInvoice,
 
           after:
             updatedInvoice,
+
+          items:
+            updatedInvoice.items,
 
           stockChanges:
             editPlan.stockUpdates.flatMap((update) => {
@@ -2886,7 +2936,19 @@ export async function onRequestDelete(
               new Date().toISOString(),
 
             stockRestored:
-              Boolean(stockPlan)
+              Boolean(stockPlan),
+
+            stockChanges:
+              stockPlan
+                ? stockPlan.movementPlans.map((movement) => ({
+                    bikeName:
+                      `${movement.bikeBrand} ${movement.bikeName}`.trim(),
+                    colorName: movement.bikeColorName,
+                    quantityBefore: movement.quantityBefore,
+                    quantityAfter: movement.quantityAfter,
+                    quantityChange: movement.quantity
+                  }))
+                : []
           }
         }
       );

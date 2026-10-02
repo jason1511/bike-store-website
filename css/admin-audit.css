@@ -311,9 +311,37 @@
 
 .admin-audit-stock-changes,
 .admin-audit-value-changes,
+.admin-audit-record-values,
 .admin-audit-item-list {
   display: grid;
   gap: 6px;
+}
+
+.admin-audit-record-values {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-audit-record-values > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(7, 18, 18, 0.58);
+}
+
+.admin-audit-record-values span {
+  color: #9fb0ad;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-audit-record-values strong {
+  color: #ffffff;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
 }
 
 .admin-audit-stock-changes > div,
@@ -469,6 +497,10 @@
   }
 
   .admin-audit-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-audit-record-values {
     grid-template-columns: 1fr;
   }
 

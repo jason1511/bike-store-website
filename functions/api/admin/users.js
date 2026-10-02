@@ -267,6 +267,11 @@ export async function onRequestPost(context) {
       targetId: createdUser.id,
       targetLabel: createdUser.username,
       details: {
+        recordValues: {
+          username: createdUser.username,
+          role: createdUser.role,
+          isActive: createdUser.isActive
+        },
         role: createdUser.role,
         isActive: createdUser.isActive
       }
@@ -399,7 +404,7 @@ export async function onRequestPut(context) {
     }
 
     if (existingUser.isActive !== updatedUser.isActive) {
-      changedFields.push("status");
+      changedFields.push("isActive");
     }
 
     if (password) {
@@ -407,6 +412,32 @@ export async function onRequestPut(context) {
     }
 
     if (changedFields.length) {
+      const fieldChanges = [];
+
+      if (existingUser.role !== updatedUser.role) {
+        fieldChanges.push({
+          field: "role",
+          before: existingUser.role,
+          after: updatedUser.role
+        });
+      }
+
+      if (existingUser.isActive !== updatedUser.isActive) {
+        fieldChanges.push({
+          field: "isActive",
+          before: existingUser.isActive,
+          after: updatedUser.isActive
+        });
+      }
+
+      if (password) {
+        fieldChanges.push({
+          field: "password",
+          before: false,
+          after: true
+        });
+      }
+
       await writeAuditLog(env, auth.user, {
         action: "user_update",
         targetType: "user",
@@ -414,6 +445,7 @@ export async function onRequestPut(context) {
         targetLabel: updatedUser.username,
         details: {
           changedFields,
+          fieldChanges,
           before: {
             role: existingUser.role,
             isActive: existingUser.isActive

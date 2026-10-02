@@ -75,6 +75,47 @@ function rowToBrand(row) {
   };
 }
 
+const BRAND_AUDIT_FIELDS = [
+  "name",
+  "slug",
+  "logoPath",
+  "themeMain",
+  "themeSecond",
+  "themeSoft",
+  "themeGlow",
+  "isActive",
+  "sortOrder"
+];
+
+function createBrandFieldChanges(beforeBrand, afterBrand) {
+  if (!afterBrand) return [];
+
+  return BRAND_AUDIT_FIELDS.map((field) => {
+    const before = beforeBrand
+      ? beforeBrand[field]
+      : field === "isActive"
+        ? false
+        : field === "sortOrder"
+          ? 0
+          : "";
+    const after = afterBrand[field];
+
+    if (
+      !beforeBrand &&
+      !["isActive", "sortOrder"].includes(field) &&
+      String(after ?? "").trim() === ""
+    ) {
+      return null;
+    }
+
+    if (JSON.stringify(before) === JSON.stringify(after)) {
+      return null;
+    }
+
+    return { field, before, after };
+  }).filter(Boolean);
+}
+
 function normalizeBrandPayload(payload, existingBrand = null) {
   const name = String(payload.name || "").trim();
   const slug = slugify(payload.slug || name);
@@ -338,6 +379,7 @@ export async function onRequestPost(context) {
       .run();
 
     const createdBrand = await getBrandById(env.BIKE_DB, brand.id);
+    const fieldChanges = createBrandFieldChanges(null, createdBrand);
 
     await writeBrandAudit(env, auth.user, {
       action: "brand_create",
@@ -345,6 +387,8 @@ export async function onRequestPost(context) {
       targetId: createdBrand.id,
       targetLabel: createdBrand.name,
       details: {
+        changedFields: fieldChanges.map((change) => change.field),
+        fieldChanges,
         slug: createdBrand.slug,
         logoPath: createdBrand.logoPath,
         themeMain: createdBrand.themeMain,
@@ -468,6 +512,10 @@ export async function onRequestPut(context) {
       .run();
 
     const updatedBrand = await getBrandById(env.BIKE_DB, brand.id);
+    const fieldChanges = createBrandFieldChanges(
+      existingBrand,
+      updatedBrand
+    );
 
     await writeBrandAudit(env, auth.user, {
       action: "brand_update",
@@ -475,6 +523,8 @@ export async function onRequestPut(context) {
       targetId: updatedBrand.id,
       targetLabel: updatedBrand.name,
       details: {
+        changedFields: fieldChanges.map((change) => change.field),
+        fieldChanges,
         previousName: existingBrand.name,
         name: updatedBrand.name,
         slug: updatedBrand.slug,
@@ -557,6 +607,10 @@ export async function onRequestPatch(context) {
       .run();
 
     const updatedBrand = await getBrandById(env.BIKE_DB, brandId);
+    const fieldChanges = createBrandFieldChanges(
+      existingBrand,
+      updatedBrand
+    );
 
     await writeBrandAudit(env, auth.user, {
       action: nextActiveState ? "brand_activate" : "brand_deactivate",
@@ -564,6 +618,8 @@ export async function onRequestPatch(context) {
       targetId: updatedBrand.id,
       targetLabel: updatedBrand.name,
       details: {
+        changedFields: fieldChanges.map((change) => change.field),
+        fieldChanges,
         previousIsActive: existingBrand.isActive,
         isActive: updatedBrand.isActive
       }

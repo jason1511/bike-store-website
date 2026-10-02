@@ -59,8 +59,16 @@ const AUDIT_FIELD_LABELS = {
   inStock: "status katalog",
   stockQty: "total stok",
   colors: "warna dan stok",
+  slug: "slug",
+  logoPath: "logo",
+  themeMain: "warna tema utama",
+  themeSecond: "warna tema kedua",
+  themeSoft: "warna tema lembut",
+  themeGlow: "efek cahaya tema",
+  sortOrder: "urutan brand",
   invoiceType: "jenis invoice",
   totalPrice: "total invoice",
+  username: "username",
   customerName: "nama customer",
   customerPhone: "nomor WhatsApp",
   customerAddress: "alamat",
@@ -68,6 +76,10 @@ const AUDIT_FIELD_LABELS = {
   paymentBank: "bank pembayaran",
   notes: "catatan",
   items: "item invoice",
+  bikeLabel: "sepeda/unit",
+  serviceType: "jenis service",
+  serviceStatus: "status service",
+  serviceCost: "biaya service",
   role: "role",
   status: "status user",
   password: "password",
@@ -210,10 +222,11 @@ function getAuditModule(log) {
   const targetType = String(
     log.targetType || log.target_type || ""
   ).toLowerCase();
+  const action = normalizeAuditAction(log.action);
 
   if (
     targetType === "bike" &&
-    normalizeAuditAction(log.action) !== "bike_create" &&
+    ["stock_receive", "bike_update"].includes(action) &&
     getAuditStockChanges(log).length
   ) {
     return { key: "stock", label: "Stok" };
@@ -249,27 +262,107 @@ function formatAuditFieldLabel(field) {
 
 function getAuditFieldChanges(details = {}) {
   if (Array.isArray(details.fieldChanges)) {
-    return details.fieldChanges.filter((change) => change?.field);
+    const explicitChanges = details.fieldChanges.filter(
+      (change) => change?.field
+    );
+    const hasItemChange = Array.isArray(details.changedFields) &&
+      details.changedFields.includes("items") &&
+      JSON.stringify(details.before?.items || []) !==
+        JSON.stringify(details.after?.items || []);
+
+    return hasItemChange
+      ? [
+          ...explicitChanges,
+          {
+            field: "items",
+            before: details.before?.items || [],
+            after: details.after?.items || []
+          }
+        ]
+      : explicitChanges;
   }
 
   const before = details.before || {};
   const after = details.after || {};
-  const fields = Array.isArray(details.changedFields)
+  let fields = Array.isArray(details.changedFields)
     ? details.changedFields
     : [];
 
-  return fields.filter((field) => {
-    return Object.prototype.hasOwnProperty.call(before, field) ||
-      Object.prototype.hasOwnProperty.call(after, field);
-  }).map((field) => ({
-    field,
-    before: before[field],
-    after: after[field]
-  }));
+  if (!fields.length && Object.keys(before).length && Object.keys(after).length) {
+    fields = [
+      "invoiceType",
+      "customerName",
+      "customerPhone",
+      "customerAddress",
+      "paymentMethod",
+      "paymentBank",
+      "notes",
+      "status",
+      "totalPrice",
+      "items"
+    ].filter((field) => {
+      return JSON.stringify(before[field]) !== JSON.stringify(after[field]);
+    });
+  }
+
+  if (!fields.length && details.previousInStock !== undefined) {
+    return [{
+      field: "inStock",
+      before: details.previousInStock,
+      after: details.newInStock
+    }];
+  }
+
+  if (!fields.length && details.previousIsActive !== undefined) {
+    return [{
+      field: "isActive",
+      before: details.previousIsActive,
+      after: details.isActive
+    }];
+  }
+
+  if (
+    !fields.length &&
+    details.previousName !== undefined &&
+    details.name !== undefined
+  ) {
+    return [{
+      field: "name",
+      before: details.previousName,
+      after: details.name
+    }];
+  }
+
+  return fields.map((field) => {
+    const valueField = field === "status" && (
+      Object.prototype.hasOwnProperty.call(before, "isActive") ||
+      Object.prototype.hasOwnProperty.call(after, "isActive")
+    )
+      ? "isActive"
+      : field;
+
+    if (
+      !Object.prototype.hasOwnProperty.call(before, valueField) &&
+      !Object.prototype.hasOwnProperty.call(after, valueField)
+    ) {
+      return null;
+    }
+
+    return {
+      field: valueField,
+      before: before[valueField],
+      after: after[valueField]
+    };
+  }).filter(Boolean);
 }
 
 function formatAuditFieldValue(field, value) {
-  if (field === "price" || field === "totalPrice" || field === "unitPrice") {
+  if (
+    field === "price" ||
+    field === "totalPrice" ||
+    field === "unitPrice" ||
+    field === "serviceCost"
+  ) {
     return formatRupiah(Number(value || 0));
   }
 
@@ -279,6 +372,45 @@ function formatAuditFieldValue(field, value) {
 
   if (field === "inStock" || field === "isActive") {
     return value ? "Aktif" : "Tidak aktif";
+  }
+
+  if (field === "invoiceType") {
+    return value === "grosir" ? "Grosir" : "Normal";
+  }
+
+  if (field === "password") {
+    return value ? "Diubah" : "Tidak diubah";
+  }
+
+  if (field === "role") {
+    return String(value || "-").toUpperCase();
+  }
+
+  if (field === "serviceStatus") {
+    const labels = {
+      received: "Diterima",
+      in_progress: "Dikerjakan",
+      completed: "Selesai",
+      cancelled: "Dibatalkan"
+    };
+
+    return labels[value] || String(value || "Belum diisi");
+  }
+
+  if (field === "items" && Array.isArray(value)) {
+    if (!value.length) return "Tidak ada item";
+
+    return value.map((item) => {
+      const bike = [item.bikeBrand, item.bikeName]
+        .filter(Boolean)
+        .join(" ") || "Sepeda";
+      const color = item.bikeColorName ? ` · ${item.bikeColorName}` : "";
+      const quantity = Number(item.quantity || 0).toLocaleString("id-ID");
+      const price = item.unitPrice !== undefined
+        ? ` @ ${formatRupiah(item.unitPrice)}`
+        : "";
+      return `${bike}${color} × ${quantity}${price}`;
+    }).join("\n");
   }
 
   if (field === "colors" && Array.isArray(value)) {
@@ -358,6 +490,13 @@ function createAuditDetailsText(log) {
     return `${preview.join(" · ")}${
       remaining > 0 ? ` · +${remaining} perubahan lain` : ""
     }${stockChanges.length ? ` · ${stockChanges.length} perubahan stok` : ""}.`;
+  }
+
+  if (action === "bike_activate" || action === "bike_reactivate" || action === "bike_deactivate") {
+    const change = fieldChanges.find((item) => item.field === "inStock");
+    return change
+      ? `Status katalog: ${formatAuditFieldValue("inStock", change.before)} → ${formatAuditFieldValue("inStock", change.after)}.`
+      : "Status katalog berubah.";
   }
 
   if (stockChanges.length && action !== "invoice_create") {
@@ -469,15 +608,18 @@ function createAuditDetailsText(log) {
   }
 
   if (action === "brand_create") {
-    return details.slug
-      ? `Brand ditambahkan dengan slug ${details.slug}.`
-      : "Brand baru ditambahkan.";
+    return fieldChanges.length
+      ? `${fieldChanges.length} nilai awal brand tersimpan.`
+      : details.slug
+        ? `Brand ditambahkan dengan slug ${details.slug}.`
+        : "Brand baru ditambahkan.";
   }
 
   if (action === "brand_update") {
-    return details.previousName && details.name &&
-      details.previousName !== details.name
-      ? `Nama diubah dari ${details.previousName} menjadi ${details.name}.`
+    return fieldChanges.length
+      ? `Diubah: ${fieldChanges.map((change) => {
+          return formatAuditFieldLabel(change.field);
+        }).join(", ")}.`
       : "Data brand diperbarui.";
   }
 
@@ -549,7 +691,10 @@ function renderAuditChangedFields(details = {}) {
     getAuditFieldChanges(details).map((change) => change.field)
   );
   const fields = Array.isArray(details.changedFields)
-    ? details.changedFields.filter((field) => !representedFields.has(field))
+    ? details.changedFields.filter((field) => {
+        return !representedFields.has(field) &&
+          !(field === "status" && representedFields.has("isActive"));
+      })
     : [];
 
   if (!fields.length) {
@@ -593,6 +738,52 @@ function renderAuditFieldChanges(details = {}) {
                 formatAuditFieldValue(change.field, change.after)
               )}</strong>
             </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderAuditRecordValues(details = {}) {
+  const values = details.recordValues || details.invoice;
+
+  if (!values || typeof values !== "object" || Array.isArray(values)) {
+    return "";
+  }
+
+  const fields = [
+    "invoiceType",
+    "customerName",
+    "customerPhone",
+    "customerAddress",
+    "paymentMethod",
+    "paymentBank",
+    "notes",
+    "status",
+    "totalPrice",
+    "username",
+    "role",
+    "isActive",
+    "brand",
+    "name",
+    "price",
+    "inStock",
+    "stockQty"
+  ].filter((field) => {
+    return Object.prototype.hasOwnProperty.call(values, field);
+  });
+
+  if (!fields.length) return "";
+
+  return `
+    <div class="admin-audit-change-section">
+      <h4>Data record</h4>
+      <div class="admin-audit-record-values">
+        ${fields.map((field) => `
+          <div>
+            <span>${escapeHtml(formatAuditFieldLabel(field))}</span>
+            <strong>${escapeHtml(formatAuditFieldValue(field, values[field]))}</strong>
           </div>
         `).join("")}
       </div>
@@ -685,7 +876,17 @@ function createAuditExpandedDetails(log) {
         ]
       : null,
     details.reason
-      ? ["Alasan", details.reason]
+      ? [
+          "Alasan",
+          {
+            missing_credentials: "Username atau password belum diisi",
+            invalid_credentials: "Username atau password tidak cocok",
+            too_many_attempts: "Terlalu banyak percobaan login"
+          }[details.reason] || details.reason
+        ]
+      : null,
+    details.attemptedUsername
+      ? ["Username dicoba", details.attemptedUsername]
       : null,
     details.ipHint
       ? ["Sumber jaringan", details.ipHint]
@@ -700,7 +901,11 @@ function createAuditExpandedDetails(log) {
       : null,
     details.stockRestored === true
       ? ["Dampak stok", "Stok dikembalikan"]
-      : null
+      : details.stockRestorationRequired === true
+        ? ["Dampak stok", "Stok akan dikembalikan saat invoice dihapus"]
+        : details.stockRestorationRequired === false
+          ? ["Dampak stok", "Tidak ada stok yang perlu dikembalikan"]
+          : null
   ].filter(Boolean);
 
   return `
@@ -712,6 +917,7 @@ function createAuditExpandedDetails(log) {
         </div>
       `).join("")}
     </div>
+    ${renderAuditRecordValues(details)}
     ${renderAuditFieldChanges(details)}
     ${renderAuditChangedFields(details)}
     ${renderAuditStockChanges(getAuditStockChanges(log))}

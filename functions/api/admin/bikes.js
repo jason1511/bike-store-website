@@ -1274,7 +1274,20 @@ export async function onRequestDelete(context) {
         details: {
           brand: existingBike.brand,
           name: existingBike.name,
-          stockQty: existingBike.stockQty
+          stockQty: existingBike.stockQty,
+          recordValues: {
+            brand: existingBike.brand,
+            name: existingBike.name,
+            price: existingBike.price,
+            inStock: existingBike.inStock,
+            stockQty: existingBike.stockQty
+          },
+          stockChanges: getBikeStockEntries(existingBike).map((entry) => ({
+            colorName: entry.colorName,
+            quantityBefore: entry.quantity,
+            quantityAfter: 0,
+            quantityChange: -entry.quantity
+          }))
         }
       });
 
@@ -1294,6 +1307,12 @@ export async function onRequestDelete(context) {
         targetId: bike.id,
         targetLabel: getBikeLabel(bike),
         details: {
+          changedFields: ["inStock"],
+          fieldChanges: [{
+            field: "inStock",
+            before: existingBike.inStock,
+            after: bike.inStock
+          }],
           previousInStock: existingBike.inStock,
           newInStock: bike.inStock,
           stockQty: bike.stockQty
@@ -1316,6 +1335,12 @@ export async function onRequestDelete(context) {
       targetId: bike.id,
       targetLabel: getBikeLabel(bike),
       details: {
+        changedFields: ["inStock"],
+        fieldChanges: [{
+          field: "inStock",
+          before: existingBike.inStock,
+          after: bike.inStock
+        }],
         previousInStock: existingBike.inStock,
         newInStock: bike.inStock,
         stockQty: bike.stockQty

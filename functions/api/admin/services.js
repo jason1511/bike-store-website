@@ -85,6 +85,36 @@ function rowToService(row) {
   };
 }
 
+const SERVICE_AUDIT_FIELDS = [
+  "customerName",
+  "customerPhone",
+  "customerAddress",
+  "bikeLabel",
+  "serviceType",
+  "serviceStatus",
+  "serviceCost",
+  "notes"
+];
+
+function createServiceFieldChanges(beforeService, afterService) {
+  if (!afterService) return [];
+
+  return SERVICE_AUDIT_FIELDS.map((field) => {
+    const before = beforeService
+      ? beforeService[field]
+      : field === "serviceCost" ? 0 : "";
+    const after = afterService[field];
+
+    if (!beforeService && field !== "serviceCost" && !String(after || "").trim()) {
+      return null;
+    }
+
+    return JSON.stringify(before) === JSON.stringify(after)
+      ? null
+      : { field, before, after };
+  }).filter(Boolean);
+}
+
 async function getServiceById(db, id) {
   const row = await db
     .prepare("SELECT * FROM services WHERE id = ? LIMIT 1")
@@ -242,6 +272,7 @@ export async function onRequestPost(context) {
       .run();
 
     const createdService = await getServiceById(env.BIKE_DB, serviceId);
+    const fieldChanges = createServiceFieldChanges(null, createdService);
 
     await writeAuditLog(env, auth.user, {
       action: "service_create",
@@ -249,6 +280,8 @@ export async function onRequestPost(context) {
       targetId: createdService.id,
       targetLabel: createdService.serviceNumber,
       details: {
+        changedFields: fieldChanges.map((change) => change.field),
+        fieldChanges,
         customerName: createdService.customerName,
         bikeLabel: createdService.bikeLabel,
         serviceType: createdService.serviceType,
@@ -353,6 +386,10 @@ export async function onRequestPut(context) {
       .run();
 
     const updatedService = await getServiceById(env.BIKE_DB, id);
+    const fieldChanges = createServiceFieldChanges(
+      existingService,
+      updatedService
+    );
 
     await writeAuditLog(env, auth.user, {
       action: "service_update",
@@ -360,6 +397,8 @@ export async function onRequestPut(context) {
       targetId: updatedService.id,
       targetLabel: updatedService.serviceNumber,
       details: {
+        changedFields: fieldChanges.map((change) => change.field),
+        fieldChanges,
         customerName: updatedService.customerName,
         bikeLabel: updatedService.bikeLabel,
         serviceType: updatedService.serviceType,
